@@ -1,6 +1,19 @@
 DirectoryIndex dashboard.php
 
-# Bloqueia acesso direto a arquivos de instalação, configuração e backup.
-<FilesMatch "\.(sql|txt|bat|cmd|log|ini)$">
+# Não expõe listagens de diretórios.
+Options -Indexes
+
+# Bloqueia acesso direto a arquivos sensíveis,
+# configurações, banco de dados, backups e arquivos temporários.
+<FilesMatch "^\.env|\.env\.|(\.sql|\.txt|\.bat|\.cmd|\.log|\.ini|\.bak|\.old|\.tmp)$">
     Require all denied
 </FilesMatch>
+
+# Cabeçalhos básicos de segurança.
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"

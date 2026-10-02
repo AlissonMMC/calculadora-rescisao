@@ -8,6 +8,11 @@ declare(strict_types=1);
  * Os valores abaixo existem apenas como fallback para desenvolvimento local.
  */
 
+function sessionTimeout(): int {
+    $timeout = (int) envValue('SESSION_TIMEOUT', 28800);
+    return max(300, $timeout);
+}
+
 function envValue(string $key, mixed $default = null): mixed {
     $value = getenv($key);
     return ($value === false || $value === '') ? $default : $value;
@@ -72,7 +77,7 @@ function usuarioAtual(): ?array {
 
     $ultimoAcesso = (int)($_SESSION['ultimo_acesso'] ?? 0);
 
-    if ($ultimoAcesso && (time() - $ultimoAcesso) > SESSION_TIMEOUT) {
+    if ($ultimoAcesso && (time() - $ultimoAcesso) > sessionTimeout()) {
         unset($_SESSION['usuario_id'], $_SESSION['ultimo_acesso']);
         return null;
     }

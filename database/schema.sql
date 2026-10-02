@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     KEY idx_usuarios_ativo (ativo)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT IGNORE INTO usuarios (nome, login, senha_hash, perfil, ativo)
-VALUES ('Administrador', 'admin', '$2y$12$9Pv3Xhg.qoNonmuEz5fzL.JkLFZiTXG6l2vOY/lGgFrU9cknJ8k6q', 'admin', 1);
+-- O primeiro administrador deve ser criado pelo procedimento de instalação.
+-- Não mantenha credenciais administrativas padrão em produção.
 
 CREATE TABLE IF NOT EXISTS historico_rescisoes (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
