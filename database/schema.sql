@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     nome VARCHAR(120) NOT NULL,
     login VARCHAR(60) NOT NULL,
+    email VARCHAR(190) NULL,
     senha_hash VARCHAR(255) NOT NULL,
     perfil VARCHAR(20) NOT NULL DEFAULT 'usuario',
     ativo TINYINT(1) NOT NULL DEFAULT 1,
@@ -14,6 +15,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     ultimo_login DATETIME NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_usuarios_login (login),
+    UNIQUE KEY uq_usuarios_email (email),
     KEY idx_usuarios_ativo (ativo)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
