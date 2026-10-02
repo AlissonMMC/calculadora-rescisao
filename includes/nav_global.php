@@ -83,6 +83,22 @@ $appPath = $appPath === '/' ? '' : $appPath;
 </div>
 <div class="global-sidebar-backdrop" id="globalSidebarBackdrop"></div>
 
+<header class="global-topbar" aria-label="Barra superior">
+    <div class="global-topbar-left">
+        <span class="global-topbar-context">Painel de gestão</span>
+        <span class="global-topbar-divider"></span>
+        <span class="global-topbar-page"><?= htmlspecialchars(ucfirst($navPage), ENT_QUOTES, 'UTF-8') ?></span>
+    </div>
+    <div class="global-topbar-user" title="<?= htmlspecialchars($userName.' · '.$profileLabel, ENT_QUOTES, 'UTF-8') ?>">
+        <span class="global-topbar-avatar"><?= htmlspecialchars($initial, ENT_QUOTES, 'UTF-8') ?></span>
+        <span class="global-topbar-user-copy">
+            <strong><?= htmlspecialchars($userName, ENT_QUOTES, 'UTF-8') ?></strong>
+            <span><?= htmlspecialchars($profileLabel, ENT_QUOTES, 'UTF-8') ?></span>
+        </span>
+        <span class="global-topbar-chevron">⌄</span>
+    </div>
+</header>
+
 <aside class="global-sidebar" id="globalSidebar" aria-label="Navegação principal">
     <div class="global-sidebar-top">
         <div class="global-sidebar-brand-row">
