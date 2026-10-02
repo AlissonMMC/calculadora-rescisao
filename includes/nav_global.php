@@ -89,13 +89,33 @@ $appPath = $appPath === '/' ? '' : $appPath;
         <span class="global-topbar-divider"></span>
         <span class="global-topbar-page"><?= htmlspecialchars(ucfirst($navPage), ENT_QUOTES, 'UTF-8') ?></span>
     </div>
-    <div class="global-topbar-user" title="<?= htmlspecialchars($userName.' · '.$profileLabel, ENT_QUOTES, 'UTF-8') ?>">
-        <span class="global-topbar-avatar"><?= htmlspecialchars($initial, ENT_QUOTES, 'UTF-8') ?></span>
-        <span class="global-topbar-user-copy">
-            <strong><?= htmlspecialchars($userName, ENT_QUOTES, 'UTF-8') ?></strong>
-            <span><?= htmlspecialchars($profileLabel, ENT_QUOTES, 'UTF-8') ?></span>
-        </span>
-        <span class="global-topbar-chevron">⌄</span>
+    <div class="global-profile-menu">
+        <button class="global-topbar-user" id="globalProfileToggle" type="button" aria-expanded="false" aria-haspopup="true">
+            <span class="global-topbar-avatar"><?= htmlspecialchars($initial, ENT_QUOTES, 'UTF-8') ?></span>
+            <span class="global-topbar-user-copy">
+                <strong><?= htmlspecialchars($userName, ENT_QUOTES, 'UTF-8') ?></strong>
+                <span><?= htmlspecialchars($profileLabel, ENT_QUOTES, 'UTF-8') ?></span>
+            </span>
+            <span class="global-topbar-chevron">⌄</span>
+        </button>
+        <div class="global-profile-dropdown" id="globalProfileDropdown" hidden>
+            <div class="global-profile-dropdown-head">
+                <span class="global-topbar-avatar"><?= htmlspecialchars($initial, ENT_QUOTES, 'UTF-8') ?></span>
+                <div><strong><?= htmlspecialchars($userName, ENT_QUOTES, 'UTF-8') ?></strong><span><?= htmlspecialchars($profileLabel, ENT_QUOTES, 'UTF-8') ?></span></div>
+            </div>
+            <a class="global-profile-item" href="<?= htmlspecialchars($navBase.'perfil.php', ENT_QUOTES, 'UTF-8') ?>">
+                <span class="profile-item-icon">⚙</span>
+                <span><strong>Gerenciar perfil</strong><small>E-mail e senha de acesso</small></span>
+            </a>
+            <div class="global-profile-divider"></div>
+            <form method="post" action="<?= htmlspecialchars($navBase.'logout.php', ENT_QUOTES, 'UTF-8') ?>">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars((string)($csrf ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                <button class="global-profile-item logout" type="submit">
+                    <span class="profile-item-icon">↪</span>
+                    <span><strong>Sair</strong><small>Encerrar sessão</small></span>
+                </button>
+            </form>
+        </div>
     </div>
 </header>
 
