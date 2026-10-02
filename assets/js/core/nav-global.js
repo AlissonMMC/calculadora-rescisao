@@ -4,6 +4,8 @@
     const desktopToggle=document.getElementById('globalSidebarToggle');
     const mobileToggle=document.getElementById('globalSidebarToggleMobile');
     const backdrop=document.getElementById('globalSidebarBackdrop');
+    const profileToggle=document.getElementById('globalProfileToggle');
+    const profileDropdown=document.getElementById('globalProfileDropdown');
 
     root.setAttribute('data-theme',localStorage.getItem('temaCalculadora')==='dark'?'dark':'light');
     if(localStorage.getItem('folhaSidebarCollapsed')==='1' && window.matchMedia('(min-width: 821px)').matches){
@@ -19,6 +21,11 @@
         if(moon)moon.style.display=dark?'none':'block';
         if(sun)sun.style.display=dark?'block':'none';
     }
+    function profileMenu(open){
+        if(!profileToggle || !profileDropdown)return;
+        profileDropdown.hidden=!open;
+        profileToggle.setAttribute('aria-expanded',open?'true':'false');
+    }
     function mobileMenu(open){
         body.classList.toggle('global-sidebar-open',open);
         if(mobileToggle)mobileToggle.setAttribute('aria-expanded',open?'true':'false');
@@ -31,6 +38,18 @@
     mobileToggle?.addEventListener('click',()=>mobileMenu(!body.classList.contains('global-sidebar-open')));
     backdrop?.addEventListener('click',()=>mobileMenu(false));
     document.querySelectorAll('.global-nav-link').forEach(link=>link.addEventListener('click',()=>mobileMenu(false)));
+    profileToggle?.addEventListener('click',(event)=>{
+        event.stopPropagation();
+        profileMenu(profileDropdown?.hidden !== false);
+    });
+    document.addEventListener('click',(event)=>{
+        if(!profileToggle || !profileDropdown)return;
+        if(!profileToggle.contains(event.target) && !profileDropdown.contains(event.target)) profileMenu(false);
+    });
+    document.addEventListener('keydown',(event)=>{
+        if(event.key==='Escape') profileMenu(false);
+    });
+    document.querySelectorAll('.global-profile-item[href]').forEach(link=>link.addEventListener('click',()=>profileMenu(false)));
     themeButton?.addEventListener('click',()=>{
         const next=root.getAttribute('data-theme')==='dark'?'light':'dark';
         root.setAttribute('data-theme',next);
