@@ -1,0 +1,24 @@
+# Dados gerados em execução
+/storage/*
+!/storage/orcamentos/
+!/storage/orcamentos/.gitkeep
+/backup/*
+!/backup/.gitkeep
+
+# Segredos e ambiente local
+.env
+.env.*
+!.env.example
+
+# Temporários
+*.zip
+*.bak
+*.log
+*.tmp
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/

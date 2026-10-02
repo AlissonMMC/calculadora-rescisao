@@ -1,0 +1,6 @@
+DirectoryIndex dashboard.php
+
+# Bloqueia acesso direto a arquivos de instalação, configuração e backup.
+<FilesMatch "\.(sql|txt|bat|cmd|log|ini)$">
+    Require all denied
+</FilesMatch>

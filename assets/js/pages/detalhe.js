@@ -1,0 +1,25 @@
+const csrf = window.APP_CSRF;
+const id = window.APP_ID;
+const select=document.getElementById('statusSelect');
+select?.addEventListener('change',async()=> {
+    try {
+        const r=await fetch('api/status.php', {
+            method:'POST',headers: {
+                'Content-Type':'application/json','X-CSRF-Token':csrf
+            }
+            ,credentials:'same-origin',body:JSON.stringify( {
+                id,status:select.value
+            }
+            )
+        }
+        );
+        const j=await r.json();
+        if(!r.ok||!j.ok)throw new Error(j.error||'Não foi possível atualizar o status.');
+        location.reload()
+    }
+    catch(e) {
+        alert(e.message)
+    }
+}
+);
+document.getElementById('btnPrint')?.addEventListener('click',()=>window.print());
