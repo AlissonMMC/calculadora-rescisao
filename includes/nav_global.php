@@ -44,22 +44,56 @@ if (basename($appPath) === 'orcamentos') {
 $appPath = $appPath === '/' ? '' : $appPath;
 ?>
 <link rel="stylesheet" href="<?= htmlspecialchars($appPath . '/assets/css/core/nav-global.css', ENT_QUOTES, 'UTF-8') ?>">
-<header class="global-nav-shell">
-<nav class="global-nav" aria-label="Navegação principal">
-    <a class="global-brand" href="<?= htmlspecialchars($navBase.'dashboard.php',ENT_QUOTES,'UTF-8') ?>" title="Folha de Cálculo">
-        <span class="global-brand-mark">R$</span>
-        <span class="global-brand-copy"><strong>Folha de Cálculo</strong><span>Gestão imobiliária</span></span>
-    </a>
-    <div class="global-nav-main">
-        <?php foreach($links as $link): $active=$navPage===$link['key']; ?>
-            <a class="global-nav-link <?= $active?'active':'' ?>" href="<?= htmlspecialchars($link['href'],ENT_QUOTES,'UTF-8') ?>" <?= $active?'aria-current="page"':'' ?>><?= navIcon($link['icon']) ?><span><?= htmlspecialchars($link['label'],ENT_QUOTES,'UTF-8') ?></span></a>
-        <?php endforeach; ?>
+
+<div class="global-mobilebar">
+    <button class="global-sidebar-toggle global-mobile-toggle" id="globalSidebarToggleMobile" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    <a class="global-mobile-brand" href="<?= htmlspecialchars($navBase.'dashboard.php', ENT_QUOTES, 'UTF-8') ?>"><span class="global-brand-mark">R$</span><span>Folha de Cálculo</span></a>
+    <span class="global-mobile-avatar"><?= htmlspecialchars($initial, ENT_QUOTES, 'UTF-8') ?></span>
+</div>
+<div class="global-sidebar-backdrop" id="globalSidebarBackdrop"></div>
+
+<aside class="global-sidebar" id="globalSidebar" aria-label="Navegação principal">
+    <div class="global-sidebar-top">
+        <div class="global-sidebar-brand-row">
+            <a class="global-brand" href="<?= htmlspecialchars($navBase.'dashboard.php', ENT_QUOTES, 'UTF-8') ?>" title="Folha de Cálculo">
+                <span class="global-brand-mark">R$</span>
+                <span class="global-brand-copy"><strong>Folha de Cálculo</strong><span>Gestão imobiliária</span></span>
+            </a>
+            <button class="global-sidebar-toggle global-collapse-toggle" id="globalSidebarToggle" type="button" aria-label="Recolher menu" aria-expanded="true" title="Recolher menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 6-6 6 6 6"/></svg>
+            </button>
+        </div>
+
+        <div class="global-sidebar-section">
+            <span class="global-sidebar-label">Principal</span>
+            <nav class="global-nav-main" aria-label="Principal"><?php renderNavLinks($linksPrimary, $navPage); ?></nav>
+        </div>
+        <div class="global-sidebar-section">
+            <span class="global-sidebar-label">Orçamentos</span>
+            <nav class="global-nav-main" aria-label="Orçamentos"><?php renderNavLinks($linksOrcamentos, $navPage); ?></nav>
+        </div>
+        <?php if ($isAdmin): ?>
+        <div class="global-sidebar-section">
+            <span class="global-sidebar-label">Administração</span>
+            <nav class="global-nav-main" aria-label="Administração"><?php renderNavLinks($linksAdmin, $navPage); ?></nav>
+        </div>
+        <?php endif; ?>
     </div>
-    <div class="global-nav-actions">
-        <div class="global-user" title="<?= htmlspecialchars($userName.' · '.$profileLabel,ENT_QUOTES,'UTF-8') ?>"><span class="global-avatar"><?= htmlspecialchars($initial,ENT_QUOTES,'UTF-8') ?></span><span class="global-user-copy"><strong><?= htmlspecialchars($userName,ENT_QUOTES,'UTF-8') ?></strong><span><?= htmlspecialchars($profileLabel,ENT_QUOTES,'UTF-8') ?></span></span></div>
-        <button class="global-theme" id="globalThemeToggle" type="button" aria-label="Alternar tema" title="Alternar tema"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.7 6.7 0 0 0 9.8 9.8Z"/></svg><span>Tema</span></button>
-        <form method="post" action="<?= htmlspecialchars($navBase.'logout.php',ENT_QUOTES,'UTF-8') ?>" style="margin:0"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars((string)($csrf ?? ''),ENT_QUOTES,'UTF-8') ?>"><button class="global-logout" type="submit" title="Sair"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-7"/></svg><span>Sair</span></button></form>
+
+    <div class="global-sidebar-bottom">
+        <button class="global-theme" id="globalThemeToggle" type="button" aria-label="Alternar tema" title="Alternar tema">
+            <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg>
+            <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.7 6.7 0 0 0 9.8 9.8Z"/></svg>
+            <span>Tema</span>
+        </button>
+        <div class="global-user" title="<?= htmlspecialchars($userName.' · '.$profileLabel, ENT_QUOTES, 'UTF-8') ?>">
+            <span class="global-avatar"><?= htmlspecialchars($initial, ENT_QUOTES, 'UTF-8') ?></span>
+            <span class="global-user-copy"><strong><?= htmlspecialchars($userName, ENT_QUOTES, 'UTF-8') ?></strong><span><?= htmlspecialchars($profileLabel, ENT_QUOTES, 'UTF-8') ?></span></span>
+        </div>
+        <form method="post" action="<?= htmlspecialchars($navBase.'logout.php', ENT_QUOTES, 'UTF-8') ?>" class="global-logout-form">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars((string)($csrf ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+            <button class="global-logout" type="submit" title="Sair"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-7"/></svg><span>Sair</span></button>
+        </form>
     </div>
-</nav>
+</aside>
 <script src="<?= htmlspecialchars($appPath . '/assets/js/core/nav-global.js', ENT_QUOTES, 'UTF-8') ?>"></script>
-</header>
