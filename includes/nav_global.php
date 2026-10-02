@@ -17,11 +17,25 @@ $links = [
     ['key'=>'historico_rescisoes','label'=>'Rescisões','href'=>$navBase.'historico.php','icon'=>'clock'],
     ['key'=>'historico_orcamentos','label'=>'Orçamentos','href'=>$navBase.'orcamentos/historico_orcamentos.php','icon'=>'archive'],
 ];
+
 if ($isAdmin) {
     $links[] = ['key'=>'prestadores','label'=>'Prestadores','href'=>$navBase.'orcamentos/prestadores.php','icon'=>'users'];
     $links[] = ['key'=>'monitoramento','label'=>'Monitoramento','href'=>$navBase.'orcamentos/monitoramento.php','icon'=>'pulse'];
     $links[] = ['key'=>'usuarios','label'=>'Usuários','href'=>$navBase.'usuarios.php','icon'=>'shield'];
 }
+
+$linksPrimary = array_values(array_filter($links, static function (array $link): bool {
+    return in_array($link['key'], ['dashboard', 'rescisao', 'historico_rescisoes'], true);
+}));
+
+$linksOrcamentos = array_values(array_filter($links, static function (array $link): bool {
+    return in_array($link['key'], ['gerador', 'historico_orcamentos'], true);
+}));
+
+$linksAdmin = array_values(array_filter($links, static function (array $link): bool {
+    return in_array($link['key'], ['prestadores', 'monitoramento', 'usuarios'], true);
+}));
+
 function navIcon(string $name): string {
     $icons = [
         'home' => '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/>',
@@ -33,7 +47,24 @@ function navIcon(string $name): string {
         'pulse' => '<path d="M3 12h4l2-7 4 14 2-7h6"/>',
         'shield' => '<path d="M12 3 20 6v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3Z"/><path d="m9 12 2 2 4-4"/>',
     ];
+
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.($icons[$name] ?? '').'</svg>';
+}
+
+function renderNavLinks(array $items, string $active): void {
+    foreach ($items as $item) {
+        $key = (string)($item['key'] ?? '');
+        $label = (string)($item['label'] ?? '');
+        $href = (string)($item['href'] ?? '#');
+        $icon = (string)($item['icon'] ?? '');
+        $isActive = $key === $active;
+        ?>
+        <a class="global-nav-link<?= $isActive ? ' active' : '' ?>" href="<?= htmlspecialchars($href, ENT_QUOTES, 'UTF-8') ?>"<?= $isActive ? ' aria-current="page"' : '' ?>>
+            <?= navIcon($icon) ?>
+            <span><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></span>
+        </a>
+        <?php
+    }
 }
 ?>
 <?php
@@ -68,10 +99,12 @@ $appPath = $appPath === '/' ? '' : $appPath;
             <span class="global-sidebar-label">Principal</span>
             <nav class="global-nav-main" aria-label="Principal"><?php renderNavLinks($linksPrimary, $navPage); ?></nav>
         </div>
+
         <div class="global-sidebar-section">
             <span class="global-sidebar-label">Orçamentos</span>
             <nav class="global-nav-main" aria-label="Orçamentos"><?php renderNavLinks($linksOrcamentos, $navPage); ?></nav>
         </div>
+
         <?php if ($isAdmin): ?>
         <div class="global-sidebar-section">
             <span class="global-sidebar-label">Administração</span>
@@ -86,14 +119,17 @@ $appPath = $appPath === '/' ? '' : $appPath;
             <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.7 6.7 0 0 0 9.8 9.8Z"/></svg>
             <span>Tema</span>
         </button>
+
         <div class="global-user" title="<?= htmlspecialchars($userName.' · '.$profileLabel, ENT_QUOTES, 'UTF-8') ?>">
             <span class="global-avatar"><?= htmlspecialchars($initial, ENT_QUOTES, 'UTF-8') ?></span>
             <span class="global-user-copy"><strong><?= htmlspecialchars($userName, ENT_QUOTES, 'UTF-8') ?></strong><span><?= htmlspecialchars($profileLabel, ENT_QUOTES, 'UTF-8') ?></span></span>
         </div>
+
         <form method="post" action="<?= htmlspecialchars($navBase.'logout.php', ENT_QUOTES, 'UTF-8') ?>" class="global-logout-form">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars((string)($csrf ?? ''), ENT_QUOTES, 'UTF-8') ?>">
             <button class="global-logout" type="submit" title="Sair"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-7"/></svg><span>Sair</span></button>
         </form>
     </div>
 </aside>
+
 <script src="<?= htmlspecialchars($appPath . '/assets/js/core/nav-global.js', ENT_QUOTES, 'UTF-8') ?>"></script>
