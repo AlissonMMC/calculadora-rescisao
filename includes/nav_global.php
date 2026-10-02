@@ -79,7 +79,7 @@ $appPath = $appPath === '/' ? '' : $appPath;
 <div class="global-mobilebar">
     <button class="global-sidebar-toggle global-mobile-toggle" id="globalSidebarToggleMobile" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button>
     <a class="global-mobile-brand" href="<?= htmlspecialchars($navBase.'dashboard.php', ENT_QUOTES, 'UTF-8') ?>"><span class="global-brand-mark">R$</span><span>Folha de Cálculo</span></a>
-    <span class="global-mobile-avatar"><?= htmlspecialchars($initial, ENT_QUOTES, 'UTF-8') ?></span>
+    <a class="global-mobile-avatar" href="<?= htmlspecialchars($navBase.'perfil.php', ENT_QUOTES, 'UTF-8') ?>" aria-label="Gerenciar perfil"><?= htmlspecialchars($initial, ENT_QUOTES, 'UTF-8') ?></a>
 </div>
 <div class="global-sidebar-backdrop" id="globalSidebarBackdrop"></div>
 
@@ -104,14 +104,14 @@ $appPath = $appPath === '/' ? '' : $appPath;
                 <div><strong><?= htmlspecialchars($userName, ENT_QUOTES, 'UTF-8') ?></strong><span><?= htmlspecialchars($profileLabel, ENT_QUOTES, 'UTF-8') ?></span></div>
             </div>
             <a class="global-profile-item" href="<?= htmlspecialchars($navBase.'perfil.php', ENT_QUOTES, 'UTF-8') ?>">
-                <span class="profile-item-icon">⚙</span>
+                <span class="profile-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.7 1.7-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20h-2.4v-.2a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.7-1.7.06-.06A1.7 1.7 0 0 0 8.4 15a1.7 1.7 0 0 0-1.56-1.03H6v-2.4h.84A1.7 1.7 0 0 0 8.4 10a1.7 1.7 0 0 0-.34-1.88L8 8.06l1.7-1.7.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 12.67 5.2V5h2.4v.2a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 1.7 1.7-.06.06A1.7 1.7 0 0 0 19.34 10a1.7 1.7 0 0 0 1.56 1.03H21v2.4h-.1A1.7 1.7 0 0 0 19.4 15Z"/></svg></span>
                 <span><strong>Gerenciar perfil</strong><small>E-mail e senha de acesso</small></span>
             </a>
             <div class="global-profile-divider"></div>
             <form method="post" action="<?= htmlspecialchars($navBase.'logout.php', ENT_QUOTES, 'UTF-8') ?>">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars((string)($csrf ?? ''), ENT_QUOTES, 'UTF-8') ?>">
                 <button class="global-profile-item logout" type="submit">
-                    <span class="profile-item-icon">↪</span>
+                    <span class="profile-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-7"/></svg></span>
                     <span><strong>Sair</strong><small>Encerrar sessão</small></span>
                 </button>
             </form>
