@@ -64,3 +64,74 @@ body,body.global-sidebar-collapsed{padding-left:0!important;padding-top:58px!imp
 html[data-theme="dark"] .global-mobile-avatar{background:#eef2f6;color:#18202a}.global-profile-dropdown{right:-2px;width:min(282px,calc(100vw - 24px))}
 }
 @media print{.global-sidebar,.global-mobilebar,.global-sidebar-backdrop,.global-topbar{display:none!important}body{padding:0!important;background:#fff!important}}
+
+
+/* v40 — menu de perfil: ícones alinhados e visual corporativo */
+.global-profile-item{
+    min-height:58px;
+    gap:12px;
+    padding:9px 10px;
+}
+.global-profile-item .profile-item-icon{
+    width:38px;
+    height:38px;
+    flex:0 0 38px;
+    border-radius:10px;
+    display:grid;
+    place-items:center;
+    background:var(--global-nav-hover);
+    border:1px solid var(--global-border);
+    color:var(--global-accent);
+    box-sizing:border-box;
+}
+.global-profile-item .profile-item-icon svg{
+    width:18px;
+    height:18px;
+    display:block;
+    flex:none;
+}
+.global-profile-item .profile-item-icon.profile-item-icon-profile{
+    background:var(--global-accent-soft);
+    border-color:rgba(234,106,18,.16);
+}
+.global-profile-item.logout .profile-item-icon{
+    background:color-mix(in srgb,var(--global-danger) 10%,var(--global-surface));
+    border-color:color-mix(in srgb,var(--global-danger) 18%,var(--global-border));
+    color:var(--global-danger);
+}
+.global-profile-item > span:last-child{
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+.global-profile-item strong{
+    font-size:.68rem;
+    line-height:1.2;
+    letter-spacing:-.01em;
+}
+.global-profile-item small{
+    margin-top:4px;
+    font-size:.56rem;
+    line-height:1.2;
+    color:var(--global-muted);
+}
+.global-profile-item:hover .profile-item-icon{
+    border-color:color-mix(in srgb,var(--global-accent) 30%,var(--global-border));
+    background:var(--global-accent-soft);
+}
+.global-profile-item.logout:hover .profile-item-icon{
+    background:color-mix(in srgb,var(--global-danger) 14%,var(--global-surface));
+    border-color:color-mix(in srgb,var(--global-danger) 28%,var(--global-border));
+}
+html[data-theme="dark"] .global-profile-item .profile-item-icon{
+    background:#202832;
+}
+html[data-theme="dark"] .global-profile-item .profile-item-icon.profile-item-icon-profile{
+    background:#2a1b11;
+    border-color:#573116;
+}
+html[data-theme="dark"] .global-profile-item.logout .profile-item-icon{
+    background:#291719;
+    border-color:#633034;
+}
