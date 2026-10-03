@@ -58,5 +58,4 @@ window.ORCAMENTOS_PROVIDERS=<?=json_encode($defaults,JSON_UNESCAPED_UNICODE|JSON
 window.ORCAMENTOS_SETTINGS=<?=json_encode($settings,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?>;
 window.ORCAMENTOS_CSRF='<?=htmlspecialchars($csrf,ENT_QUOTES,'UTF-8')?>';
 </script>
-<script src="../assets/js/orcamentos/index.js"></script>
-<script src="../assets/js/orcamentos/index.js"></script></body></html>
+<script src="../assets/js/orcamentos/index.js?v=20261003"></script></body></html>

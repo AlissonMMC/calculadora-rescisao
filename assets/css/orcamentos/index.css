@@ -211,67 +211,6 @@ body {
     grid-template-columns:1fr auto;
     gap:8px
 }
-.file-picker {
-    position:relative;
-    display:flex;
-    align-items:center;
-    gap:11px;
-    min-height:64px;
-    padding:9px 13px;
-    border:1px dashed #fdba74;
-    border-radius:14px;
-    background:linear-gradient(180deg,#fffaf5,#fff7ed);
-    color:var(--text);
-    cursor:pointer;
-    transition:.18s ease;
-    overflow:hidden
-}
-.file-picker:hover {
-    border-color:var(--orange);
-    background:#fff3e7;
-    transform:translateY(-1px);
-    box-shadow:0 8px 20px rgba(249,115,22,.08)
-}
-.file-picker input {
-    position:absolute!important;
-    opacity:0!important;
-    width:1px!important;
-    height:1px!important;
-    padding:0!important;
-    border:0!important
-}
-.file-picker-icon {
-    width:40px;
-    height:40px;
-    flex:0 0 40px;
-    display:grid;
-    place-items:center;
-    border-radius:11px;
-    background:var(--orange);
-    color:#fff;
-    box-shadow:0 8px 16px rgba(249,115,22,.18)
-}
-.file-picker-icon svg {
-    width:18px;
-    height:18px
-}
-.file-picker-copy {
-    display:flex;
-    min-width:0;
-    flex:1;
-    flex-direction:column;
-    gap:3px
-}
-.file-picker-copy strong {
-    font-size:.76rem;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis
-}
-.file-picker-copy small {
-    font-size:.61rem;
-    color:var(--muted)
-}
 .file-picker-arrow {
     font-size:1.3rem;
     color:var(--orange);
@@ -732,4 +671,17 @@ body {
     .top-actions {
         flex-wrap:wrap
     }
+}
+
+
+/* O componente global define o seletor de arquivos. Estas regras apenas
+   mantêm compatibilidade com o tema específico do gerador. */
+html[data-theme=dark] .file-picker {
+    background:linear-gradient(180deg,#1b2027,#24170f);
+    border-color:rgba(249,115,22,.55);
+    color:var(--text);
+}
+html[data-theme=dark] .file-picker:hover {
+    background:#2a1b10;
+    border-color:var(--orange);
 }

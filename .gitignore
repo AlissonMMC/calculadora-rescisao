@@ -2,6 +2,10 @@
 /storage/*
 !/storage/orcamentos/
 !/storage/orcamentos/.gitkeep
+
+# Armazenamento local do modulo de orcamentos
+/orcamentos/storage/*
+!/orcamentos/storage/.gitkeep
 /backup/*
 !/backup/.gitkeep
 
