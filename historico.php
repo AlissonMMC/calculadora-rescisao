@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/api/config.php';
-$usuario = exigirLoginPagina();
+$usuario = exigirPermissaoPagina('historico.view');
 $navPage = 'historico_rescisoes';
 $navBase = "";
 $csrf = csrfToken();
