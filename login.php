@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$login, $login]);
         $usuario = $stmt->fetch();
         if (!$usuario || !(int)$usuario['ativo'] || !password_verify($senha, $usuario['senha_hash'])) {
+            registrarTentativaLogin($login, false, $usuario ? (int)$usuario['id'] : null);
             $_SESSION['login_falhas'] = ((int)($_SESSION['login_falhas'] ?? 0)) + 1;
             if ($_SESSION['login_falhas'] >= 5) {
                 $_SESSION['login_bloqueado_ate'] = time() + 300;
@@ -27,12 +28,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             throw new RuntimeException('Login ou senha inválidos.');
         }
+        registrarTentativaLogin($login, true, (int)$usuario['id']);
         unset($_SESSION['login_falhas'], $_SESSION['login_bloqueado_ate']);
         session_regenerate_id(true);
         $_SESSION['usuario_id'] = (int)$usuario['id'];
         $_SESSION['ultimo_acesso'] = time();
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         db()->prepare('UPDATE usuarios SET ultimo_login = CURRENT_TIMESTAMP WHERE id = ?')->execute([(int)$usuario['id']]);
+        registrarAuditoriaSistema('autenticacao', 'login', (int)$usuario['id'], 'Login realizado com sucesso.');
         header('Location: dashboard.php');
         exit;
     } catch (Throwable $e) {
