@@ -1,0 +1,243 @@
+/*
+ * Componentes visuais globais
+ * Aplicado depois dos estilos específicos de cada página para manter
+ * uma única linguagem visual sem alterar a lógica ou o HTML funcional.
+ */
+
+:root{
+  --ui-radius-sm:10px;
+  --ui-radius-md:14px;
+  --ui-radius-lg:18px;
+  --ui-control-h:42px;
+  --ui-gap:16px;
+  --ui-shadow:0 10px 30px rgba(15,23,42,.06);
+  --ui-shadow-hover:0 14px 34px rgba(15,23,42,.09);
+}
+
+body > .container,
+body > .wrap,
+body > main.container,
+body > main.wrap{
+  font-size:14px;
+}
+
+/* Não duplicar a barra superior antiga das páginas. */
+.container > .topbar,
+.wrap > .topbar{
+  display:none !important;
+}
+
+/* Títulos de página */
+.container h1,
+.wrap h1{
+  color:var(--global-text,#18202a);
+  letter-spacing:-.035em;
+}
+
+.container h2,
+.container h3,
+.wrap h2,
+.wrap h3{
+  color:var(--global-text,#18202a);
+  letter-spacing:-.02em;
+}
+
+/* Cards */
+.container .card,
+.wrap .card,
+.container .panel,
+.wrap .panel,
+.container .mode-card,
+.wrap .mode-card,
+.container .stat-card,
+.wrap .stat-card,
+.container .profile-card,
+.wrap .profile-card,
+.container .profile-account,
+.wrap .profile-account{
+  border-color:var(--global-border,#e4e8ed);
+  border-radius:var(--ui-radius-lg);
+  box-shadow:var(--ui-shadow);
+}
+
+.container .card:hover,
+.wrap .card:hover,
+.container .panel:hover,
+.wrap .panel:hover{
+  box-shadow:var(--ui-shadow-hover);
+}
+
+/* Controles */
+.container input:not([type="checkbox"]):not([type="radio"]),
+.container select,
+.container textarea,
+.wrap input:not([type="checkbox"]):not([type="radio"]),
+.wrap select,
+.wrap textarea{
+  min-height:var(--ui-control-h);
+  border-color:var(--global-border,#e4e8ed);
+  border-radius:var(--ui-radius-sm);
+  background:var(--global-surface,#fff);
+  color:var(--global-text,#18202a);
+  box-sizing:border-box;
+}
+
+.container input:not([type="checkbox"]):not([type="radio"]):focus,
+.container select:focus,
+.container textarea:focus,
+.wrap input:not([type="checkbox"]):not([type="radio"]):focus,
+.wrap select:focus,
+.wrap textarea:focus{
+  border-color:var(--global-accent,#ea6a12);
+  box-shadow:0 0 0 3px rgba(234,106,18,.12);
+}
+
+/* Botões */
+.container .btn,
+.wrap .btn,
+.container button:not(.global-sidebar-toggle):not(.global-theme):not(.global-logout):not(.global-topbar-user),
+.wrap button:not(.global-sidebar-toggle):not(.global-theme):not(.global-logout):not(.global-topbar-user){
+  border-radius:var(--ui-radius-sm);
+  min-height:40px;
+  font-weight:800;
+}
+
+.container .btn-primary,
+.wrap .btn-primary{
+  background:var(--global-accent,#ea6a12);
+  border-color:var(--global-accent,#ea6a12);
+}
+
+.container .btn-primary:hover,
+.wrap .btn-primary:hover{
+  background:var(--global-accent-strong,#c6530a);
+  border-color:var(--global-accent-strong,#c6530a);
+}
+
+/* Tabelas */
+.container .table-wrap,
+.wrap .table-wrap,
+.container .table-container,
+.wrap .table-container,
+.container .history-table-wrap,
+.wrap .history-table-wrap,
+.container .recent-table-wrap,
+.wrap .recent-table-wrap{
+  border-color:var(--global-border,#e4e8ed);
+  border-radius:var(--ui-radius-md);
+}
+
+.container table th,
+.wrap table th{
+  background:var(--global-surface-2,#f8fafb);
+  color:var(--global-muted,#697586);
+  font-weight:850;
+}
+
+.container table td,
+.container table th,
+.wrap table td,
+.wrap table th{
+  border-color:var(--global-border,#e4e8ed);
+}
+
+/* Layouts */
+.container .grid,
+.wrap .grid{
+  gap:var(--ui-gap);
+}
+
+.container .layout,
+.wrap .layout{
+  gap:20px;
+}
+
+/* Evita que conteúdo comprima a sidebar/topbar em resoluções menores. */
+.container > *,
+.wrap > *{
+  min-width:0;
+}
+
+/* Tablet */
+@media (max-width:900px){
+  .container .grid,
+  .wrap .grid,
+  .container .stats,
+  .wrap .stats{
+    grid-template-columns:1fr;
+  }
+
+  .container .layout,
+  .wrap .layout{
+    grid-template-columns:1fr;
+  }
+
+  .container .workflow-grid,
+  .wrap .workflow-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+/* Celular */
+@media (max-width:620px){
+  .container .hero,
+  .wrap .hero,
+  .container .header,
+  .wrap .header{
+    padding:22px;
+    border-radius:14px;
+  }
+
+  .container .card,
+  .wrap .card,
+  .container .mode-card,
+  .wrap .mode-card{
+    padding:16px;
+    border-radius:14px;
+  }
+
+  .container .mode-grid,
+  .wrap .mode-grid{
+    grid-template-columns:1fr;
+  }
+
+  .container .date-range,
+  .wrap .date-range{
+    grid-template-columns:1fr;
+  }
+
+  .container .date-arrow,
+  .wrap .date-arrow{
+    display:none;
+  }
+}
+
+/* Dark mode */
+html[data-theme="dark"] .container .card,
+html[data-theme="dark"] .wrap .card,
+html[data-theme="dark"] .container .panel,
+html[data-theme="dark"] .wrap .panel,
+html[data-theme="dark"] .container .mode-card,
+html[data-theme="dark"] .wrap .mode-card,
+html[data-theme="dark"] .container .stat-card,
+html[data-theme="dark"] .wrap .stat-card{
+  background:var(--global-surface,#151a21);
+  border-color:var(--global-border,#29313b);
+  color:var(--global-text,#edf2f7);
+}
+
+html[data-theme="dark"] .container input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme="dark"] .container select,
+html[data-theme="dark"] .container textarea,
+html[data-theme="dark"] .wrap input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme="dark"] .wrap select,
+html[data-theme="dark"] .wrap textarea{
+  background:var(--global-surface-2,#1b222b);
+  border-color:var(--global-border,#29313b);
+  color:var(--global-text,#edf2f7);
+}
+
+html[data-theme="dark"] .container table th,
+html[data-theme="dark"] .wrap table th{
+  background:var(--global-surface-2,#1b222b);
+}
