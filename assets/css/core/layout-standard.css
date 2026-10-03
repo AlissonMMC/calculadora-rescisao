@@ -1,0 +1,194 @@
+/*
+ * Design system de layout global
+ * Objetivo: todas as telas autenticadas usam a mesma régua horizontal,
+ * espaçamento vertical e comportamento responsivo.
+ */
+
+:root {
+    --app-content-max: 1240px;
+    --app-content-gutter: 24px;
+    --app-content-top: 28px;
+    --app-content-bottom: 56px;
+    --app-section-gap: 16px;
+    --app-card-radius: 16px;
+    --app-control-height: 42px;
+}
+
+/* Reset estrutural */
+html,
+body {
+    min-width: 0;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+    max-width: 100%;
+}
+
+/* Régua única de conteúdo.
+   .container e .wrap são os shells usados pelas telas atuais. */
+body > .container,
+body > .wrap,
+body > main.container,
+body > main.wrap {
+    width: min(var(--app-content-max), calc(100% - (var(--app-content-gutter) * 2)));
+    max-width: var(--app-content-max);
+    margin-inline: auto;
+    padding-top: var(--app-content-top);
+    padding-bottom: var(--app-content-bottom);
+}
+
+/* O conteúdo interno nunca cria uma segunda régua horizontal acidental. */
+.container > .container,
+.wrap > .wrap {
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
+}
+
+/* Cabeçalhos de página */
+.container > .topbar,
+.wrap > .topbar,
+.container > .top,
+.wrap > .top,
+.container > .page-title,
+.wrap > .page-title {
+    width: 100%;
+    margin-inline: 0;
+}
+
+/* Cards e grids devem respeitar a largura do shell. */
+.container > section,
+.wrap > section,
+.container > .grid,
+.wrap > .grid,
+.container > .card,
+.wrap > .card,
+.container > .table,
+.wrap > .table {
+    min-width: 0;
+}
+
+/* Tabelas grandes: nunca estourar a viewport. */
+.table-wrap,
+.history-table-wrap,
+.recent-table-wrap,
+.table-container {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Campos longos */
+.field,
+.f,
+.form-field,
+.setting {
+    min-width: 0;
+}
+
+input,
+select,
+textarea {
+    box-sizing: border-box;
+}
+
+/* Área de conteúdo da calculadora */
+#calculatorScreen,
+#modeScreen {
+    width: 100%;
+    min-width: 0;
+}
+
+/* Mantém os grids flexíveis quando o espaço diminui. */
+.grid,
+.layout,
+.workflow-grid,
+.stats {
+    min-width: 0;
+}
+
+.grid > *,
+.layout > *,
+.workflow-grid > *,
+.stats > * {
+    min-width: 0;
+}
+
+/* Breakpoint corporativo para notebooks menores/tablets */
+@media (max-width: 1100px) {
+    :root {
+        --app-content-gutter: 20px;
+    }
+
+    body > .container,
+    body > .wrap,
+    body > main.container,
+    body > main.wrap {
+        width: min(var(--app-content-max), calc(100% - (var(--app-content-gutter) * 2)));
+    }
+}
+
+/* Tablet */
+@media (max-width: 820px) {
+    :root {
+        --app-content-gutter: 16px;
+        --app-content-top: 20px;
+        --app-content-bottom: 40px;
+    }
+
+    body > .container,
+    body > .wrap,
+    body > main.container,
+    body > main.wrap {
+        width: calc(100% - (var(--app-content-gutter) * 2));
+        max-width: none;
+    }
+
+    .container > .hero,
+    .wrap > .hero {
+        width: 100%;
+    }
+}
+
+/* Celular */
+@media (max-width: 560px) {
+    :root {
+        --app-content-gutter: 12px;
+        --app-content-top: 16px;
+        --app-content-bottom: 32px;
+    }
+
+    body > .container,
+    body > .wrap,
+    body > main.container,
+    body > main.wrap {
+        width: calc(100% - (var(--app-content-gutter) * 2));
+    }
+}
+
+/* Impressão: remover a régua da aplicação e usar toda a folha. */
+@media print {
+    body > .container,
+    body > .wrap,
+    body > main.container,
+    body > main.wrap {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
