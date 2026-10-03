@@ -35,13 +35,7 @@ function renderProviders() {
         }
         const row=document.createElement('div');
         row.className='provider';
-        row.innerHTML=`<div><div class="provider-name">Orçamento ${i+1}</div><div class="provider-meta" id="meta${i}">${esc(selected.nome||'Selecione um prestador')}</div></div><div class="provider-select"><select data-slot="${i}">${PROVIDERS.map(p=>`<option value="${esc(p.id)}" $ {
-            String(p.id)===String(slots[i])?'selected':''
-        }
-        >$ {
-            esc(p.nome)
-        }
-        </option>`).join('')}</select></div><div class="provider-image"><img class="preview" id="preview${i}" alt=""><span class="file-name" id="sigName${i}">${selected.assinatura?'Assinatura cadastrada':'Sem assinatura cadastrada'}</span><input type="file" id="imagem${i+1}" name="imagem${i+1}" accept="image/png,image/jpeg,image/jpg"><label class="btn secondary small" for="imagem${i+1}">Substituir</label></div><span class="hint">${esc(selected.cpf||'')}</span>`;
+        row.innerHTML=`<div><div class="provider-name">Orçamento ${i+1}</div><div class="provider-meta" id="meta${i}">${esc(selected.nome||'Selecione um prestador')}</div></div><div class="provider-select"><select data-slot="${i}">${PROVIDERS.map(p=>`<option value="${esc(p.id)}" ${String(p.id)===String(slots[i])?'selected':''}>${esc(p.nome)}</option>`).join('')}</select></div><div class="provider-image"><img class="preview" id="preview${i}" alt=""><span class="file-name" id="sigName${i}">${selected.assinatura?'Assinatura cadastrada':'Sem assinatura cadastrada'}</span><input type="file" id="imagem${i+1}" name="imagem${i+1}" accept="image/png,image/jpeg,image/jpg"><label class="btn secondary small" for="imagem${i+1}">Substituir</label></div><span class="hint">${esc(selected.cpf||'')}</span>`;
         box.appendChild(row);
         setStoredPreview(i,selected);
     }
