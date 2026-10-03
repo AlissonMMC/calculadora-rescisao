@@ -5,17 +5,17 @@ $navBase = (string)($navBase ?? '');
 $navPage = (string)($navPage ?? 'dashboard');
 $navUser = is_array($usuario ?? null) ? $usuario : (is_array($u ?? null) ? $u : (function_exists('usuarioAtual') ? (usuarioAtual() ?: []) : []));
 $perfil = strtolower((string)($navUser['perfil'] ?? $navUser['role'] ?? $navUser['nivel'] ?? ''));
-$isAdmin = !empty($navUser['is_admin']) || !empty($navUser['admin']) || $perfil === 'admin' || strtolower((string)($navUser['login'] ?? '')) === 'admin';
+$isAdmin = function_exists('perfilNormalizado') ? perfilNormalizado($navUser) === 'admin' : ($perfil === 'admin' || strtolower((string)($navUser['login'] ?? '')) === 'admin');
 $userName = trim((string)($navUser['nome'] ?? $navUser['login'] ?? 'Usuário')) ?: 'Usuário';
 $initial = strtoupper(function_exists('mb_substr') ? mb_substr($userName, 0, 1, 'UTF-8') : substr($userName, 0, 1));
 $profileLabel = $isAdmin ? 'Administrador' : 'Usuário';
 
 $links = [
-    ['key'=>'dashboard','label'=>'Início','href'=>$navBase.'dashboard.php','icon'=>'home'],
-    ['key'=>'rescisao','label'=>'Nova rescisão','href'=>$navBase.'index.php?nova=1','icon'=>'calc'],
-    ['key'=>'gerador','label'=>'Gerador de orçamentos','href'=>$navBase.'orcamentos/','icon'=>'file'],
-    ['key'=>'historico_rescisoes','label'=>'Rescisões','href'=>$navBase.'historico.php','icon'=>'clock'],
-    ['key'=>'historico_orcamentos','label'=>'Orçamentos','href'=>$navBase.'orcamentos/historico_orcamentos.php','icon'=>'archive'],
+    ['key'=>'dashboard','label'=>'Início','href'=>$navBase.'dashboard.php','icon'=>'home','permission'=>'dashboard.view'],
+    ['key'=>'rescisao','label'=>'Nova rescisão','href'=>$navBase.'index.php?nova=1','icon'=>'calc','permission'=>'rescisao.create'],
+    ['key'=>'gerador','label'=>'Gerador de orçamentos','href'=>$navBase.'orcamentos/','icon'=>'file','permission'=>'orcamentos.view'],
+    ['key'=>'historico_rescisoes','label'=>'Rescisões','href'=>$navBase.'historico.php','icon'=>'clock','permission'=>'historico.view'],
+    ['key'=>'historico_orcamentos','label'=>'Orçamentos','href'=>$navBase.'orcamentos/historico_orcamentos.php','icon'=>'archive','permission'=>'orcamentos.view'],
 ];
 
 if ($isAdmin) {
@@ -24,12 +24,14 @@ if ($isAdmin) {
     $links[] = ['key'=>'usuarios','label'=>'Usuários','href'=>$navBase.'usuarios.php','icon'=>'shield'];
 }
 
-$linksPrimary = array_values(array_filter($links, static function (array $link): bool {
-    return in_array($link['key'], ['dashboard', 'rescisao', 'historico_rescisoes'], true);
+$linksPrimary = array_values(array_filter($links, static function (array $link) use ($navUser): bool {
+    return in_array($link['key'], ['dashboard', 'rescisao', 'historico_rescisoes'], true)
+        && (!function_exists('temPermissao') || temPermissao($navUser, (string)($link['permission'] ?? '')));
 }));
 
-$linksOrcamentos = array_values(array_filter($links, static function (array $link): bool {
-    return in_array($link['key'], ['gerador', 'historico_orcamentos'], true);
+$linksOrcamentos = array_values(array_filter($links, static function (array $link) use ($navUser): bool {
+    return in_array($link['key'], ['gerador', 'historico_orcamentos'], true)
+        && (!function_exists('temPermissao') || temPermissao($navUser, (string)($link['permission'] ?? '')));
 }));
 
 $linksAdmin = array_values(array_filter($links, static function (array $link): bool {
