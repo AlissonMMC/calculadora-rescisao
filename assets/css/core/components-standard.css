@@ -241,3 +241,94 @@ html[data-theme="dark"] .container table th,
 html[data-theme="dark"] .wrap table th{
   background:var(--global-surface-2,#1b222b);
 }
+
+
+/* Seletor de arquivos — padrão visual global.
+   O input nativo continua funcional; apenas sua apresentação é padronizada. */
+.file-picker{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  min-height:64px;
+  width:100%;
+  padding:9px 13px;
+  border:1px dashed color-mix(in srgb,var(--global-accent,#ea6a12) 55%,var(--global-border,#e4e8ed));
+  border-radius:14px;
+  background:linear-gradient(180deg,var(--global-surface,#fff),color-mix(in srgb,var(--global-accent,#ea6a12) 7%,var(--global-surface,#fff)));
+  color:var(--global-text,#18202a);
+  cursor:pointer;
+  transition:.18s ease;
+  overflow:hidden;
+  box-sizing:border-box;
+}
+.file-picker:hover{
+  border-color:var(--global-accent,#ea6a12);
+  background:color-mix(in srgb,var(--global-accent,#ea6a12) 8%,var(--global-surface,#fff));
+  transform:translateY(-1px);
+  box-shadow:0 8px 20px rgba(234,106,18,.08);
+}
+.file-picker input[type=file]{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+  opacity:0!important;
+}
+.file-picker-icon{
+  width:40px;
+  height:40px;
+  flex:0 0 40px;
+  display:grid;
+  place-items:center;
+  border-radius:11px;
+  background:var(--global-accent,#ea6a12);
+  color:#fff;
+  box-shadow:0 8px 16px rgba(234,106,18,.18);
+}
+.file-picker-icon svg{width:18px;height:18px}
+.file-picker-copy{
+  display:flex;
+  min-width:0;
+  flex:1;
+  flex-direction:column;
+  gap:3px;
+}
+.file-picker-copy strong{
+  font-size:.76rem;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.file-picker-copy small{font-size:.61rem;color:var(--global-muted,#697586)}
+.file-picker-arrow{
+  font-size:1.3rem;
+  color:var(--global-accent,#ea6a12);
+  font-weight:900;
+  line-height:1;
+}
+.file-picker-compact{min-height:52px;padding:7px 10px}
+.file-picker-compact .file-picker-icon{width:34px;height:34px;flex-basis:34px}
+.file-picker-compact .file-picker-copy strong{font-size:.70rem}
+.file-picker-compact .file-picker-copy small{font-size:.58rem}
+
+html[data-theme="dark"] .file-picker{
+  border-color:rgba(249,115,22,.55);
+  background:linear-gradient(180deg,#1b2027,#24170f);
+  color:var(--global-text,#edf2f7);
+}
+html[data-theme="dark"] .file-picker:hover{
+  border-color:#f97316;
+  background:#2a1b10;
+}
+html[data-theme="dark"] .file-picker-copy small{color:var(--global-muted,#aab3bf)}
+
+@media(max-width:620px){
+  .file-picker{min-height:58px;padding:8px 10px}
+  .file-picker-icon{width:36px;height:36px;flex-basis:36px}
+}
