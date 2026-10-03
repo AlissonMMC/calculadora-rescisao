@@ -8,7 +8,12 @@ $perfil = strtolower((string)($navUser['perfil'] ?? $navUser['role'] ?? $navUser
 $isAdmin = function_exists('perfilNormalizado') ? perfilNormalizado($navUser) === 'admin' : ($perfil === 'admin' || strtolower((string)($navUser['login'] ?? '')) === 'admin');
 $userName = trim((string)($navUser['nome'] ?? $navUser['login'] ?? 'Usuário')) ?: 'Usuário';
 $initial = strtoupper(function_exists('mb_substr') ? mb_substr($userName, 0, 1, 'UTF-8') : substr($userName, 0, 1));
-$profileLabel = $isAdmin ? 'Administrador' : 'Usuário';
+$profileLabel = match (function_exists('perfilNormalizado') ? perfilNormalizado($navUser) : $perfil) {
+    'admin' => 'Administrador',
+    'financeiro' => 'Financeiro',
+    'consulta' => 'Somente consulta',
+    default => 'Operacional',
+};
 
 $links = [
     ['key'=>'dashboard','label'=>'Início','href'=>$navBase.'dashboard.php','icon'=>'home','permission'=>'dashboard.view'],
