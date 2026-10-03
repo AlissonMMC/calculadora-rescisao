@@ -106,7 +106,7 @@ $appPath = $appPath === '/' ? '' : $appPath;
                 <div><strong><?= htmlspecialchars($userName, ENT_QUOTES, 'UTF-8') ?></strong><span><?= htmlspecialchars($profileLabel, ENT_QUOTES, 'UTF-8') ?></span></div>
             </div>
             <a class="global-profile-item" href="<?= htmlspecialchars($navBase.'perfil.php', ENT_QUOTES, 'UTF-8') ?>">
-                <span class="profile-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.7 1.7-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20h-2.4v-.2a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.7-1.7.06-.06A1.7 1.7 0 0 0 8.4 15a1.7 1.7 0 0 0-1.56-1.03H6v-2.4h.84A1.7 1.7 0 0 0 8.4 10a1.7 1.7 0 0 0-.34-1.88L8 8.06l1.7-1.7.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 12.67 5.2V5h2.4v.2a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 1.7 1.7-.06.06A1.7 1.7 0 0 0 19.34 10a1.7 1.7 0 0 0 1.56 1.03H21v2.4h-.1A1.7 1.7 0 0 0 19.4 15Z"/></svg></span>
+                <span class="profile-item-icon profile-item-icon-profile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c.8-3.3 3-5 6.5-5s5.7 1.7 6.5 5"/></svg></span>
                 <span><strong>Gerenciar perfil</strong><small>E-mail e senha de acesso</small></span>
             </a>
             <div class="global-profile-divider"></div>
