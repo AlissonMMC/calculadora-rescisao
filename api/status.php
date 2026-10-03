@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/config.php';
-$usuario = exigirLoginApi();
+$usuario = exigirPermissaoApi('rescisao.edit');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') responder(['ok' => false, 'error' => 'Método não permitido.'], 405);
 validarCsrf();
 $entrada = entradaJson();

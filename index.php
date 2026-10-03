@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/api/config.php';
-$usuario = exigirLoginPagina();
+$usuario = exigirPermissaoPagina('rescisao.view');
 $navPage = 'rescisao';
 $navBase = "";
 $csrf = csrfToken();

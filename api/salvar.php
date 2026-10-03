@@ -2,6 +2,9 @@
 declare(strict_types=1);
 require __DIR__ . '/config.php';
 $usuario = exigirLoginApi();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // A permissão específica é validada abaixo conforme criação ou edição.
+}
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') responder(['ok' => false, 'error' => 'Método não permitido.'], 405);
 validarCsrf();
 $entrada = entradaJson();
@@ -21,11 +24,12 @@ try {
     $pdo->beginTransaction();
 
     if ($id > 0) {
+        if (!temPermissao($usuario, 'rescisao.edit')) responder(['ok' => false, 'error' => 'Você não possui permissão para editar rescisões.'], 403);
         $stmt = $pdo->prepare('SELECT id, usuario_id, status, nome FROM historico_rescisoes WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
         $existente = $stmt->fetch();
         if (!$existente) { $pdo->rollBack(); responder(['ok' => false, 'error' => 'Rescisão não encontrada.'], 404); }
-        $permitido = ((int)$existente['usuario_id'] === (int)$usuario['id']) || $usuario['perfil'] === 'admin';
+        $permitido = temPermissao($usuario, 'rescisao.edit') && (((int)$existente['usuario_id'] === (int)$usuario['id']) || perfilNormalizado($usuario) === 'admin');
         if (!$permitido) { $pdo->rollBack(); responder(['ok' => false, 'error' => 'Você não pode alterar esta rescisão.'], 403); }
 
         $stmt = $pdo->prepare('UPDATE historico_rescisoes SET nome = ?, endereco = ?, total = ?, total_adm = ?, total_repasse = ?, modo_nome = ?, status = ?, atualizado_em = CURRENT_TIMESTAMP, ultimo_editor_id = ? WHERE id = ?');
@@ -48,6 +52,7 @@ try {
         }
         registrarAuditoria($id, (int)$usuario['id'], $acao, $detalhes);
     } else {
+        if (!temPermissao($usuario, 'rescisao.create')) responder(['ok' => false, 'error' => 'Você não possui permissão para criar rescisões.'], 403);
         $stmt = $pdo->prepare('INSERT INTO historico_rescisoes (usuario_id, ultimo_editor_id, nome, endereco, total, total_adm, total_repasse, modo_nome, status, dados_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([(int)$usuario['id'], (int)$usuario['id'], $nome, $endereco, $total, $totalAdm, $totalRepasse, $modoNome, $status, $jsonDados]);
         $id = (int)$pdo->lastInsertId();

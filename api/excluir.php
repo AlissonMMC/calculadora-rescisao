@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/config.php';
-exigirAdminApi();
+exigirPermissaoApi('historico.delete');
 if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') responder(['ok' => false, 'error' => 'Método não permitido.'], 405);
 validarCsrf();
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);

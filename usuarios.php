@@ -27,7 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nome = limparTexto($_POST['nome'] ?? '', 120);
             $login = mb_substr(strtolower(trim((string)($_POST['login'] ?? ''))), 0, 60);
             $senha = (string)($_POST['senha'] ?? '');
-            $perfil = ($_POST['perfil'] ?? 'usuario') === 'admin' ? 'admin' : 'usuario';
+            $perfisPermitidos = ['admin', 'financeiro', 'operacional', 'consulta'];
+            $perfil = (string)($_POST['perfil'] ?? 'operacional');
+            if (!in_array($perfil, $perfisPermitidos, true)) $perfil = 'operacional';
             if ($nome === '' || $login === '' || $senha === '') throw new RuntimeException('Preencha nome, usuário e senha.');
             if (!preg_match('/^[a-z0-9._-]{3,60}$/', $login)) throw new RuntimeException('O usuário deve ter de 3 a 60 caracteres usando letras, números, ponto, hífen ou sublinhado.');
             if (mb_strlen($senha) < 8) throw new RuntimeException('A senha deve ter pelo menos 8 caracteres.');
@@ -36,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ((int)$stmt->fetchColumn() > 0) throw new RuntimeException('Esse usuário já existe.');
             $stmt = $pdo->prepare('INSERT INTO usuarios (nome, login, senha_hash, perfil, ativo) VALUES (?, ?, ?, ?, 1)');
             $stmt->execute([$nome, $login, password_hash($senha, PASSWORD_DEFAULT), $perfil]);
+            registrarAuditoriaSistema('usuarios', 'criar_usuario', (int)$pdo->lastInsertId(), 'Perfil: ' . $perfil);
             redirecionarComMensagem('ok', 'Usuário criado com sucesso.');
         }
 
@@ -53,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $stmt = $pdo->prepare('UPDATE usuarios SET ativo = ? WHERE id = ?');
             $stmt->execute([(int)$alvo['ativo'] ? 0 : 1, $id]);
+            registrarAuditoriaSistema('usuarios', (int)$alvo['ativo'] ? 'bloquear_usuario' : 'ativar_usuario', $id);
             redirecionarComMensagem('ok', (int)$alvo['ativo'] ? 'Usuário bloqueado.' : 'Usuário ativado.');
         }
 
@@ -62,6 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($id < 1 || mb_strlen($novaSenha) < 6) throw new RuntimeException('A nova senha deve ter pelo menos 8 caracteres.');
             $stmt = $pdo->prepare('UPDATE usuarios SET senha_hash = ? WHERE id = ?');
             $stmt->execute([password_hash($novaSenha, PASSWORD_DEFAULT), $id]);
+            registrarAuditoriaSistema('usuarios', 'redefinir_senha', $id);
             redirecionarComMensagem('ok', 'Senha redefinida com sucesso.');
         }
 
@@ -99,10 +104,10 @@ $csrf = csrfToken();
         <div class="field"><label for="nome">Nome completo</label><input id="nome" name="nome" type="text" required></div>
         <div class="field"><label for="login">Usuário</label><input id="login" name="login" type="text" pattern="[a-z0-9._-]{3,60}" required></div>
         <div class="field"><label for="senha">Senha inicial</label><input id="senha" name="senha" type="password" minlength="8" required></div>
-        <div class="field"><label for="perfil">Perfil</label><select id="perfil" name="perfil"><option value="usuario">Usuário</option><option value="admin">Administrador</option></select></div>
+        <div class="field"><label for="perfil">Perfil</label><select id="perfil" name="perfil"><option value="operacional">Operacional</option><option value="financeiro">Financeiro</option><option value="consulta">Somente consulta</option><option value="admin">Administrador</option></select></div>
         <div class="form-actions"><button class="btn btn-primary" type="submit">Criar usuário</button></div>
       </form>
-      <p class="footnote">Usuários comuns podem usar a calculadora e o histórico. Administradores também podem gerenciar usuários e apagar registros do histórico.</p>
+      <p class="footnote">Cada perfil possui permissões diferentes. Administradores têm acesso integral; Financeiro e Operacional podem trabalhar nos cálculos; Consulta possui acesso somente leitura.</p>
     </section>
     <section class="card">
       <h2>Usuários cadastrados</h2><p class="sub">Controle de acesso do sistema.</p>
@@ -111,7 +116,7 @@ $csrf = csrfToken();
         <tr>
           <td><strong><?= htmlspecialchars($u['nome'], ENT_QUOTES, 'UTF-8') ?></strong></td>
           <td><?= htmlspecialchars($u['login'], ENT_QUOTES, 'UTF-8') ?></td>
-          <td><span class="role"><?= $u['perfil'] === 'admin' ? 'Administrador' : 'Usuário' ?></span></td>
+          <td><span class="role"><?= htmlspecialchars(match ($u['perfil']) { 'admin' => 'Administrador', 'financeiro' => 'Financeiro', 'consulta' => 'Somente consulta', default => 'Operacional' }, ENT_QUOTES, 'UTF-8') ?></span></td>
           <td><span class="status <?= (int)$u['ativo'] ? 'active' : 'off' ?>"><?= (int)$u['ativo'] ? 'Ativo' : 'Bloqueado' ?></span></td>
           <td><?= !empty($u['ultimo_login']) ? date('d/m/Y H:i', strtotime($u['ultimo_login'])) : 'Nunca' ?></td><td><?= !empty($u['criado_em']) ? date('d/m/Y H:i', strtotime($u['criado_em'])) : '—' ?></td>
           <td>
