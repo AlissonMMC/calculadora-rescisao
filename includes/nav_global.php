@@ -76,6 +76,7 @@ $appPath = $appPath === '/' ? '' : $appPath;
 ?>
 <link rel="stylesheet" href="<?= htmlspecialchars($appPath . '/assets/css/core/nav-global.css', ENT_QUOTES, 'UTF-8') ?>">
 <link rel="stylesheet" href="<?= htmlspecialchars($appPath . '/assets/css/core/layout-standard.css', ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars($appPath . '/assets/css/core/components-standard.css', ENT_QUOTES, 'UTF-8') ?>">
 
 <div class="global-mobilebar">
     <button class="global-sidebar-toggle global-mobile-toggle" id="globalSidebarToggleMobile" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button>
