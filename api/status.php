@@ -14,7 +14,7 @@ try {
     $stmt->execute([$id]);
     $row = $stmt->fetch();
     if (!$row) responder(['ok' => false, 'error' => 'Rescisão não encontrada.'], 404);
-    if ((int)$row['usuario_id'] !== (int)$usuario['id'] && $usuario['perfil'] !== 'admin') responder(['ok' => false, 'error' => 'Você não pode alterar o status desta rescisão.'], 403);
+    if ((int)$row['usuario_id'] !== (int)$usuario['id'] && perfilNormalizado($usuario) !== 'admin') responder(['ok' => false, 'error' => 'Você não pode alterar o status desta rescisão.'], 403);
 
     $pdo->beginTransaction();
     $stmt = $pdo->prepare('UPDATE historico_rescisoes SET status = ?, atualizado_em = CURRENT_TIMESTAMP, ultimo_editor_id = ? WHERE id = ?');
