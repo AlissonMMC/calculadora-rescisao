@@ -1,0 +1,8 @@
+{
+  "name": "calculadora-rescisao",
+  "description": "Sistema web para cálculo e gestão de rescisões de contratos de locação.",
+  "require": {
+    "php": ">=8.0",
+    "phpmailer/phpmailer": "^7.1.1"
+  }
+}
