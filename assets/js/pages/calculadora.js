@@ -1531,12 +1531,73 @@ function topicStateSave() {
     catch (_) {
     }
 }
-function refreshTopicStepButtons() {
-    document.querySelectorAll('.workflow-step[data-topic]').forEach(btn => {
-        const card=document.getElementById(btn.dataset.topic);
-        btn.classList.toggle('active', !!card?.classList.contains('is-open'));
+function topicIsComplete(id) {
+    const hasValue = field => {
+        const el = document.getElementById(field);
+        if (!el) return false;
+        if (el.type === 'checkbox') return el.checked;
+        if (CAMPOS_MONETARIOS.has(field)) return numero(field) > 0;
+        return String(el.value || '').trim() !== '';
+    };
+
+    switch (id) {
+        case 'topicoDiasFinais':
+            return hasValue('dataInicial') && hasValue('dataFinal');
+        case 'topicoAviso':
+            return hasValue('semAviso') || (hasValue('dataInicioAviso') && hasValue('dataFimAviso'));
+        case 'topicoMulta':
+            if (hasValue('semMulta')) return true;
+            return modoSelecionado === 'dias'
+                ? hasValue('dataInicioContrato') && hasValue('dataFinal')
+                : hasValue('mesesFaltantes');
+        case 'topicoAluguelInteiro':
+            return hasValue('semAluguelInteiro') || hasValue('valorAluguelInteiro');
+        case 'topicoManutencao':
+            return hasValue('semManutencao') || hasValue('manutencao');
+        case 'topicoChaveiro':
+            return hasValue('semChaveiro') || hasValue('chaveiro');
+        case 'topicoSeguros':
+            return hasValue('semSeguros') || hasValue('seguroIncendio') || hasValue('seguroFianca');
+        default:
+            return false;
     }
-    );
+}
+
+function refreshTopicStepButtons() {
+    let concluidos = 0;
+
+    document.querySelectorAll('.workflow-step[data-topic]').forEach(btn => {
+        const id = btn.dataset.topic;
+        const card = document.getElementById(id);
+        const completo = topicIsComplete(id);
+
+        btn.classList.toggle('active', !!card?.classList.contains('is-open'));
+        btn.classList.toggle('complete', completo);
+        btn.setAttribute(
+            'aria-label',
+            completo ? btn.textContent.trim() + ' — concluído' : btn.textContent.trim()
+        );
+
+        if (completo) concluidos++;
+    });
+
+    const total = document.querySelectorAll('.workflow-step[data-topic]').length;
+    let progress = document.getElementById('workflowProgress');
+
+    if (!progress) {
+        const actions = document.querySelector('.calculator-toolbar-actions');
+        if (actions) {
+            progress = document.createElement('span');
+            progress.id = 'workflowProgress';
+            progress.className = 'workflow-progress';
+            actions.prepend(progress);
+        }
+    }
+
+    if (progress) {
+        progress.textContent = total ? concluidos + '/' + total + ' concluídos' : '';
+        progress.classList.toggle('complete', total > 0 && concluidos === total);
+    }
 }
 function setTopicOpen(id, open, persist=true) {
     const card=document.getElementById(id);
