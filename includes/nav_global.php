@@ -18,7 +18,7 @@ $profileLabel = match (function_exists('perfilNormalizado') ? perfilNormalizado(
 $links = [
     ['key'=>'dashboard','label'=>'Início','href'=>$navBase.'dashboard.php','icon'=>'home','permission'=>'dashboard.view'],
     ['key'=>'rescisao','label'=>'Nova rescisão','href'=>$navBase.'index.php?nova=1','icon'=>'calc','permission'=>'rescisao.create'],
-    ['key'=>'gerador','label'=>'Gerador de orçamentos','href'=>$navBase.'orcamentos/','icon'=>'file','permission'=>'orcamentos.view'],
+    ['key'=>'gerador','label'=>'Gerador de orçamentos','href'=>$navBase.'orcamentos/','icon'=>'file','permission'=>'orcamentos.create'],
     ['key'=>'historico_rescisoes','label'=>'Rescisões','href'=>$navBase.'historico.php','icon'=>'clock','permission'=>'historico.view'],
     ['key'=>'historico_orcamentos','label'=>'Orçamentos','href'=>$navBase.'orcamentos/historico_orcamentos.php','icon'=>'archive','permission'=>'orcamentos.view'],
 ];
