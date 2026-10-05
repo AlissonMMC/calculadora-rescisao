@@ -243,7 +243,7 @@ $statusClass = static function(string $status): string {
       <div class="field"><label for="de">De</label><input id="de" name="de" type="date" value="<?= htmlspecialchars($dataInicial,ENT_QUOTES,'UTF-8') ?>"></div>
       <div class="field"><label for="ate">Até</label><input id="ate" name="ate" type="date" value="<?= htmlspecialchars($dataFinal,ENT_QUOTES,'UTF-8') ?>"></div>
       <div class="field"><label for="status">Status</label><select id="status" name="status"><option value="">Todos os status</option><?php foreach(STATUS_RESCISAO as $st): ?><option value="<?= htmlspecialchars($st,ENT_QUOTES,'UTF-8') ?>" <?= $statusFiltro===$st?'selected':'' ?>><?= htmlspecialchars($st,ENT_QUOTES,'UTF-8') ?></option><?php endforeach; ?></select></div>
-      <div class="filter-form-actions"><a class="btn" href="dashboard.php">Limpar</a><button class="btn btn-primary" type="submit">Aplicar filtros</button></div>
+      <div class="filter-form-actions"><a class="btn" href="dashboard.php">Limpar</a><span class="filter-auto-hint">Atualização automática</span></div>
     </form>
   </section>
 
@@ -287,5 +287,5 @@ $statusClass = static function(string $status): string {
   <section class="panel"><div class="panel-head"><div><h3>Atividade recente</h3><p>Mostrando os 8 últimos lançamentos.</p></div><a class="btn" href="historico.php">Ver todos</a></div><div class="table-wrap" style="overflow:auto"><table class="recent-table"><thead><tr><th>Inquilino / imóvel</th><th>Data</th><th>Critério</th><th>Status</th><th>Responsável</th><th>Total</th><th></th></tr></thead><tbody>
     <?php if (!$recentes): ?><tr><td colspan="7"><div class="empty">Nenhuma rescisão foi registrada ainda.</div></td></tr><?php else: foreach ($recentes as $item): ?><tr><td><span class="record-name"><?= htmlspecialchars($item['nome'] ?: 'Inquilino não informado', ENT_QUOTES, 'UTF-8') ?></span><span class="record-sub"><?= htmlspecialchars($item['endereco'] ?: 'Imóvel não informado', ENT_QUOTES, 'UTF-8') ?></span></td><td class="record-meta"><?= htmlspecialchars(date('d/m/Y H:i',strtotime($item['criado_em'])), ENT_QUOTES, 'UTF-8') ?></td><td><span class="mode"><?= htmlspecialchars($item['modo_nome'] ?: 'Critério não informado', ENT_QUOTES, 'UTF-8') ?></span></td><td><span class="status <?= $statusClass($item['status'] ?? 'Rascunho') ?>"><?= htmlspecialchars($item['status'] ?? 'Rascunho', ENT_QUOTES, 'UTF-8') ?></span></td><td class="record-meta"><?= htmlspecialchars($item['usuario_nome'] ?: '—', ENT_QUOTES, 'UTF-8') ?></td><td class="record-total"><?= htmlspecialchars($formatar((float)$item['total']), ENT_QUOTES, 'UTF-8') ?></td><td><a class="btn" href="detalhe.php?id=<?= (int)$item['id'] ?>">Detalhes</a></td></tr><?php endforeach; endif; ?></tbody></table></div></section>
 </main>
-<script src="assets/js/pages/dashboard.js?v=20261005-dashboard"></script>
+<script src="assets/js/pages/dashboard.js?v=20261005-dashboard-auto"></script>
 </body></html>
