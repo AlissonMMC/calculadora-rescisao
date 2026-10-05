@@ -628,3 +628,24 @@ html[data-theme="dark"] .hero-status{
     .financial-card{position:static}
     .hero-status{color:#111!important;background:#fff!important;border-color:#bbb!important}
 }
+
+/* Correção de sobreposição durante a rolagem */
+.layout{
+    align-items:start;
+}
+.layout > main,
+.layout > aside{
+    min-width:0;
+}
+.layout > aside{
+    align-self:start;
+    position:static;
+}
+.financial-card{
+    position:static!important;
+    top:auto!important;
+}
+.audit{
+    position:static;
+    margin-top:12px;
+}
