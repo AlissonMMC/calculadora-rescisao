@@ -26,3 +26,6 @@ __pycache__/
 # IDE
 .vscode/
 .idea/
+
+# Dependências Composer
+/vendor/
