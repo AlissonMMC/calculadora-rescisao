@@ -303,6 +303,85 @@ html[data-theme="dark"] .wrap > .lead{
   }
 }
 
+
+
+/* Cabeçalhos internos — linguagem corporativa unificada */
+.container > .hero,
+.wrap > .hero,
+.container > .header,
+.wrap > .header{
+  position:relative;
+  overflow:hidden;
+  background:var(--global-surface,#fff);
+  color:var(--global-text,#18202a);
+  border:1px solid var(--global-border,#e4e8ed);
+  box-shadow:var(--ui-shadow);
+}
+
+.container > .hero::after,
+.wrap > .hero::after,
+.container > .header::after,
+.wrap > .header::after{
+  display:none !important;
+}
+
+.container > .hero p,
+.wrap > .hero p,
+.container > .header p,
+.wrap > .header p{
+  color:var(--global-muted,#697586) !important;
+}
+
+.container > .hero .eyebrow,
+.wrap > .hero .eyebrow,
+.container > .header .eyebrow,
+.wrap > .header .eyebrow{
+  background:var(--global-accent-soft,#fff4eb);
+  color:var(--global-accent-strong,#c6530a);
+  border:1px solid color-mix(in srgb,var(--global-accent,#ea6a12) 18%,var(--global-border,#e4e8ed));
+}
+
+.container > .hero .eyebrow-dot,
+.wrap > .hero .eyebrow-dot{
+  background:var(--global-accent,#ea6a12);
+}
+
+.container > .hero .btn-secondary,
+.wrap > .hero .btn-secondary,
+.container > .header .btn-secondary,
+.wrap > .header .btn-secondary{
+  border-color:var(--global-border,#e4e8ed);
+  background:var(--global-surface-2,#f8fafb);
+  color:var(--global-text,#18202a);
+}
+
+.container > .hero .btn-secondary:hover,
+.wrap > .hero .btn-secondary:hover,
+.container > .header .btn-secondary:hover,
+.wrap > .header .btn-secondary:hover{
+  border-color:var(--global-accent,#ea6a12);
+  background:var(--global-accent-soft,#fff4eb);
+  color:var(--global-accent-strong,#c6530a);
+}
+
+.container > .hero .meta-chip,
+.wrap > .hero .meta-chip,
+.container > .header .meta-chip,
+.wrap > .header .meta-chip{
+  border-color:var(--global-border,#e4e8ed);
+  background:var(--global-surface-2,#f8fafb);
+  color:var(--global-text,#18202a);
+}
+
+html[data-theme="dark"] .container > .hero .meta-chip,
+html[data-theme="dark"] .wrap > .hero .meta-chip,
+html[data-theme="dark"] .container > .header .meta-chip,
+html[data-theme="dark"] .wrap > .header .meta-chip{
+  background:var(--global-surface-2,#1b222b);
+  border-color:var(--global-border,#29313b);
+  color:var(--global-text,#edf2f7);
+}
+
 /* Celular */
 @media (max-width:620px){
   .container .hero,
