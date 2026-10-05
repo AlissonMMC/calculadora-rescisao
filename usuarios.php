@@ -134,9 +134,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($acao === 'senha') {
             $id = (int)($_POST['id'] ?? 0);
             $novaSenha = (string)($_POST['nova_senha'] ?? '');
-            if ($id < 1 || mb_strlen($novaSenha) < 6) throw new RuntimeException('A nova senha deve ter pelo menos 8 caracteres.');
-            $stmt = $pdo->prepare('UPDATE usuarios SET senha_hash = ? WHERE id = ?');
+            if ($id < 1 || mb_strlen($novaSenha) < 8) throw new RuntimeException('A nova senha deve ter pelo menos 8 caracteres.');
+            $stmt = $pdo->prepare('UPDATE usuarios SET senha_hash = ?, senha_definida = 1 WHERE id = ?');
             $stmt->execute([password_hash($novaSenha, PASSWORD_DEFAULT), $id]);
+            // Uma redefinição manual invalida qualquer convite de primeiro acesso pendente.
+            $pdo->prepare('UPDATE convites_usuarios SET usado_em = COALESCE(usado_em, CURRENT_TIMESTAMP) WHERE usuario_id = ? AND usado_em IS NULL')->execute([$id]);
             registrarAuditoriaSistema('usuarios', 'redefinir_senha', $id);
             redirecionarComMensagem('ok', 'Senha redefinida com sucesso.');
         }
