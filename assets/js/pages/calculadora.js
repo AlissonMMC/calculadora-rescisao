@@ -1787,6 +1787,10 @@ function limpar() {
     document.getElementById('dataInicial').focus();
 }
 function novaRescisao() {
+    if (window.PODE_CRIAR_RESCISAO === false) {
+        alert('Seu perfil possui acesso somente para consulta e não pode iniciar uma nova rescisão.');
+        return;
+    }
     if (!confirm('Deseja iniciar uma nova rescisão? Os dados atuais serão apagados.')) return;
     historicoIdAtual = null;
     definirStatusUI('Rascunho');
