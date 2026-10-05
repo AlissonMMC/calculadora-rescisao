@@ -1,4 +1,5 @@
 -- Migração 004 — convite de primeiro acesso e definição de senha
+-- O login do sistema é o próprio e-mail do usuário.
 -- Execute no banco de TESTE primeiro, com calculadora_rescisao_teste selecionado no phpMyAdmin.
 -- Em produção, execute a mesma estrutura no banco calculadora_rescisao.
 
