@@ -15,16 +15,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $login = mb_substr(trim((string)($_POST['login'] ?? '')), 0, 60);
         $senha = (string)($_POST['senha'] ?? '');
-        $stmt = db()->prepare('SELECT id, nome, login, email, senha_hash, perfil, ativo FROM usuarios WHERE login = ? OR email = ? LIMIT 1');
+        $stmt = db()->prepare('SELECT id, nome, login, email, senha_hash, senha_definida, perfil, ativo FROM usuarios WHERE login = ? OR email = ? LIMIT 1');
         $stmt->execute([$login, $login]);
         $usuario = $stmt->fetch();
-        if (!$usuario || !(int)$usuario['ativo'] || !password_verify($senha, $usuario['senha_hash'])) {
+        if (!$usuario || !(int)$usuario['ativo'] || !(int)($usuario['senha_definida'] ?? 1) || !password_verify($senha, $usuario['senha_hash'])) {
             registrarTentativaLogin($login, false, $usuario ? (int)$usuario['id'] : null);
             $_SESSION['login_falhas'] = ((int)($_SESSION['login_falhas'] ?? 0)) + 1;
             if ($_SESSION['login_falhas'] >= 5) {
                 $_SESSION['login_bloqueado_ate'] = time() + 300;
                 $_SESSION['login_falhas'] = 0;
                 throw new RuntimeException('Muitas tentativas inválidas. O login foi temporariamente bloqueado por 5 minutos.');
+            }
+            if ($usuario && (int)$usuario['ativo'] && !(int)($usuario['senha_definida'] ?? 1)) {
+                throw new RuntimeException('Seu acesso ainda não foi ativado. Verifique o e-mail enviado pelo administrador para definir sua senha.');
             }
             throw new RuntimeException('Login ou senha inválidos.');
         }
