@@ -73,6 +73,21 @@ function db(): PDO {
 }
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
+    // Cada instalação do sistema precisa ter sua própria sessão.
+    // Isso evita que produção (/rescisao) e teste (/calculadora-rescisao)
+    // compartilhem o mesmo cookie PHPSESSID no localhost.
+    $sessionName = preg_replace(
+        '/[^a-zA-Z0-9_]/',
+        '_',
+        (string)envValue('SESSION_NAME', 'folha_calculo_prod')
+    );
+
+    if ($sessionName === '') {
+        $sessionName = 'folha_calculo_prod';
+    }
+
+    session_name($sessionName);
+
     $secure = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
 
     session_set_cookie_params([
