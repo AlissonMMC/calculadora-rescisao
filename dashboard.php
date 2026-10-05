@@ -221,7 +221,7 @@ $statusClass = static function(string $status): string {
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Início — Folha de Cálculo</title>
-<link rel="stylesheet" href="assets/css/pages/dashboard.css?v=20261005-dashboard">
+<link rel="stylesheet" href="assets/css/pages/dashboard.css?v=20261005-dashboard-corporate">
 </head>
 <body>
 <?php require __DIR__ . "/includes/nav_global.php"; ?>
