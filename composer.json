@@ -1,5 +1,5 @@
 {
-  "name": "calculadora-rescisao",
+  "name": "alissonmmc/calculadora-rescisao",
   "description": "Sistema web para cálculo e gestão de rescisões de contratos de locação.",
   "require": {
     "php": ">=8.0",
