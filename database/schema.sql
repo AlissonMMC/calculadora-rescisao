@@ -5,7 +5,7 @@ USE calculadora_rescisao;
 CREATE TABLE IF NOT EXISTS usuarios (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     nome VARCHAR(120) NOT NULL,
-    login VARCHAR(60) NOT NULL,
+    login VARCHAR(190) NOT NULL,
     email VARCHAR(190) NULL,
     senha_hash VARCHAR(255) NOT NULL,
     senha_definida TINYINT(1) NOT NULL DEFAULT 1,
