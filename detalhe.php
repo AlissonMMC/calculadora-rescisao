@@ -36,7 +36,7 @@ $podeEditar = temPermissao($usuario, 'rescisao.edit') && ($isAdmin || ((int)($ro
 $statusClass=match($status){'Conferido'=>'ok','Pronto para cobrança'=>'ready','Cobrado'=>'done','Cancelado'=>'cancelled','Em conferência'=>'review',default=>'draft'};
 ?>
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rescisão #<?= $id ?> — Folha de Cálculo</title>
-<link rel="stylesheet" href="assets/css/pages/detalhe.css"></head><body><?php require __DIR__ . "/includes/nav_global.php"; ?><div class="wrap">
+<link rel="stylesheet" href="assets/css/pages/detalhe.css?v=20261005-detail"></head><body><?php require __DIR__ . "/includes/nav_global.php"; ?><div class="wrap">
 <?php if($erro): ?><div class="error"><?= htmlspecialchars($erro,ENT_QUOTES,'UTF-8') ?></div><?php else: ?>
 <section class="hero"><div class="hero-content"><div class="hero-topline"><span class="eyebrow">Rescisão #<?= $id ?></span><span class="status hero-status <?= $statusClass ?>"><?= htmlspecialchars($status,ENT_QUOTES,'UTF-8') ?></span></div><h1><?= htmlspecialchars($nome?:'Inquilino não informado',ENT_QUOTES,'UTF-8') ?></h1><p><?= htmlspecialchars($endereco?:'Imóvel não informado',ENT_QUOTES,'UTF-8') ?></p><div class="hero-meta"><span class="meta-chip"><?= htmlspecialchars($modo,ENT_QUOTES,'UTF-8') ?></span><span class="meta-chip">Criado em <?= htmlspecialchars(date('d/m/Y H:i',strtotime($row['criado_em'])),ENT_QUOTES,'UTF-8') ?></span><span class="meta-chip">Atualizado em <?= htmlspecialchars(date('d/m/Y H:i',strtotime($row['atualizado_em'])),ENT_QUOTES,'UTF-8') ?></span><span class="meta-chip">Responsável: <?= htmlspecialchars($row['usuario_nome']?:'—',ENT_QUOTES,'UTF-8') ?></span></div><div class="hero-actions no-print"><?php if($podeEditar): ?><a class="btn btn-primary" href="index.php?historico_id=<?= $id ?>">✎ Editar rescisão</a><?php endif; ?><button id="btnPrint" class="btn" type="button">🖨 Imprimir</button><?php if($isAdmin): ?><button id="btnExcluirDetalhe" class="btn btn-danger" type="button">Excluir</button><?php endif; ?><a class="btn" href="historico.php">← Voltar ao histórico</a></div></div></section>
 <div class="layout"><main>
@@ -59,5 +59,5 @@ window.APP_IS_ADMIN = <?= $isAdmin ? 'true' : 'false' ?>;
 window.APP_CSRF = <?= json_encode($csrf) ?>;
 window.APP_ID = <?= $id ?>;
 </script>
-<script src="assets/js/pages/detalhe.js"></script>
+<script src="assets/js/pages/detalhe.js?v=20261005-detail"></script>
 </body></html>
