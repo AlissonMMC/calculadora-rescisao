@@ -19,7 +19,7 @@ try {
 $dados = json_decode($row['dados_json'] ?? '', true); if (!is_array($dados)) $dados=[]; $campos = $dados['campos'] ?? []; if (!is_array($campos)) $campos=[];
 $nome = trim((string)($row['nome'] ?? '')); $endereco=trim((string)($row['endereco'] ?? '')); $modo=trim((string)($row['modo_nome'] ?? '')) ?: 'Critério não informado';
 $labels=[
- 'cpfInquilino'=>'CPF','numeroContrato'=>'Contrato','dataInicial'=>'Data inicial','dataFinal'=>'Entrega das chaves','aluguel'=>'Aluguel mensal','iptu'=>'IPTU','condominio'=>'Condomínio','agua'=>'Água','luz'=>'Luz','internet'=>'Internet','percentualAdm'=>'ADM do aluguel (%)','dataInicioAviso'=>'Início do aviso','dataFimAviso'=>'Fim do aviso','mesesFaltantes'=>'Meses faltantes','dataInicioContrato'=>'Início do contrato','percentualProp'=>'ADM sobre multa (%)','valorAluguelInteiro'=>'Aluguel inteiro + encargos','manutencao'=>'Manutenção','chaveiro'=>'Chaveiro','seguroIncendio'=>'Seguro incêndio','seguroFianca'=>'Seguro fiança','assuntoEmail'=>'Assunto do e-mail'
+ 'cpfInquilino'=>'CPF','numeroContrato'=>'Contrato','dataInicial'=>'Data inicial','dataFinal'=>'Entrega das chaves','aluguel'=>'Aluguel mensal','iptu'=>'IPTU','condominio'=>'Condomínio','agua'=>'Água','luz'=>'Luz','internet'=>'Internet','percentualAdm'=>'ADM do aluguel (%)','dataInicioAviso'=>'Início do aviso','dataFimAviso'=>'Fim do aviso','mesesFaltantes'=>'Meses faltantes','dataInicioContrato'=>'Início do contrato','percentualProp'=>'ADM sobre multa (%)','valorAluguelInteiro'=>'Aluguel inteiro + encargos','manutencao'=>'Manutenção','chaveiro'=>'Chaveiro','seguroIncendio'=>'Seguro incêndio — valor da parcela','seguroIncendioExtras'=>'Parcelas extras do seguro incêndio','seguroFianca'=>'Seguro fiança — valor da parcela','seguroFiancaExtras'=>'Parcelas extras do seguro fiança','assuntoEmail'=>'Assunto do e-mail'
 ];
 $currency=['aluguel','iptu','condominio','agua','luz','internet','valorAluguelInteiro','manutencao','chaveiro','seguroIncendio','seguroFianca'];
 $dateFields=['dataInicial','dataFinal','dataInicioAviso','dataFimAviso','dataInicioContrato'];
@@ -28,7 +28,7 @@ $groups=[
  'Identificação'=>['cpfInquilino','numeroContrato','assuntoEmail'],
  'Valores e critérios'=>['aluguel','iptu','condominio','agua','luz','internet','percentualAdm','mesesFaltantes','dataInicioContrato','percentualProp','dataInicial','dataFinal'],
  'Aviso prévio'=>['dataInicioAviso','dataFimAviso'],
- 'Cobranças adicionais'=>['valorAluguelInteiro','manutencao','chaveiro','seguroIncendio','seguroFianca'],
+ 'Cobranças adicionais'=>['valorAluguelInteiro','manutencao','chaveiro','seguroIncendio','seguroIncendioExtras','seguroFianca','seguroFiancaExtras'],
 ];
 $status=(string)($row['status']??'Rascunho');
 $isAdmin = perfilNormalizado($usuario) === 'admin';
