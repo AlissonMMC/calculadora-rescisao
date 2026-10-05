@@ -20,8 +20,10 @@ $dataFinal = $validDate($dataFinal) ?? '';
 if ($statusFiltro !== '' && !statusValido($statusFiltro)) $statusFiltro = '';
 
 $where=[];$params=[];
+$whereStatus=[];$paramsStatus=[];
 if ($q!=='') { $where[]='(h.nome LIKE ? OR h.endereco LIKE ? OR COALESCE(u.nome,\'\') LIKE ? OR COALESCE(u.login,\'\') LIKE ? OR h.modo_nome LIKE ? OR h.dados_json LIKE ?)'; $like='%'.$q.'%'; array_push($params,$like,$like,$like,$like,$like,$like); }
 if ($modo!=='') { $where[]='h.modo_nome = ?'; $params[]=$modo; }
+$whereStatus=$where;$paramsStatus=$params;
 if ($statusFiltro!=='') { $where[]='h.status = ?'; $params[]=$statusFiltro; }
 if ($usuarioFiltro>0) { $where[]='h.usuario_id = ?'; $params[]=$usuarioFiltro; }
 if ($dataInicial!=='') { $where[]='h.criado_em >= ?'; $params[]=$dataInicial.' 00:00:00'; }
@@ -33,7 +35,8 @@ try{
  $usuarios=$pdo->query('SELECT id,nome,ativo FROM usuarios ORDER BY ativo DESC,nome ASC')->fetchAll();
  $stmt=$pdo->prepare("SELECT COUNT(*) qtd,COALESCE(SUM(h.total),0) total,COALESCE(SUM(h.total_adm),0) adm,COALESCE(SUM(h.total_repasse),0) repasse FROM historico_rescisoes h LEFT JOIN usuarios u ON u.id=h.usuario_id $whereSql");$stmt->execute($params);$res=$stmt->fetch()?:[];
  $totalRegistros=(int)($res['qtd']??0);$valorTotal=(float)($res['total']??0);$valorAdm=(float)($res['adm']??0);$valorRepasse=(float)($res['repasse']??0);
- $stmtStatus=$pdo->prepare("SELECT h.status,COUNT(*) qtd FROM historico_rescisoes h LEFT JOIN usuarios u ON u.id=h.usuario_id $whereSql GROUP BY h.status");$stmtStatus->execute($params);foreach($stmtStatus->fetchAll() as $sc){$statusCounts[(string)$sc['status']]=(int)$sc['qtd'];}
+ $whereStatusSql=$whereStatus?'WHERE '.implode(' AND ',$whereStatus):'';
+  $stmtStatus=$pdo->prepare("SELECT h.status,COUNT(*) qtd FROM historico_rescisoes h LEFT JOIN usuarios u ON u.id=h.usuario_id $whereStatusSql GROUP BY h.status");$stmtStatus->execute($paramsStatus);foreach($stmtStatus->fetchAll() as $sc){$statusCounts[(string)$sc['status']]=(int)$sc['qtd'];}
  $totalPages=max(1,(int)ceil($totalRegistros/$perPage));$page=min($page,$totalPages);$offset=($page-1)*$perPage;
  $stmt=$pdo->prepare("SELECT h.id,h.usuario_id,h.nome,h.endereco,h.total,h.total_adm,h.total_repasse,h.criado_em,h.atualizado_em,h.modo_nome,h.status,u.nome usuario_nome,u.login usuario_login FROM historico_rescisoes h LEFT JOIN usuarios u ON u.id=h.usuario_id $whereSql ORDER BY h.id DESC LIMIT $perPage OFFSET $offset");$stmt->execute($params);$itens=$stmt->fetchAll();
 }catch(Throwable $e){error_log('Calculadora historico.php: '.$e->getMessage());$erro='Não foi possível consultar o histórico central.';$totalPages=1;}
