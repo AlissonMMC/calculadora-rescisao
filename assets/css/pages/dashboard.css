@@ -13,7 +13,7 @@
     --red:#b91c1c;
     --blue:#2563eb;
     --shadow:0 1px 2px rgba(17,17,17,.04),0 8px 22px rgba(17,17,17,.04);
-    --radius:18px
+    --radius:14px
 }
 * {
     box-sizing:border-box
@@ -153,22 +153,21 @@ body {
     position:relative;
     overflow:hidden;
     border-radius:var(--radius);
-    padding:34px;
-    background:var(--black);
-    color:#fff;
+    padding:24px 26px 24px 30px;
+    background:var(--white);
+    color:var(--text);
+    border:1px solid var(--border);
     margin-bottom:18px;
     box-shadow:var(--shadow)
 }
 .hero:after {
     content:"";
     position:absolute;
-    width:300px;
-    height:300px;
-    border-radius:50%;
-    right:-115px;
-    top:-150px;
-    background:var(--orange);
-    opacity:.88
+    left:0;
+    top:0;
+    bottom:0;
+    width:7px;
+    background:var(--orange)
 }
 .hero-content {
     position:relative;
@@ -181,8 +180,8 @@ body {
     gap:7px;
     padding:6px 10px;
     border-radius:999px;
-    background:rgba(249,115,22,.15);
-    color:#fdba74;
+    background:var(--orange-soft);
+    color:var(--orange-dark);
     font-size:.66rem;
     font-weight:900;
     text-transform:uppercase;
@@ -246,13 +245,13 @@ body {
     color:#fff
 }
 .hero .btn-secondary {
-    border-color:rgba(255,255,255,.18);
-    background:rgba(255,255,255,.07);
-    color:#fff
+    border-color:var(--border);
+    background:var(--white);
+    color:var(--text)
 }
 .hero .btn-secondary:hover {
-    background:rgba(255,255,255,.13);
-    color:#fff
+    background:var(--bg);
+    color:var(--text)
 }
 .section-label {
     display:flex;
@@ -595,7 +594,7 @@ html[data-theme="dark"] .workflow-row:hover {
 }
 html[data-theme="dark"] .status.draft {
     background:#222;
-    color:#d4d4d4;
+    color:var(--muted);
     border-color:#3a3a3a
 }
 @media(max-width:1050px) {
@@ -619,10 +618,10 @@ html[data-theme="dark"] .status.draft {
         margin-right:auto
     }
     .hero {
-        padding:28px 22px
+        padding:22px 20px 22px 24px
     }
     .hero h1 {
-        font-size:2.2rem
+        font-size:2rem
     }
 }
 @media(max-width:560px) {
