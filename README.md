@@ -14,7 +14,6 @@ O projeto foi desenvolvido com foco em uso profissional, organização de proces
 
 - 🔐 Autenticação e controle de acesso por e-mail
 - 👥 Gestão de usuários e permissões
-- ✉️ Convite de primeiro acesso por e-mail e definição de senha pelo usuário
 - 🧮 Cálculo de rescisão por **meses ou dias**
 - 💰 Cálculo de aluguel e encargos
 - 🧾 Cálculo de multa rescisória
@@ -77,7 +76,6 @@ calculadora-rescisao/
 - Python 3
 - pip
 - openpyxl
-- Composer 2+
 - XAMPP ou ambiente equivalente
 
 ### 2. Clonar o projeto
@@ -107,20 +105,13 @@ Use .env.example como referência para as variáveis do ambiente.
 
 **Nunca coloque credenciais reais no Git.**
 
-### 5. Instalar dependências PHP e do módulo de orçamentos
+### 5. Instalar dependências do módulo de orçamentos
 
 ```bash
-composer install
 python -m pip install openpyxl
 ```
 
-### 6. Configurar envio de e-mail
-
-Preencha no `.env` as variáveis `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` e `APP_URL`.
-
-O cadastro de usuário usa o e-mail como nome de usuário e não define uma senha. O sistema gera um convite individual, envia o link por SMTP e permite que o próprio usuário crie a senha na tela de primeiro acesso. O convite é de uso único e possui expiração configurável por `INVITE_EXPIRATION_HOURS`.
-
-### 7. Executar
+### 6. Executar
 
 Com Apache e MySQL ativos no XAMPP, acesse o projeto pelo navegador através do endereço configurado no Apache.
 
@@ -171,7 +162,6 @@ Ao realizar alterações, procure manter essa separação e evitar código dupli
 - [x] Auditoria
 - [x] Módulo de orçamentos
 - [x] Publicação do código no GitHub
-- [x] Convite de primeiro acesso por e-mail
 - [ ] Configuração de ambiente de produção
 - [ ] Pipeline de testes e validação automática
 - [ ] Melhorias de segurança para produção
