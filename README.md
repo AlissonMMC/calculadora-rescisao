@@ -12,7 +12,7 @@ O projeto foi desenvolvido com foco em uso profissional, organização de proces
 
 ## ✨ Principais recursos
 
-- 🔐 Autenticação e controle de acesso
+- 🔐 Autenticação e controle de acesso por e-mail
 - 👥 Gestão de usuários e permissões
 - ✉️ Convite de primeiro acesso por e-mail e definição de senha pelo usuário
 - 🧮 Cálculo de rescisão por **meses ou dias**
@@ -118,7 +118,7 @@ python -m pip install openpyxl
 
 Preencha no `.env` as variáveis `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` e `APP_URL`.
 
-O cadastro de usuário não define uma senha. O sistema gera um convite individual, envia o link por SMTP e permite que o próprio usuário crie a senha na tela de primeiro acesso. O convite é de uso único e possui expiração configurável por `INVITE_EXPIRATION_HOURS`.
+O cadastro de usuário usa o e-mail como nome de usuário e não define uma senha. O sistema gera um convite individual, envia o link por SMTP e permite que o próprio usuário crie a senha na tela de primeiro acesso. O convite é de uso único e possui expiração configurável por `INVITE_EXPIRATION_HOURS`.
 
 ### 7. Executar
 
