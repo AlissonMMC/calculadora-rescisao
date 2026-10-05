@@ -224,9 +224,9 @@ def detect_headers(ws):
     }
 
 
-def find_final_total_row(ws, header_row: Optional[int], pintura_row: Optional[int]):
+def find_final_total_row(ws, header_row: Optional[int]):
     start = max(12, (header_row or 11) + 1)
-    end = pintura_row - 1 if pintura_row else ws.max_row
+    end = ws.max_row
     for r in range(start, end + 1):
         if norm(ws.cell(r, 1).value) == "TOTAL":
             return r
@@ -238,8 +238,7 @@ def find_final_total_row(ws, header_row: Optional[int], pintura_row: Optional[in
 
 def build_meta(ws):
     h = detect_headers(ws)
-    pintura_row, _ = find_text(ws, "PINTURA INTERNA")
-    total_row = find_final_total_row(ws, h.get("header_row"), pintura_row)
+    total_row = find_final_total_row(ws, h.get("header_row"))
     cache: dict[str, Optional[float]] = {}
 
     items = []
@@ -279,7 +278,6 @@ def build_meta(ws):
     return {
         "name": ws.title,
         "total_row": total_row,
-        "pintura_row": pintura_row,
         "material_cols": bool(h.get("material_col") and h.get("labor_col")),
         "material_col": h.get("material_col"),
         "labor_col": h.get("labor_col"),
