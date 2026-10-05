@@ -154,12 +154,19 @@ function usuarioAtual(): ?array {
 }
 
 function perfilNormalizado(array $usuario): string {
-    $perfil = strtolower(trim((string)($usuario['perfil'] ?? 'operacional')));
+    $perfil = strtolower(trim((string)($usuario['perfil'] ?? '')));
+
+    // Normaliza valores antigos ou escritos de formas diferentes.
+    // Em caso de valor desconhecido, aplica o princípio do menor privilégio:
+    // o usuário fica somente em consulta, nunca com acesso de escrita.
     return match ($perfil) {
-        'admin', 'administrador' => 'admin',
-        'financeiro' => 'financeiro',
-        'consulta', 'leitura', 'somente_consulta' => 'consulta',
-        default => 'operacional',
+        'admin', 'administrador', 'administradora' => 'admin',
+        'financeiro', 'financeira' => 'financeiro',
+        'consulta', 'leitura', 'somente_consulta', 'somente consulta',
+        'somente-consulta', 'readonly', 'read_only', 'read-only',
+        'visualizacao', 'visualização' => 'consulta',
+        'operacional', 'usuario', 'usuário' => 'operacional',
+        default => 'consulta',
     };
 }
 
