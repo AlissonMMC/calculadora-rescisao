@@ -31,13 +31,14 @@ $groups=[
  'Cobranças adicionais'=>['valorAluguelInteiro','manutencao','chaveiro','seguroIncendio','seguroFianca'],
 ];
 $status=(string)($row['status']??'Rascunho');
-$podeEditar = ((int)($row['usuario_id'] ?? 0) === (int)$usuario['id']) || $usuario['perfil'] === 'admin';
+$isAdmin = perfilNormalizado($usuario) === 'admin';
+$podeEditar = temPermissao($usuario, 'rescisao.edit') && ($isAdmin || ((int)($row['usuario_id'] ?? 0) === (int)$usuario['id']));
 $statusClass=match($status){'Conferido'=>'ok','Pronto para cobrança'=>'ready','Cobrado'=>'done','Cancelado'=>'cancelled','Em conferência'=>'review',default=>'draft'};
 ?>
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rescisão #<?= $id ?> — Folha de Cálculo</title>
 <link rel="stylesheet" href="assets/css/pages/detalhe.css"></head><body><?php require __DIR__ . "/includes/nav_global.php"; ?><div class="wrap">
 <?php if($erro): ?><div class="error"><?= htmlspecialchars($erro,ENT_QUOTES,'UTF-8') ?></div><?php else: ?>
-<section class="hero"><div class="hero-content"><span class="eyebrow">Rescisão #<?= $id ?></span><h1><?= htmlspecialchars($nome?:'Inquilino não informado',ENT_QUOTES,'UTF-8') ?></h1><p><?= htmlspecialchars($endereco?:'Imóvel não informado',ENT_QUOTES,'UTF-8') ?></p><div class="hero-meta"><span class="meta-chip"><?= htmlspecialchars($modo,ENT_QUOTES,'UTF-8') ?></span><span class="meta-chip">Criado em <?= htmlspecialchars(date('d/m/Y H:i',strtotime($row['criado_em'])),ENT_QUOTES,'UTF-8') ?></span><span class="meta-chip">Responsável: <?= htmlspecialchars($row['usuario_nome']?:'—',ENT_QUOTES,'UTF-8') ?></span></div><div class="hero-actions no-print"><a class="btn btn-primary" href="index.php?historico_id=<?= $id ?>">✎ Editar rescisão</a><a class="btn" href="historico.php">← Voltar ao histórico</a></div></div></section>
+<section class="hero"><div class="hero-content"><span class="eyebrow">Rescisão #<?= $id ?></span><h1><?= htmlspecialchars($nome?:'Inquilino não informado',ENT_QUOTES,'UTF-8') ?></h1><p><?= htmlspecialchars($endereco?:'Imóvel não informado',ENT_QUOTES,'UTF-8') ?></p><div class="hero-meta"><span class="meta-chip"><?= htmlspecialchars($modo,ENT_QUOTES,'UTF-8') ?></span><span class="meta-chip">Criado em <?= htmlspecialchars(date('d/m/Y H:i',strtotime($row['criado_em'])),ENT_QUOTES,'UTF-8') ?></span><span class="meta-chip">Responsável: <?= htmlspecialchars($row['usuario_nome']?:'—',ENT_QUOTES,'UTF-8') ?></span></div><div class="hero-actions no-print"><?php if($podeEditar): ?><a class="btn btn-primary" href="index.php?historico_id=<?= $id ?>">✎ Editar rescisão</a><?php endif; ?><button id="btnPrint" class="btn" type="button">🖨 Imprimir</button><a class="btn" href="historico.php">← Voltar ao histórico</a></div></div></section>
 <div class="layout"><main>
 <section class="card"><div class="status-wrap"><div><span class="status-label">Status da rescisão</span><strong><span class="status <?= $statusClass ?>"><?= htmlspecialchars($status,ENT_QUOTES,'UTF-8') ?></span></strong></div><select id="statusSelect" class="no-print" <?php if(!$podeEditar): ?>disabled title="Somente o responsável ou administrador pode alterar o status."<?php endif; ?>><?php foreach(STATUS_RESCISAO as $st): ?><option value="<?= htmlspecialchars($st,ENT_QUOTES,'UTF-8') ?>" <?= $status===$st?'selected':'' ?>><?= htmlspecialchars($st,ENT_QUOTES,'UTF-8') ?></option><?php endforeach; ?></select></div>
 <h2>Dados da rescisão</h2><p class="sub">Todos os dados abaixo foram armazenados no momento do lançamento.</p>
@@ -53,9 +54,9 @@ $statusClass=match($status){'Conferido'=>'ok','Pronto para cobrança'=>'ready','
 </aside></div>
 <?php endif; ?></div>
 <script>
+window.APP_CAN_EDIT_STATUS = <?= $podeEditar ? 'true' : 'false' ?>;
 window.APP_CSRF = <?= json_encode($csrf) ?>;
 window.APP_ID = <?= $id ?>;
 </script>
-<script src="assets/js/pages/detalhe.js"></script>
 <script src="assets/js/pages/detalhe.js"></script>
 </body></html>
