@@ -522,6 +522,15 @@ async function carregarHistoricoServidor(opcoes = {
         );
         const json = await resposta.json();
         if (resposta.status === 401) {
+            // A abertura de uma nova rescisão não depende do histórico.
+            // Não expulsamos o usuário da tela por uma falha isolada
+            // da consulta em segundo plano.
+            if (novaRescisaoInicial) {
+                historicoOnline = false;
+                historicoCarregando = false;
+                renderizarHistorico();
+                return false;
+            }
             window.location.href = 'login.php';
             return false;
         }
@@ -2001,7 +2010,15 @@ historicoCache = [];
 historicoOnline = false;
 historicoCarregando = true;
 renderizarHistorico();
-carregarHistoricoServidor();
+
+// Em "Nova rescisão" a tela é independente do histórico.
+// A consulta central será feita quando o usuário abrir/atualizar o histórico.
+if (!novaRescisaoInicial) {
+    carregarHistoricoServidor();
+} else {
+    historicoCarregando = false;
+    renderizarHistorico();
+}
 revisaoBloqueada = localStorage.getItem(STORAGE_LOCK) === '1';
 if (modoSelecionado && !novaRescisaoInicial) {
     atualizarModoUI();
