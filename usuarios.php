@@ -27,17 +27,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($acao === 'criar') {
             $nome = limparTexto($_POST['nome'] ?? '', 120);
-            $login = mb_substr(strtolower(trim((string)($_POST['login'] ?? ''))), 0, 60);
             $email = mb_substr(strtolower(trim((string)($_POST['email'] ?? ''))), 0, 190);
+            $login = $email;
             $perfisPermitidos = ['admin', 'financeiro', 'operacional', 'consulta'];
             $perfil = (string)($_POST['perfil'] ?? 'operacional');
             if (!in_array($perfil, $perfisPermitidos, true)) $perfil = 'operacional';
 
-            if ($nome === '' || $login === '' || $email === '') {
-                throw new RuntimeException('Preencha nome, usuário e e-mail.');
-            }
-            if (!preg_match('/^[a-z0-9._-]{3,60}$/', $login)) {
-                throw new RuntimeException('O usuário deve ter de 3 a 60 caracteres usando letras, números, ponto, hífen ou sublinhado.');
+            if ($nome === '' || $email === '') {
+                throw new RuntimeException('Preencha nome e e-mail.');
             }
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 throw new RuntimeException('Informe um e-mail válido.');
@@ -175,8 +172,7 @@ $csrf = csrfToken();
       <form method="post">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>"><input type="hidden" name="acao" value="criar">
         <div class="field"><label for="nome">Nome completo</label><input id="nome" name="nome" type="text" required></div>
-        <div class="field"><label for="login">Usuário</label><input id="login" name="login" type="text" pattern="[a-z0-9._-]{3,60}" required></div>
-        <div class="field"><label for="email">E-mail de acesso</label><input id="email" name="email" type="email" maxlength="190" autocomplete="email" required></div>
+        <div class="field"><label for="email">E-mail de acesso</label><input id="email" name="email" type="email" maxlength="190" autocomplete="email" required><small class="field-help">Este e-mail será o usuário usado para entrar no sistema.</small></div>
         <div class="field"><label for="perfil">Perfil</label><select id="perfil" name="perfil"><option value="operacional">Operacional</option><option value="financeiro">Financeiro</option><option value="consulta">Somente consulta</option><option value="admin">Administrador</option></select></div>
         <div class="form-actions"><button class="btn btn-primary" type="submit">Criar usuário</button></div>
       </form>
@@ -184,12 +180,11 @@ $csrf = csrfToken();
     </section>
     <section class="card">
       <h2>Usuários cadastrados</h2><p class="sub">Controle de acesso do sistema.</p>
-      <div class="table-wrap"><table class="table"><thead><tr><th>Nome</th><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Último acesso</th><th>Criado em</th><th>Ações</th></tr></thead><tbody>
+      <div class="table-wrap"><table class="table"><thead><tr><th>Nome</th><th>Usuário / e-mail</th><th>Perfil</th><th>Status</th><th>Último acesso</th><th>Criado em</th><th>Ações</th></tr></thead><tbody>
       <?php foreach ($usuarios as $u): ?>
         <tr>
           <td><strong><?= htmlspecialchars($u['nome'], ENT_QUOTES, 'UTF-8') ?></strong></td>
-          <td><?= htmlspecialchars($u['login'], ENT_QUOTES, 'UTF-8') ?></td>
-          <td><?= htmlspecialchars((string)($u['email'] ?? '—'), ENT_QUOTES, 'UTF-8') ?></td>
+          <td><?= htmlspecialchars((string)($u['email'] ?? $u['login'] ?? '—'), ENT_QUOTES, 'UTF-8') ?></td>
           <td><span class="role"><?= htmlspecialchars(match ($u['perfil']) { 'admin' => 'Administrador', 'financeiro' => 'Financeiro', 'consulta' => 'Somente consulta', default => 'Operacional' }, ENT_QUOTES, 'UTF-8') ?></span></td>
           <td><span class="status <?= (int)$u['ativo'] ? ((int)$u['senha_definida'] ? 'active' : 'pending') : 'off' ?>"><?= (int)$u['ativo'] ? ((int)$u['senha_definida'] ? 'Ativo' : 'Aguardando ativação') : 'Bloqueado' ?></span></td>
           <td><?= !empty($u['ultimo_login']) ? date('d/m/Y H:i', strtotime($u['ultimo_login'])) : 'Nunca' ?></td><td><?= !empty($u['criado_em']) ? date('d/m/Y H:i', strtotime($u['criado_em'])) : '—' ?></td>
