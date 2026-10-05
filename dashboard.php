@@ -215,6 +215,7 @@ $statusClass = static function(string $status): string {
         default => 'draft',
     };
 };
+?>
 <!doctype html>
 <html lang="pt-BR">
 <head>
