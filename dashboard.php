@@ -243,7 +243,7 @@ $statusClass = static function(string $status): string {
       <div class="field"><label for="de">De</label><input id="de" name="de" type="date" value="<?= htmlspecialchars($dataInicial,ENT_QUOTES,'UTF-8') ?>"></div>
       <div class="field"><label for="ate">Até</label><input id="ate" name="ate" type="date" value="<?= htmlspecialchars($dataFinal,ENT_QUOTES,'UTF-8') ?>"></div>
       <div class="field"><label for="status">Status</label><select id="status" name="status"><option value="">Todos os status</option><?php foreach(STATUS_RESCISAO as $st): ?><option value="<?= htmlspecialchars($st,ENT_QUOTES,'UTF-8') ?>" <?= $statusFiltro===$st?'selected':'' ?>><?= htmlspecialchars($st,ENT_QUOTES,'UTF-8') ?></option><?php endforeach; ?></select></div>
-      <div class="filter-form-actions"><a class="btn" href="dashboard.php">Limpar</a></div>
+      <div class="filter-form-actions"><a class="btn" href="dashboard.php">Limpar</a><button class="btn btn-primary" type="submit">Aplicar filtros</button></div>
     </form>
   </section>
 
