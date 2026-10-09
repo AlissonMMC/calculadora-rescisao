@@ -2,6 +2,9 @@
 declare(strict_types=1);
 require __DIR__ . '/config.php';
 $usuario = exigirLoginApi();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // A permissão específica é validada abaixo conforme criação ou edição.
+}
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') responder(['ok' => false, 'error' => 'Método não permitido.'], 405);
 validarCsrf();
 $entrada = entradaJson();
@@ -21,11 +24,12 @@ try {
     $pdo->beginTransaction();
 
     if ($id > 0) {
-        $stmt = $pdo->prepare('SELECT id, usuario_id, status, nome FROM historico_rescisoes WHERE id = ? LIMIT 1');
+        if (!temPermissao($usuario, 'rescisao.edit')) responder(['ok' => false, 'error' => 'Você não possui permissão para editar rescisões.'], 403);
+        $stmt = $pdo->prepare('SELECT id, usuario_id, status, nome, endereco, total, total_adm, total_repasse, modo_nome, dados_json FROM historico_rescisoes WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
         $existente = $stmt->fetch();
         if (!$existente) { $pdo->rollBack(); responder(['ok' => false, 'error' => 'Rescisão não encontrada.'], 404); }
-        $permitido = ((int)$existente['usuario_id'] === (int)$usuario['id']) || $usuario['perfil'] === 'admin';
+        $permitido = temPermissao($usuario, 'rescisao.edit') && (((int)$existente['usuario_id'] === (int)$usuario['id']) || perfilNormalizado($usuario) === 'admin');
         if (!$permitido) { $pdo->rollBack(); responder(['ok' => false, 'error' => 'Você não pode alterar esta rescisão.'], 403); }
 
         $stmt = $pdo->prepare('UPDATE historico_rescisoes SET nome = ?, endereco = ?, total = ?, total_adm = ?, total_repasse = ?, modo_nome = ?, status = ?, atualizado_em = CURRENT_TIMESTAMP, ultimo_editor_id = ? WHERE id = ?');
@@ -46,8 +50,84 @@ try {
             $stmt = $pdo->prepare('UPDATE historico_rescisoes SET conferido_em = NULL, conferido_por = NULL, cobrado_em = NULL, cobrado_por = NULL WHERE id = ?');
             $stmt->execute([$id]);
         }
-        registrarAuditoria($id, (int)$usuario['id'], $acao, $detalhes);
+        $dadosAnteriores = json_decode((string)($existente['dados_json'] ?? ''), true);
+        if (!is_array($dadosAnteriores)) $dadosAnteriores = ['campos' => []];
+        $camposAnteriores = is_array($dadosAnteriores['campos'] ?? null) ? $dadosAnteriores['campos'] : [];
+        $camposNovos = is_array($dados['campos'] ?? null) ? $dados['campos'] : [];
+
+        $rotulos = [
+            'nomeInquilino' => 'Inquilino',
+            'cpfInquilino' => 'CPF',
+            'enderecoImovel' => 'Endereço',
+            'numeroContrato' => 'Contrato',
+            'dataInicial' => 'Data inicial',
+            'dataFinal' => 'Entrega das chaves',
+            'dataInicioContrato' => 'Início do contrato',
+            'dataInicioAviso' => 'Início do aviso',
+            'dataFimAviso' => 'Fim do aviso',
+            'aluguel' => 'Aluguel',
+            'iptu' => 'IPTU',
+            'condominio' => 'Condomínio',
+            'agua' => 'Água',
+            'luz' => 'Luz',
+            'internet' => 'Internet',
+            'percentualAdm' => 'ADM do aluguel (%)',
+            'mesesFaltantes' => 'Meses faltantes',
+            'percentualProp' => 'ADM sobre multa (%)',
+            'valorAluguelInteiro' => 'Aluguel inteiro + encargos',
+            'manutencao' => 'Manutenção',
+            'chaveiro' => 'Chaveiro',
+            'seguroIncendio' => 'Seguro incêndio',
+            'seguroIncendioExtras' => 'Parcelas extras do seguro incêndio',
+            'seguroFianca' => 'Seguro fiança',
+            'seguroFiancaExtras' => 'Parcelas extras do seguro fiança',
+            'semAviso' => 'Sem aviso',
+            'semMulta' => 'Sem multa',
+            'semEncargos' => 'Sem encargos',
+            'semManutencao' => 'Sem manutenção',
+            'semChaveiro' => 'Sem chaveiro',
+            'semAluguelInteiro' => 'Sem aluguel inteiro',
+            'semSeguros' => 'Sem seguros',
+        ];
+        $formatarAuditoria = static function (string $campo, mixed $valor): string {
+            if (is_bool($valor)) return $valor ? 'Sim' : 'Não';
+            if ($valor === null || $valor === '') return 'vazio';
+            if (is_array($valor)) return '[dados]';
+            return is_scalar($valor) ? (string)$valor : '[dados]';
+        };
+        $alteracoes = [];
+        $todosCampos = array_unique(array_merge(array_keys($camposAnteriores), array_keys($camposNovos)));
+        foreach ($todosCampos as $campo) {
+            $antes = $camposAnteriores[$campo] ?? null;
+            $depois = $camposNovos[$campo] ?? null;
+            if ((string)$antes === (string)$depois && is_bool($antes) === is_bool($depois)) continue;
+            $rotulo = $rotulos[$campo] ?? $campo;
+            $alteracoes[] = $rotulo . ': ' . $formatarAuditoria($campo, $antes) . ' → ' . $formatarAuditoria($campo, $depois);
+        }
+
+        if ((string)($existente['nome'] ?? '') !== $nome) {
+            $alteracoes[] = 'Nome exibido: ' . (($existente['nome'] ?? '') !== '' ? $existente['nome'] : 'vazio') . ' → ' . ($nome !== '' ? $nome : 'vazio');
+        }
+        if ((string)($existente['endereco'] ?? '') !== $endereco) {
+            $alteracoes[] = 'Endereço: ' . (($existente['endereco'] ?? '') !== '' ? $existente['endereco'] : 'vazio') . ' → ' . ($endereco !== '' ? $endereco : 'vazio');
+        }
+        if ((float)($existente['total'] ?? 0) !== $total) {
+            $alteracoes[] = 'Total: R$ ' . number_format((float)($existente['total'] ?? 0), 2, ',', '.') . ' → R$ ' . number_format($total, 2, ',', '.');
+        }
+        if ((float)($existente['total_adm'] ?? 0) !== $totalAdm) {
+            $alteracoes[] = 'ADM: R$ ' . number_format((float)($existente['total_adm'] ?? 0), 2, ',', '.') . ' → R$ ' . number_format($totalAdm, 2, ',', '.');
+        }
+        if ((float)($existente['total_repasse'] ?? 0) !== $totalRepasse) {
+            $alteracoes[] = 'Repasse: R$ ' . number_format((float)($existente['total_repasse'] ?? 0), 2, ',', '.') . ' → R$ ' . number_format($totalRepasse, 2, ',', '.');
+        }
+
+        if ($alteracoes) {
+            registrarAuditoria($id, (int)$usuario['id'], 'Edição', 'Alterações: ' . implode(' | ', array_slice($alteracoes, 0, 30)));
+        } else {
+            registrarAuditoria($id, (int)$usuario['id'], $acao, $detalhes);
+        }
     } else {
+        if (!temPermissao($usuario, 'rescisao.create')) responder(['ok' => false, 'error' => 'Você não possui permissão para criar rescisões.'], 403);
         $stmt = $pdo->prepare('INSERT INTO historico_rescisoes (usuario_id, ultimo_editor_id, nome, endereco, total, total_adm, total_repasse, modo_nome, status, dados_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([(int)$usuario['id'], (int)$usuario['id'], $nome, $endereco, $total, $totalAdm, $totalRepasse, $modoNome, $status, $jsonDados]);
         $id = (int)$pdo->lastInsertId();

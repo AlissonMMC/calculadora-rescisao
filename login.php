@@ -13,12 +13,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!hash_equals((string)($_SESSION['csrf_token'] ?? ''), (string)($_POST['csrf_token'] ?? ''))) {
             throw new RuntimeException('Token de segurança inválido.');
         }
-        $login = mb_substr(trim((string)($_POST['login'] ?? '')), 0, 60);
+        $login = mb_substr(strtolower(trim((string)($_POST['login'] ?? ''))), 0, 190);
         $senha = (string)($_POST['senha'] ?? '');
         $stmt = db()->prepare('SELECT id, nome, login, email, senha_hash, perfil, ativo FROM usuarios WHERE login = ? OR email = ? LIMIT 1');
         $stmt->execute([$login, $login]);
         $usuario = $stmt->fetch();
         if (!$usuario || !(int)$usuario['ativo'] || !password_verify($senha, $usuario['senha_hash'])) {
+            registrarTentativaLogin($login, false, $usuario ? (int)$usuario['id'] : null);
             $_SESSION['login_falhas'] = ((int)($_SESSION['login_falhas'] ?? 0)) + 1;
             if ($_SESSION['login_falhas'] >= 5) {
                 $_SESSION['login_bloqueado_ate'] = time() + 300;
@@ -27,12 +28,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             throw new RuntimeException('Login ou senha inválidos.');
         }
+        registrarTentativaLogin($login, true, (int)$usuario['id']);
         unset($_SESSION['login_falhas'], $_SESSION['login_bloqueado_ate']);
         session_regenerate_id(true);
         $_SESSION['usuario_id'] = (int)$usuario['id'];
         $_SESSION['ultimo_acesso'] = time();
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         db()->prepare('UPDATE usuarios SET ultimo_login = CURRENT_TIMESTAMP WHERE id = ?')->execute([(int)$usuario['id']]);
+        registrarAuditoriaSistema('autenticacao', 'login', (int)$usuario['id'], 'Login realizado com sucesso.');
         header('Location: dashboard.php');
         exit;
     } catch (Throwable $e) {
@@ -60,10 +63,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <section class="login-form-wrap">
     <form class="login-form" method="post" autocomplete="on">
       <h2>Entrar</h2>
-      <p>Use seu usuário ou e-mail de acesso da imobiliária.</p>
+      <p>Use o e-mail cadastrado pelo administrador para acessar o sistema.</p>
       <?php if ($erro): ?><div class="error"><?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
       <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
-      <div class="field"><label for="login">Usuário ou e-mail</label><input id="login" name="login" type="text" autocomplete="username" required autofocus></div>
+      <div class="field"><label for="login">E-mail de acesso</label><input id="login" name="login" type="email" autocomplete="username" required autofocus></div>
       <div class="field"><label for="senha">Senha</label><input id="senha" name="senha" type="password" autocomplete="current-password" required></div>
       <button class="btn" type="submit">Entrar →</button>
       <div class="hint">O administrador pode criar, bloquear e redefinir usuários dentro do sistema.</div>

@@ -12,7 +12,7 @@ O projeto foi desenvolvido com foco em uso profissional, organização de proces
 
 ## ✨ Principais recursos
 
-- 🔐 Autenticação e controle de acesso
+- 🔐 Autenticação e controle de acesso por e-mail
 - 👥 Gestão de usuários e permissões
 - 🧮 Cálculo de rescisão por **meses ou dias**
 - 💰 Cálculo de aluguel e encargos

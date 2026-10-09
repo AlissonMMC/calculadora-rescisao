@@ -73,6 +73,21 @@ function db(): PDO {
 }
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
+    // Cada instalação do sistema precisa ter sua própria sessão.
+    // Isso evita que produção (/rescisao) e teste (/calculadora-rescisao)
+    // compartilhem o mesmo cookie PHPSESSID no localhost.
+    $sessionName = preg_replace(
+        '/[^a-zA-Z0-9_]/',
+        '_',
+        (string)envValue('SESSION_NAME', 'folha_calculo_prod')
+    );
+
+    if ($sessionName === '') {
+        $sessionName = 'folha_calculo_prod';
+    }
+
+    session_name($sessionName);
+
     $secure = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
 
     session_set_cookie_params([
@@ -138,6 +153,108 @@ function usuarioAtual(): ?array {
     }
 }
 
+function perfilNormalizado(array $usuario): string {
+    $perfil = strtolower(trim((string)($usuario['perfil'] ?? '')));
+
+    // Normaliza valores antigos ou escritos de formas diferentes.
+    // Em caso de valor desconhecido, aplica o princípio do menor privilégio:
+    // o usuário fica somente em consulta, nunca com acesso de escrita.
+    return match ($perfil) {
+        'admin', 'administrador', 'administradora' => 'admin',
+        'financeiro', 'financeira' => 'financeiro',
+        'consulta', 'leitura', 'somente_consulta', 'somente consulta',
+        'somente-consulta', 'readonly', 'read_only', 'read-only',
+        'visualizacao', 'visualização' => 'consulta',
+        'operacional', 'usuario', 'usuário' => 'operacional',
+        default => 'consulta',
+    };
+}
+
+function permissoesPerfil(string $perfil): array {
+    return match ($perfil) {
+        'admin' => ['*'],
+        'financeiro' => [
+            'dashboard.view', 'rescisao.view', 'rescisao.create', 'rescisao.edit',
+            'historico.view', 'historico.edit', 'orcamentos.view', 'orcamentos.create',
+            'orcamentos.edit', 'prestadores.view', 'perfil.view', 'perfil.edit'
+        ],
+        'consulta' => [
+            'dashboard.view', 'rescisao.view', 'historico.view', 'detalhe.view',
+            'orcamentos.view', 'perfil.view', 'perfil.edit'
+        ],
+        default => [
+            'dashboard.view', 'rescisao.view', 'rescisao.create', 'rescisao.edit',
+            'historico.view', 'historico.edit', 'orcamentos.view', 'orcamentos.create',
+            'orcamentos.edit', 'perfil.view', 'perfil.edit'
+        ],
+    };
+}
+
+function temPermissao(array $usuario, string $permissao): bool {
+    $perfil = perfilNormalizado($usuario);
+    $lista = permissoesPerfil($perfil);
+    return in_array('*', $lista, true) || in_array($permissao, $lista, true);
+}
+
+function exigirPermissaoPagina(string $permissao): array {
+    $usuario = exigirLoginPagina();
+    if (!temPermissao($usuario, $permissao)) {
+        http_response_code(403);
+        echo '<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Acesso negado</title><body style="font-family:Arial,sans-serif;padding:40px"><h1>Acesso negado</h1><p>Seu perfil não possui permissão para esta área.</p><p><a href="dashboard.php">Voltar ao painel</a></p></body></html>';
+        exit;
+    }
+    return $usuario;
+}
+
+function exigirPermissaoApi(string $permissao): array {
+    $usuario = exigirLoginApi();
+    if (!temPermissao($usuario, $permissao)) {
+        responder(['ok' => false, 'error' => 'Você não possui permissão para esta operação.'], 403);
+    }
+    return $usuario;
+}
+
+function registrarAuditoriaSistema(
+    string $modulo,
+    string $acao,
+    ?int $registroId = null,
+    ?string $detalhes = null,
+    ?int $usuarioId = null
+): void {
+    try {
+        $usuarioId = $usuarioId ?? (int)($_SESSION['usuario_id'] ?? 0);
+        $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+        $ua = mb_substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 500);
+        $stmt = db()->prepare(
+            'INSERT INTO auditoria_sistema
+             (usuario_id, modulo, acao, registro_id, detalhes, ip, user_agent)
+             VALUES (?, ?, ?, ?, ?, ?, ?)'
+        );
+        $stmt->execute([$usuarioId > 0 ? $usuarioId : null, $modulo, $acao, $registroId, $detalhes, $ip, $ua]);
+    } catch (Throwable $e) {
+        error_log('Calculadora auditoria_sistema: ' . $e->getMessage());
+    }
+}
+
+function registrarTentativaLogin(string $login, bool $sucesso, ?int $usuarioId = null): void {
+    try {
+        $stmt = db()->prepare(
+            'INSERT INTO tentativas_login
+             (login_informado, usuario_id, sucesso, ip, user_agent)
+             VALUES (?, ?, ?, ?, ?)'
+        );
+        $stmt->execute([
+            mb_substr($login, 0, 190),
+            $usuarioId,
+            $sucesso ? 1 : 0,
+            $_SERVER['REMOTE_ADDR'] ?? null,
+            mb_substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 500)
+        ]);
+    } catch (Throwable $e) {
+        error_log('Calculadora tentativas_login: ' . $e->getMessage());
+    }
+}
+
 function exigirLoginApi(): array {
     $usuario = usuarioAtual();
 
@@ -154,7 +271,7 @@ function exigirLoginApi(): array {
 function exigirAdminApi(): array {
     $usuario = exigirLoginApi();
 
-    if ($usuario['perfil'] !== 'admin') {
+    if (perfilNormalizado($usuario) !== 'admin') {
         responder([
             'ok' => false,
             'error' => 'Acesso restrito ao administrador.'

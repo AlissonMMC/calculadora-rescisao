@@ -2,8 +2,7 @@
 declare(strict_types=1);
 require __DIR__.'/../api/config.php';
 require __DIR__.'/includes/storage.php';
-$u=usuarioAtual();
-if(!$u){header('Location: ../login.php');exit;}
+$u=exigirPermissaoPagina('orcamentos.view');
 $f=orcamentosStorage().'/historico_orcamentos.json';
 $data=is_file($f)?json_decode((string)file_get_contents($f),true):[];
 if(!is_array($data))$data=[];
