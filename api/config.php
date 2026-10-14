@@ -93,14 +93,25 @@ function csrfToken(): string {
 }
 
 function validarCsrf(): void {
-    $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_POST['csrf_token'] ?? '');
+    $sessaoToken = (string)($_SESSION['csrf_token'] ?? '');
+    $tokensRecebidos = [
+        (string)($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ''),
+        (string)($_POST['csrf_token'] ?? ''),
+    ];
 
-    if (!$token || !hash_equals((string)($_SESSION['csrf_token'] ?? ''), (string)$token)) {
-        responder([
-            'ok' => false,
-            'error' => 'Token de segurança inválido. Atualize a página e tente novamente.'
-        ], 419);
+    // Valida qualquer token fornecido pelos canais suportados.
+    // Um cabeçalho vazio ou desatualizado não deve descartar um token
+    // válido enviado pelo formulário, como ocorre no logout via POST.
+    foreach ($tokensRecebidos as $token) {
+        if ($sessaoToken !== '' && $token !== '' && hash_equals($sessaoToken, $token)) {
+            return;
+        }
     }
+
+    responder([
+        'ok' => false,
+        'error' => 'Token de segurança inválido. Atualize a página e tente novamente.'
+    ], 419);
 }
 
 function usuarioAtual(): ?array {
