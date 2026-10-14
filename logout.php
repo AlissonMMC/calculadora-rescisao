@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/api/config.php';
+$usuarioLogout = usuarioAtual();
+if ($usuarioLogout) {
+    registrarAuditoriaSistema('autenticacao', 'logout', (int)$usuarioLogout['id'], 'Sessão encerrada.');
+}
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     validarCsrf();
 }
