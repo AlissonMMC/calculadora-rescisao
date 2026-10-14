@@ -1,5 +1,6 @@
--- Migração 004: trilha central de auditoria do sistema
-USE calculadora_rescisao;
+-- Migração 004: trilha central de auditoria do sistema.
+-- Selecione explicitamente o banco de TESTE antes de executar este arquivo.
+-- Este script não troca o banco ativo e não deve ser executado em produção antes da aprovação.
 
 CREATE TABLE IF NOT EXISTS auditoria_sistema (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
