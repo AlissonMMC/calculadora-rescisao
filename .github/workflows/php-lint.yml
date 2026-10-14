@@ -28,3 +28,9 @@ jobs:
 
       - name: Validate Python syntax
         run: python3 -m py_compile tools/gerar_fotos_word.py
+
+      - name: Install photo module dependencies
+        run: python3 -m pip install -r tools/requirements-fotos-word.txt
+
+      - name: Validate photo generator imports
+        run: python3 tools/gerar_fotos_word.py --help
