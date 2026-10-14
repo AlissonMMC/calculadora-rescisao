@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$login, $login]);
         $usuario = $stmt->fetch();
         if (!$usuario || !(int)$usuario['ativo'] || !password_verify($senha, $usuario['senha_hash'])) {
+            registrarAuditoriaSistema('autenticacao', 'login_falha', null, 'Tentativa inválida para o identificador: ' . $login, 0);
             $_SESSION['login_falhas'] = ((int)($_SESSION['login_falhas'] ?? 0)) + 1;
             if ($_SESSION['login_falhas'] >= 5) {
                 $_SESSION['login_bloqueado_ate'] = time() + 300;
