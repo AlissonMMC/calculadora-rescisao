@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new RuntimeException('Informe sua senha atual para confirmar a alteração.');
         }
 
-        $stmt = db()->prepare('SELECT id, senha_hash FROM usuarios WHERE id = ? LIMIT 1');
+        $stmt = db()->prepare('SELECT id, senha_hash, email FROM usuarios WHERE id = ? LIMIT 1');
         $stmt->execute([(int)$usuario['id']]);
         $registro = $stmt->fetch();
 
@@ -45,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $stmt = db()->prepare('UPDATE usuarios SET email = ? WHERE id = ?');
             $stmt->execute([$email !== '' ? $email : null, (int)$usuario['id']]);
+            registrarAuditoriaSistema('perfil', 'alteracao_email', (int)$usuario['id'], 'E-mail: ' . ((string)($registro['email'] ?? '') ?: 'vazio') . ' → ' . ($email !== '' ? $email : 'vazio'), (int)$usuario['id']);
             $mensagem = 'E-mail de acesso atualizado com sucesso.';
         } elseif ($acao === 'senha') {
             $novaSenha = (string)($_POST['nova_senha'] ?? '');
@@ -64,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $stmt = db()->prepare('UPDATE usuarios SET senha_hash = ? WHERE id = ?');
             $stmt->execute([password_hash($novaSenha, PASSWORD_DEFAULT), (int)$usuario['id']]);
+            registrarAuditoriaSistema('perfil', 'alteracao_senha', (int)$usuario['id'], 'Senha alterada pelo próprio usuário após validação da senha atual.', (int)$usuario['id']);
 
             // Invalida o identificador da sessão após uma troca de senha.
             session_regenerate_id(true);
