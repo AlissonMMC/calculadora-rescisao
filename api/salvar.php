@@ -21,7 +21,7 @@ try {
     $pdo->beginTransaction();
 
     if ($id > 0) {
-        $stmt = $pdo->prepare('SELECT id, usuario_id, status, nome FROM historico_rescisoes WHERE id = ? LIMIT 1');
+        $stmt = $pdo->prepare('SELECT id, usuario_id, status, nome, endereco, total, total_adm, total_repasse, modo_nome FROM historico_rescisoes WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
         $existente = $stmt->fetch();
         if (!$existente) { $pdo->rollBack(); responder(['ok' => false, 'error' => 'Rescisão não encontrada.'], 404); }
@@ -47,6 +47,11 @@ try {
             $stmt->execute([$id]);
         }
         registrarAuditoria($id, (int)$usuario['id'], $acao, $detalhes);
+        $detalhesCentral = 'Locatário: ' . (string)$existente['nome'] . ' → ' . $nome
+            . '; Endereço: ' . (string)$existente['endereco'] . ' → ' . $endereco
+            . '; Total: R$ ' . number_format((float)$existente['total'], 2, ',', '.') . ' → R$ ' . number_format($total, 2, ',', '.')
+            . '; Status: ' . ((string)$existente['status'] ?: 'Rascunho') . ' → ' . $status;
+        registrarAuditoriaSistema('rescisoes', ((string)$existente['status'] !== $status) ? 'alteracao_status' : 'edicao', $id, $detalhesCentral, (int)$usuario['id']);
     } else {
         $stmt = $pdo->prepare('INSERT INTO historico_rescisoes (usuario_id, ultimo_editor_id, nome, endereco, total, total_adm, total_repasse, modo_nome, status, dados_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([(int)$usuario['id'], (int)$usuario['id'], $nome, $endereco, $total, $totalAdm, $totalRepasse, $modoNome, $status, $jsonDados]);
@@ -57,6 +62,7 @@ try {
             $pdo->prepare('UPDATE historico_rescisoes SET conferido_em = CURRENT_TIMESTAMP, conferido_por = ?, cobrado_em = CURRENT_TIMESTAMP, cobrado_por = ? WHERE id = ?')->execute([(int)$usuario['id'], (int)$usuario['id'], $id]);
         }
         registrarAuditoria($id, (int)$usuario['id'], 'Criação', 'Rescisão criada com status: ' . $status);
+        registrarAuditoriaSistema('rescisoes', 'criacao', $id, 'Rescisão criada para ' . $nome . '; total: R$ ' . number_format($total, 2, ',', '.') . '; status: ' . $status, (int)$usuario['id']);
     }
 
     // Sempre grava a versão mais recente do JSON após a decisão de criar/editar.
