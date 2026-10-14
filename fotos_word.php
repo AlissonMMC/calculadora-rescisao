@@ -125,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $limitePost = fotosWordBytesIni((string)ini_get('post_max_size'));
         if ($contentLength > 0 && $limitePost > 0 && $contentLength > $limitePost) {
             throw new RuntimeException(
-                'O envio ultrapassou o limite de ' . ini_get('post_max_size') . ' configurado no PHP. Para contratos grandes, configure post_max_size=800M, upload_max_filesize=750M e max_file_uploads=850 no php.ini, salve e reinicie o Apache.'
+                'O envio ultrapassou o limite de ' . ini_get('post_max_size') . ' configurado no PHP. Para contratos grandes, configure post_max_size=1100M, upload_max_filesize=1050M e max_file_uploads=850 no php.ini, salve e reinicie o Apache.'
             );
         }
 
@@ -188,8 +188,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (strtolower(pathinfo($nomeZip, PATHINFO_EXTENSION)) !== 'zip') {
                 throw new RuntimeException('O arquivo enviado precisa estar no formato .zip.');
             }
-            if ((int)($arquivosZip['size'] ?? 0) > 700 * 1024 * 1024) {
-                throw new RuntimeException('O ZIP pode ter no máximo 700 MB.');
+            if ((int)($arquivosZip['size'] ?? 0) > 1024 * 1024 * 1024) {
+                throw new RuntimeException('O ZIP pode ter no máximo 1 GB.');
             }
 
             $caminhoZip = $diretorioTemporario . DIRECTORY_SEPARATOR . 'fotos.zip';
@@ -261,7 +261,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($lista as $foto) {
                 $totalBytes += $foto['tamanho'];
                 if ($totalBytes > 700 * 1024 * 1024) {
-                    throw new RuntimeException('O total das fotos excede 700 MB. Divida as fotos em dois envios.');
+                    throw new RuntimeException('O total das fotos excede 1 GB. Divida as fotos em dois envios.');
                 }
 
                 $temporario = $foto['tmp'];
@@ -478,7 +478,7 @@ if ($resultado === null) {
             </div>
 
             <button type="submit" class="photo-word-button primary photo-word-submit" id="generateButton">Gerar documentos</button>
-            <p class="photo-word-privacy">Até 800 fotos por envio e 700 MB no total. As imagens são otimizadas para reduzir o peso dos documentos. Os arquivos temporários são removidos; os documentos gerados ficam disponíveis para download na sessão por até 48 horas.</p>
+            <p class="photo-word-privacy">Até 800 fotos por envio e 1 GB no total. As imagens são otimizadas para reduzir o peso dos documentos. Os arquivos temporários são removidos; os documentos gerados ficam disponíveis para download na sessão por até 48 horas.</p>
         </form>
     </section>
 </main>
