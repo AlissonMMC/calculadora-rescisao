@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-"""Gera um DOCX com fotos padronizadas e converte para PDF.
+"""Gera documentos DOCX e PDF diretamente a partir de um conjunto de fotos.
 
-Requer: python-docx, Pillow e LibreOffice instalado no computador que executa o sistema.
+Requer: python-docx, Pillow e ReportLab.
 """
 from __future__ import annotations
 
 import argparse
 import io
 import json
-import os
 import re
-import shutil
-import subprocess
 import sys
 import tempfile
 import zipfile
@@ -23,6 +20,9 @@ try:
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     from docx.shared import Cm, Pt
     from PIL import Image, ImageOps, UnidentifiedImageError
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.units import cm
+    from reportlab.pdfgen import canvas
 except ImportError as exc:
     print(
         "Dependência Python ausente. Execute: py -3 -m pip install -r tools/requirements-fotos-word.txt",
@@ -36,6 +36,7 @@ MAX_PHOTOS = 800
 MAX_IMAGE_BYTES = 40 * 1024 * 1024
 MAX_TOTAL_BYTES = 1024 * 1024 * 1024
 MAX_IMAGE_EDGE = 1800
+MAX_IMAGE_HEIGHT_CM = 11.2
 
 
 def natural_key(value: str) -> list[object]:
@@ -116,23 +117,40 @@ def image_sources(input_dir: Path | None, zip_path: Path | None) -> Iterator[tup
                 raise ValueError(f"A imagem {path.name} excede 40 MB.")
             total_bytes += size
             if total_bytes > MAX_TOTAL_BYTES:
-                raise ValueError("O total das imagens excede 700 MB.")
+                raise ValueError("O total das imagens excede 1 GB.")
         for path in paths:
             yield path.name, path.read_bytes()
 
-def normalize_images(candidates: Iterable[tuple[str, bytes]], temp_dir: Path) -> list[Path]:
+def normalize_images(
+    candidates: Iterable[tuple[str, bytes]],
+    temp_dir: Path,
+    width_cm: float,
+) -> list[Path]:
     normalized: list[Path] = []
     invalid: list[str] = []
 
     for filename, data in candidates:
         try:
-            with Image.open(io.BytesIO(data)) as original:
-                original.verify()
+            # Abre e decodifica cada arquivo uma única vez; verify() seguido de
+            # uma segunda abertura custava tempo em contratos com centenas de fotos.
             with Image.open(io.BytesIO(data)) as original:
                 image = ImageOps.exif_transpose(original)
-                # 1800 px por lado mantém boa qualidade em 12 cm e reduz o peso
-                # dos DOCX/PDF com centenas de fotos.
-                image.thumbnail((MAX_IMAGE_EDGE, MAX_IMAGE_EDGE), Image.Resampling.LANCZOS)
+                image.load()
+
+                # Reduz imagens grandes usando o caminho otimizado do Pillow.
+                image.thumbnail(
+                    (MAX_IMAGE_EDGE, MAX_IMAGE_EDGE),
+                    Image.Resampling.LANCZOS,
+                    reducing_gap=3.0,
+                )
+
+                # Fotos verticais altas são giradas uma vez aqui e reutilizadas
+                # tanto pelo Word quanto pelo PDF, evitando trabalho duplicado.
+                largura_px, altura_px = image.size
+                altura_se_largura_maxima = width_cm * altura_px / max(largura_px, 1)
+                if altura_px > largura_px and altura_se_largura_maxima > MAX_IMAGE_HEIGHT_CM:
+                    image = image.transpose(Image.Transpose.ROTATE_270)
+
                 has_alpha = (
                     image.mode in ("RGBA", "LA")
                     or (image.mode == "P" and "transparency" in image.info)
@@ -140,11 +158,12 @@ def normalize_images(candidates: Iterable[tuple[str, bytes]], temp_dir: Path) ->
                 if has_alpha:
                     image = image.convert("RGBA")
                     target = temp_dir / f"{len(normalized) + 1:04d}.png"
-                    image.save(target, format="PNG", optimize=True)
+                    # Compressão rápida: priorizamos tempo no lote de centenas de fotos.
+                    image.save(target, format="PNG", optimize=False, compress_level=3)
                 else:
                     image = image.convert("RGB")
                     target = temp_dir / f"{len(normalized) + 1:04d}.jpg"
-                    image.save(target, format="JPEG", quality=88, optimize=True)
+                    image.save(target, format="JPEG", quality=86, optimize=False)
                 normalized.append(target)
         except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
             invalid.append(filename)
@@ -154,6 +173,15 @@ def normalize_images(candidates: Iterable[tuple[str, bytes]], temp_dir: Path) ->
     if invalid:
         print(f"Aviso: {len(invalid)} arquivo(s) inválido(s) ou corrompido(s) foram ignorados.", file=sys.stderr)
     return normalized
+
+def image_dimensions(image_path: Path, width_cm: float) -> tuple[float, float]:
+    with Image.open(image_path) as image:
+        width_px, height_px = image.size
+    scale = min(
+        width_cm / max(width_px, 1),
+        MAX_IMAGE_HEIGHT_CM / max(height_px, 1),
+    )
+    return width_px * scale, height_px * scale
 
 
 def build_docx(images: list[Path], output_path: Path, width_cm: float) -> None:
@@ -171,31 +199,9 @@ def build_docx(images: list[Path], output_path: Path, width_cm: float) -> None:
     normal.font.size = Pt(10)
     normal.paragraph_format.space_after = Pt(0)
 
-    # Duas imagens por página A4. O limite de altura deixa espaço para
-    # espaçamento dos parágrafos e evita que uma foto empurre a seguinte.
-    altura_maxima_cm = 11.2
-
+    # Duas fotos por página; cada imagem cabe em uma caixa com altura máxima.
     for index, image_path in enumerate(images):
-        with Image.open(image_path) as original:
-            imagem = original.copy()
-            largura_px, altura_px = imagem.size
-
-            # Fotos verticais que passariam do limite de altura são giradas
-            # 90 graus para ficarem deitadas. A imagem original do usuário
-            # nunca é modificada: esta é apenas uma cópia temporária.
-            altura_se_largura_maxima = width_cm * altura_px / max(largura_px, 1)
-            if altura_px > largura_px and altura_se_largura_maxima > altura_maxima_cm:
-                imagem = imagem.transpose(Image.Transpose.ROTATE_270)
-                rotacionada = image_path.with_name(image_path.stem + "_rotacionada" + image_path.suffix)
-                imagem.save(rotacionada)
-                image_path = rotacionada
-                largura_px, altura_px = imagem.size
-
-            # Ajusta dentro da caixa de  largura x altura sem distorcer a proporção.
-            escala = min(width_cm / max(largura_px, 1), altura_maxima_cm / max(altura_px, 1))
-            largura_final = largura_px * escala
-            altura_final = altura_px * escala
-
+        largura_final, altura_final = image_dimensions(image_path, width_cm)
         paragraph = document.add_paragraph()
         paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
         paragraph.paragraph_format.space_before = Pt(3)
@@ -206,45 +212,46 @@ def build_docx(images: list[Path], output_path: Path, width_cm: float) -> None:
             width=Cm(largura_final),
             height=Cm(altura_final),
         )
-
-        # Força o próximo par a começar em uma página nova.
         if (index + 1) % 2 == 0 and index + 1 < len(images):
             document.add_page_break()
 
     document.save(output_path)
 
 
-def convert_to_pdf(docx_path: Path, pdf_path: Path, output_dir: Path) -> None:
-    soffice = locate_soffice()
-    if not soffice:
-        raise RuntimeError(
-            "O LibreOffice não foi encontrado. Instale-o ou configure LIBREOFFICE_BIN apontando para soffice.com."
+def build_pdf(images: list[Path], output_path: Path, width_cm: float) -> None:
+    """Renderiza o PDF diretamente, sem abrir/converter o DOCX no LibreOffice."""
+    page_width, page_height = A4
+    max_height = MAX_IMAGE_HEIGHT_CM * cm
+    side_margin = 1.8 * cm
+    top_margin = 1.3 * cm
+    bottom_margin = 1.3 * cm
+    width_limit = min(width_cm * cm, page_width - (2 * side_margin))
+
+    pdf = canvas.Canvas(str(output_path), pagesize=A4, pageCompression=1)
+    for index, image_path in enumerate(images):
+        draw_width_cm, draw_height_cm = image_dimensions(image_path, width_limit / cm)
+        draw_width = draw_width_cm * cm
+        draw_height = draw_height_cm * cm
+
+        # Cada página tem duas áreas fixas; centraliza a foto na sua área.
+        slot_bottom = (page_height - top_margin - max_height) if index % 2 == 0 else bottom_margin
+        draw_x = (page_width - draw_width) / 2
+        draw_y = slot_bottom + (max_height - draw_height) / 2
+        pdf.drawImage(
+            str(image_path),
+            draw_x,
+            draw_y,
+            width=draw_width,
+            height=draw_height,
+            preserveAspectRatio=True,
+            anchor="c",
+            mask="auto",
         )
 
-    profile_dir = Path(tempfile.mkdtemp(prefix="fotos-word-lo-"))
-    try:
-        command = [
-            soffice,
-            "--headless",
-            f"-env:UserInstallation={profile_dir.resolve().as_uri()}",
-            "--convert-to", "pdf",
-            "--outdir", str(output_dir),
-            str(docx_path),
-        ]
-        result = subprocess.run(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            timeout=900,
-            check=False,
-        )
-        if result.returncode != 0 or not pdf_path.is_file() or pdf_path.stat().st_size == 0:
-            detail = (result.stderr or result.stdout or "").strip()
-            raise RuntimeError("Não foi possível converter o Word para PDF." + (f" Detalhe: {detail[:500]}" if detail else ""))
-    finally:
-        shutil.rmtree(profile_dir, ignore_errors=True)
+        if (index + 1) % 2 == 0 and index + 1 < len(images):
+            pdf.showPage()
 
+    pdf.save()
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -265,9 +272,9 @@ def main() -> int:
 
     candidates = image_sources(args.input_dir, args.zip_file)
     with tempfile.TemporaryDirectory(prefix="fotos-word-images-") as temp:
-        normalized = normalize_images(candidates, Path(temp))
+        normalized = normalize_images(candidates, Path(temp), args.width)
         build_docx(normalized, docx_path, args.width)
-        convert_to_pdf(docx_path, pdf_path, args.output_dir)
+        build_pdf(normalized, pdf_path, args.width)
         stats = {
             "ok": True,
             "photos": len(normalized),
