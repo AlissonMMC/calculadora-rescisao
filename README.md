@@ -22,6 +22,7 @@ O projeto foi desenvolvido com foco em uso profissional, organização de proces
 - 🔎 Conferência antes da cobrança
 - 🕵️ Registro de alterações e auditoria
 - 📊 Módulo de geração e processamento de orçamentos
+- 🖼️ Geração de documentos Word/PDF a partir de pastas de fotos, com largura padronizada e proporção preservada
 - 📑 Integração com planilhas
 - 🐍 Processamento auxiliar com Python
 
@@ -105,11 +106,21 @@ Use .env.example como referência para as variáveis do ambiente.
 
 **Nunca coloque credenciais reais no Git.**
 
-### 5. Instalar dependências do módulo de orçamentos
+### 5. Instalar dependências Python
+
+Para o módulo de orçamentos:
 
 ```bash
-python -m pip install openpyxl
+py -3 -m pip install openpyxl
 ```
+
+Para o módulo Fotos Word/PDF:
+
+```bash
+py -3 -m pip install -r tools/requirements-fotos-word.txt
+```
+
+O módulo Fotos Word/PDF também exige o LibreOffice instalado no computador que executa o PHP, pois ele converte o DOCX gerado em PDF. Se o executável não estiver no PATH ou no caminho padrão, configure a variável de ambiente `LIBREOFFICE_BIN` com o caminho de `soffice.com` ou `soffice.exe`.
 
 ### 6. Executar
 
