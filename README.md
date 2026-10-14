@@ -120,7 +120,7 @@ Para o módulo Fotos Word/PDF:
 py -3 -m pip install -r tools/requirements-fotos-word.txt
 ```
 
-O módulo Fotos Word/PDF também exige o LibreOffice instalado no computador que executa o PHP, pois ele converte o DOCX gerado em PDF. Se o executável não estiver no PATH ou no caminho padrão, configure a variável de ambiente `LIBREOFFICE_BIN` com o caminho de `soffice.com` ou `soffice.exe`.
+O módulo Fotos Word/PDF usa ReportLab para criar o PDF diretamente, sem depender do LibreOffice. Isso reduz a etapa de conversão em contratos com centenas de imagens.
 
 Para contratos com centenas de fotos (até 800 por envio e 1 GB de imagens), ajuste o `php.ini` do Apache local e reinicie o Apache:
 
