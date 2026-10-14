@@ -161,22 +161,55 @@ def build_docx(images: list[Path], output_path: Path, width_cm: float) -> None:
     section = document.sections[0]
     section.page_width = Cm(21)
     section.page_height = Cm(29.7)
-    section.top_margin = Cm(1.8)
-    section.bottom_margin = Cm(1.8)
+    section.top_margin = Cm(1.3)
+    section.bottom_margin = Cm(1.3)
     section.left_margin = Cm(1.8)
     section.right_margin = Cm(1.8)
 
     normal = document.styles["Normal"]
     normal.font.name = "Arial"
     normal.font.size = Pt(10)
-    normal.paragraph_format.space_after = Pt(6)
+    normal.paragraph_format.space_after = Pt(0)
 
-    for image_path in images:
+    # Duas imagens por página A4. O limite de altura deixa espaço para
+    # espaçamento dos parágrafos e evita que uma foto empurre a seguinte.
+    altura_maxima_cm = 11.2
+
+    for index, image_path in enumerate(images):
+        with Image.open(image_path) as original:
+            imagem = original.copy()
+            largura_px, altura_px = imagem.size
+
+            # Fotos verticais que passariam do limite de altura são giradas
+            # 90 graus para ficarem deitadas. A imagem original do usuário
+            # nunca é modificada: esta é apenas uma cópia temporária.
+            altura_se_largura_maxima = width_cm * altura_px / max(largura_px, 1)
+            if altura_px > largura_px and altura_se_largura_maxima > altura_maxima_cm:
+                imagem = imagem.transpose(Image.Transpose.ROTATE_270)
+                rotacionada = image_path.with_name(image_path.stem + "_rotacionada" + image_path.suffix)
+                imagem.save(rotacionada)
+                image_path = rotacionada
+                largura_px, altura_px = imagem.size
+
+            # Ajusta dentro da caixa de  largura x altura sem distorcer a proporção.
+            escala = min(width_cm / max(largura_px, 1), altura_maxima_cm / max(altura_px, 1))
+            largura_final = largura_px * escala
+            altura_final = altura_px * escala
+
         paragraph = document.add_paragraph()
         paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
         paragraph.paragraph_format.space_before = Pt(3)
         paragraph.paragraph_format.space_after = Pt(12)
-        paragraph.add_run().add_picture(str(image_path), width=Cm(width_cm))
+        paragraph.paragraph_format.keep_together = True
+        paragraph.add_run().add_picture(
+            str(image_path),
+            width=Cm(largura_final),
+            height=Cm(altura_final),
+        )
+
+        # Força o próximo par a começar em uma página nova.
+        if (index + 1) % 2 == 0 and index + 1 < len(images):
+            document.add_page_break()
 
     document.save(output_path)
 
