@@ -139,6 +139,14 @@
     color:var(--global-muted,#697586);
     font-size:.64rem;
 }
+.audit-table td:nth-child(3){
+    white-space:nowrap;
+}
+.audit-table .tag{
+    max-width:none;
+    white-space:nowrap;
+    overflow-wrap:normal;
+}
 .audit-table .audit-date{
     min-width:135px;
     white-space:nowrap;
