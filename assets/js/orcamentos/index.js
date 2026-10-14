@@ -106,9 +106,9 @@ function renderValidation(m) {
         validation.innerHTML='';
         return;
     }
-    const items=[['Arquivo','ok'],['TOTAL',m.total_row?'ok':'bad'],['PINTURA INTERNA',m.pintura_row?'ok':'bad'],['Materiais / Mão de obra',m.material_cols?'ok':'bad'],['Estrutura',m.header_row?'ok':'bad']];
+    const items=[['Arquivo','ok'],['TOTAL',m.total_row?'ok':'bad'],['Materiais / Mão de obra',m.material_cols?'ok':'bad'],['Estrutura',m.header_row?'ok':'bad']];
     validation.innerHTML=items.map(([a,c])=>`<div class="check ${c}"><b>${c==='ok'?'✓':'!'} ${a}</b><span>${c==='ok'?'Validado':'Não encontrado'}</span></div>`).join('');
-    generateBtn.disabled=!(m.total_row&&m.pintura_row&&m.material_cols&&sheet.value);
+    generateBtn.disabled=!(m.total_row&&m.material_cols&&sheet.value);
 }
 function updatePreview() {
     const m=sheetMeta.find(x=>x.name===sheet.value);
@@ -286,7 +286,7 @@ form.addEventListener('submit',async e=> {
         document.getElementById('progress').classList.remove('show')
     }
     finally {
-        generateBtn.disabled=!(sheet.value&&sheetMeta.find(x=>x.name===sheet.value)?.total_row&&sheetMeta.find(x=>x.name===sheet.value)?.pintura_row&&sheetMeta.find(x=>x.name===sheet.value)?.material_cols);
+        generateBtn.disabled=!(sheet.value&&sheetMeta.find(x=>x.name===sheet.value)?.total_row&&sheetMeta.find(x=>x.name===sheet.value)?.material_cols);
         generateBtn.textContent='Gerar 3 orçamentos'
     }
 }

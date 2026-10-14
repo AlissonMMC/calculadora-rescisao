@@ -41,7 +41,6 @@ def _norm(v):
     return s.translate(repl)
 
 def locate_structure(ws):
-    pintura_row,_=find_exact(ws,'PINTURA INTERNA',start=1)
     header_row=None;mat_col=None;labor_col=None;total_col=None
     preferred_mat={'MATERIAIS','MATERIAL'}; preferred_labor={'MÃO DE OBRA','MAO DE OBRA'}
     alias_mat=preferred_mat|{'MP','MP%','MP %','M.P.','M.P'}; alias_labor=preferred_labor|{'MO','MO%','MO %','M.O.','M.O'}
@@ -66,7 +65,7 @@ def locate_structure(ws):
         f_has=any(ws.cell(r,6).value not in (None,'') for r in range(max(12,(header_row or 11)+1),min(ws.max_row,18)+1))
         g_has=any(ws.cell(r,7).value not in (None,'') for r in range(max(12,(header_row or 11)+1),min(ws.max_row,18)+1))
         if f_has and g_has: mat_col,labor_col=6,7
-    total_row=None; search_end=(pintura_row-1) if pintura_row else ws.max_row
+    total_row=None; search_end=ws.max_row
     for r in range(max(12,(header_row or 11)+1),search_end+1):
         for c in range(1,min(ws.max_column,20)+1):
             if _norm(ws.cell(r,c).value)=='TOTAL': total_row=r;break
@@ -77,7 +76,7 @@ def locate_structure(ws):
         for c in range((labor_col or 7),min(ws.max_column,20)+1):
             if _norm(ws.cell(hr,c).value)=='TOTAL': total_col=c
         if total_col is None: total_col=9
-    return {'total_row':total_row,'pintura_row':pintura_row,'header_row':header_row,'material_col':mat_col,'labor_col':labor_col,'total_col':total_col,'material_cols':bool(mat_col and labor_col)}
+    return {'total_row':total_row,'header_row':header_row,'material_col':mat_col,'labor_col':labor_col,'total_col':total_col,'material_cols':bool(mat_col and labor_col)}
 
 def configure(ws,cfg,provider,structure):
     nome=str(provider.get('nome',''));cpf=str(provider.get('cpf',''))
@@ -180,7 +179,6 @@ def make_workbook(cfg):
     if requested not in wb.sheetnames:raise ValueError(f"A planilha '{requested}' não foi encontrada no arquivo.")
     src=wb[requested];structure=locate_structure(src)
     if not structure['total_row']:raise ValueError('Não foi possível localizar a linha TOTAL.')
-    if not structure['pintura_row']:raise ValueError("Não foi possível localizar 'PINTURA INTERNA'.")
     if not structure['material_cols']:raise ValueError('Não foi possível localizar as colunas MATERIAIS e MÃO DE OBRA.')
     cache_path=recalc_input(source,job);cache_wb=load_workbook(cache_path,data_only=True);cache=cache_wb[requested] if requested in cache_wb.sheetnames else None
     copies=[wb.copy_worksheet(src),wb.copy_worksheet(src),wb.copy_worksheet(src)]
@@ -188,7 +186,7 @@ def make_workbook(cfg):
     for original in list(wb.worksheets):wb.remove(original)
     for i,ws in enumerate(copies,1):
         s=locate_structure(ws);hr,mc,lc,tc=configure(ws,cfg,providers[i-1],s);ws.title=SHEETS[i-1]
-        total=s['total_row'];pintura=s['pintura_row']
+        total=s['total_row']
         if i in (2,3):
             for r in range(12,total):
                 for col in (mc,lc):
