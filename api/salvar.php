@@ -71,8 +71,9 @@ try {
         if ($nomeAnteriorAuditoria === '') {
             $nomeAnteriorAuditoria = limparTexto($camposExistentesAuditoria['nomeInquilino'] ?? $camposExistentesAuditoria['nomeLocatario'] ?? '', 150);
         }
+        $camposNovosAuditoria = is_array($dados['campos'] ?? null) ? $dados['campos'] : [];
         $nomeAtualAuditoria = limparTexto(
-            $nome !== '' ? $nome : ($camposAuditados['Locatário'][1] ?? ''),
+            $nome !== '' ? $nome : ($camposNovosAuditoria['nomeInquilino'] ?? $camposNovosAuditoria['nomeLocatario'] ?? $dados['nomeInquilino'] ?? ''),
             150
         );
         if ($nomeAnteriorAuditoria !== '' || $nomeAtualAuditoria !== '') {
