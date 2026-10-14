@@ -22,7 +22,7 @@ O projeto foi desenvolvido com foco em uso profissional, organização de proces
 - 🔎 Conferência antes da cobrança
 - 🕵️ Registro de alterações e auditoria
 - 📊 Módulo de geração e processamento de orçamentos
-- 🖼️ Geração de documentos Word/PDF a partir de pastas de fotos, com largura padronizada e proporção preservada
+- 🖼️ Geração de documentos Word/PDF a partir de pastas de fotos, com proporção preservada, rotação automática de fotos verticais altas e duas fotos por página
 - 📑 Integração com planilhas
 - 🐍 Processamento auxiliar com Python
 
