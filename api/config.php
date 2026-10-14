@@ -200,6 +200,41 @@ function statusValido(string $status): bool {
     return in_array($status, STATUS_RESCISAO, true);
 }
 
+function registrarAuditoriaSistema(
+    string $modulo,
+    string $acao,
+    ?int $registroId = null,
+    ?string $detalhes = null,
+    ?int $usuarioId = null
+): void {
+    try {
+        $usuarioId = $usuarioId ?? (int)($_SESSION['usuario_id'] ?? 0);
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? substr((string)$_SERVER['REMOTE_ADDR'], 0, 45) : null;
+        $agente = (string)($_SERVER['HTTP_USER_AGENT'] ?? '');
+        $agente = function_exists('mb_substr') ? mb_substr($agente, 0, 500) : substr($agente, 0, 500);
+        if ($detalhes !== null) {
+            $detalhes = function_exists('mb_substr') ? mb_substr($detalhes, 0, 5000) : substr($detalhes, 0, 5000);
+        }
+
+        $stmt = db()->prepare(
+            'INSERT INTO auditoria_sistema
+             (usuario_id, modulo, acao, registro_id, detalhes, ip, user_agent)
+             VALUES (?, ?, ?, ?, ?, ?, ?)'
+        );
+        $stmt->execute([
+            $usuarioId > 0 ? $usuarioId : null,
+            substr($modulo, 0, 50),
+            substr($acao, 0, 80),
+            $registroId,
+            $detalhes,
+            $ip,
+            $agente
+        ]);
+    } catch (Throwable $e) {
+        error_log('Calculadora auditoria_sistema: ' . $e->getMessage());
+    }
+}
+
 function registrarAuditoria(
     int $historicoId,
     int $usuarioId,
