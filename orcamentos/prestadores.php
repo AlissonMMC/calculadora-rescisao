@@ -29,13 +29,26 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       $auditAction=$prestadorAnterior?'edicao':'criacao';$auditRecordId=$id;
       $provider=['id'=>$id,'nome'=>trim((string)($_POST['nome']??'')),'cpf'=>trim((string)($_POST['cpf']??'')),'telefone'=>trim((string)($_POST['telefone']??'')),'endereco'=>trim((string)($_POST['endereco']??'')),'assinatura'=>''];
       if($provider['nome']===''||$provider['cpf']==='')throw new RuntimeException('Nome e CPF são obrigatórios.');
-      $auditDetails='Prestador '.($prestadorAnterior?'atualizado: ':'cadastrado: ').$provider['nome'].' (ID '.$id.').';
+      if($prestadorAnterior){
+        $camposAlterados=[];
+        if((string)($prestadorAnterior['nome']??'')!==$provider['nome'])$camposAlterados[]='Nome: '.(string)($prestadorAnterior['nome']??'').' → '.$provider['nome'];
+        if((string)($prestadorAnterior['cpf']??'')!==$provider['cpf'])$camposAlterados[]='CPF alterado';
+        if((string)($prestadorAnterior['telefone']??'')!==$provider['telefone'])$camposAlterados[]='Telefone alterado';
+        if((string)($prestadorAnterior['endereco']??'')!==$provider['endereco'])$camposAlterados[]='Endereço alterado';
+        $auditDetails='Prestador atualizado (ID '.$id.'): '.($camposAlterados?implode('; ',$camposAlterados):'dados salvos sem mudança nos campos cadastrais visíveis').'.';
+      }else{$auditDetails='Prestador cadastrado: '.$provider['nome'].' (ID '.$id.').';
       foreach($data as &$p){if((int)($p['id']??0)===$id){$provider['assinatura']=$p['assinatura']??'';$p=$provider;break;}}unset($p);
       if(!array_filter($data,fn($p)=>(int)($p['id']??0)===$id))$data[]=$provider;
       $field='assinatura';if(isset($_FILES[$field])&&($_FILES[$field]['error']??1)===UPLOAD_ERR_OK){$mime=(new finfo(FILEINFO_MIME_TYPE))->file($_FILES[$field]['tmp_name']);$ext=$mime==='image/png'?'png':($mime==='image/jpeg'?'jpg':'');if($ext==='')throw new RuntimeException('A assinatura deve ser PNG ou JPG.');$dest=$sigDir.'/'.$id.'.'.$ext;foreach(glob($sigDir.'/'.$id.'.*')?:[] as $old){if($old!==$dest)@unlink($old);}copy($_FILES[$field]['tmp_name'],$dest);foreach($data as &$p){if((int)$p['id']===$id)$p['assinatura']=basename($dest);}unset($p);}
     }
     $settings=['signature_height'=>max(80,min(320,(int)($_POST['signature_height']??150))),'signature_gap'=>max(1,min(6,(int)($_POST['signature_gap']??1))),'signature_align'=>in_array($_POST['signature_align']??'left',['left','center','right'],true)?$_POST['signature_align']:'left'];
-    file_put_contents($file,json_encode(array_values($data),JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),LOCK_EX);file_put_contents($dir.'/config_gerador.json',json_encode($settings,JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),LOCK_EX);
+    $gravouPrestadores=file_put_contents($file,json_encode(array_values($data),JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),LOCK_EX);
+    $gravouConfig=file_put_contents($dir.'/config_gerador.json',json_encode($settings,JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),LOCK_EX);
+    if($gravouPrestadores===false||$gravouConfig===false){
+      registrarAuditoriaSistema('prestadores','falha_gravacao',$auditRecordId,'Falha ao persistir alterações nos dados do prestador ou configurações.',(int)$u['id']);
+      throw new RuntimeException('Não foi possível gravar os dados. Verifique as permissões do servidor.');
+    }
+    $auditDetails .= ' Configuração de assinatura salva (altura: '.(int)$settings['signature_height'].' px; espaço: '.(int)$settings['signature_gap'].'; alinhamento: '.(string)$settings['signature_align'].').';
     registrarAuditoriaSistema('prestadores', $auditAction, $auditRecordId, $auditDetails, (int)$u['id']);$msg='Cadastro atualizado com sucesso.';
   }catch(Throwable $e){$err=$e->getMessage();}
 }
