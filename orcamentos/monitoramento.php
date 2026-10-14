@@ -225,7 +225,7 @@ $query = static function (array $extra = []) use ($q, $modulo, $acaoFiltro, $usu
             </div>
 
             <div class="audit-actions">
-                <a class="btn audit-btn-secondary" href="auditoria.php">Limpar filtros</a>
+                <a class="btn audit-btn-secondary" href="monitoramento.php">Limpar filtros</a>
                 <button class="btn btn-primary" type="submit">Aplicar filtros</button>
             </div>
         </form>
@@ -255,7 +255,7 @@ $query = static function (array $extra = []) use ($q, $modulo, $acaoFiltro, $usu
                         <td><?= htmlspecialchars((string)$item['acao'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= !empty($item['registro_id']) ? '#' . (int)$item['registro_id'] : '—' ?></td>
                         <td class="details"><?= htmlspecialchars((string)($item['detalhes'] ?: '—'), ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars((string)($item['ip'] ?: '—'), ENT_QUOTES, 'UTF-8') ?></td>
+                        <td><?= htmlspecialchars((string)($item['ip'] ?: '—'), ENT_QUOTES, 'UTF-8') ?><?php if (!empty($item['user_agent'])): ?><small><?= htmlspecialchars((string)$item['user_agent'], ENT_QUOTES, 'UTF-8') ?></small><?php endif; ?></td>
                     </tr>
                 <?php endforeach; endif; ?>
                 </tbody>
