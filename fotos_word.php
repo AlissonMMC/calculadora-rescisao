@@ -260,7 +260,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             foreach ($lista as $foto) {
                 $totalBytes += $foto['tamanho'];
-                if ($totalBytes > 700 * 1024 * 1024) {
+                if ($totalBytes > 1024 * 1024 * 1024) {
                     throw new RuntimeException('O total das fotos excede 1 GB. Divida as fotos em dois envios.');
                 }
 
@@ -333,10 +333,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (strpos($erroNormalizado, 'dependência python ausente') !== false) {
                 throw new RuntimeException('Falta instalar a dependência Python. Execute: py -3 -m pip install -r tools/requirements-fotos-word.txt');
             }
-            if (strpos($erroNormalizado, 'libreoffice') !== false) {
-                throw new RuntimeException('O LibreOffice não foi encontrado pelo sistema. Verifique se está instalado ou configure LIBREOFFICE_BIN no ambiente.');
+            if (strpos($erroNormalizado, 'dependência python ausente') !== false || strpos($erroNormalizado, 'reportlab') !== false) {
+                throw new RuntimeException('Falta uma dependência Python. Execute: py -3 -m pip install -r tools/requirements-fotos-word.txt');
             }
-            throw new RuntimeException('Não foi possível gerar os documentos. Confira se Python, python-docx, Pillow e LibreOffice estão instalados.');
+            throw new RuntimeException('Não foi possível gerar os documentos. Confira se Python, python-docx, Pillow e ReportLab estão instalados e tente novamente.');
         }
 
         $estatisticas = json_decode(trim((string)$saidaPython), true);
