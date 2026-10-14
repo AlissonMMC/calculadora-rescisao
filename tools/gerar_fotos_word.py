@@ -34,7 +34,7 @@ except ImportError as exc:
 SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tif", ".tiff"}
 MAX_PHOTOS = 800
 MAX_IMAGE_BYTES = 40 * 1024 * 1024
-MAX_TOTAL_BYTES = 700 * 1024 * 1024
+MAX_TOTAL_BYTES = 1024 * 1024 * 1024
 MAX_IMAGE_EDGE = 1800
 
 
@@ -95,7 +95,7 @@ def image_sources(input_dir: Path | None, zip_path: Path | None) -> Iterator[tup
                         raise ValueError(f"A imagem {Path(entry.filename).name} excede 40 MB.")
                     total_bytes += entry.file_size
                     if total_bytes > MAX_TOTAL_BYTES:
-                        raise ValueError("O total das imagens excede 700 MB.")
+                        raise ValueError("O total das imagens excede 1 GB.")
                 for entry in entries:
                     # Lê uma única imagem por vez e nunca extrai caminhos do ZIP no disco.
                     yield Path(entry.filename.replace("\\", "/")).name, archive.read(entry)
@@ -203,7 +203,7 @@ def convert_to_pdf(docx_path: Path, pdf_path: Path, output_dir: Path) -> None:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            timeout=180,
+            timeout=900,
             check=False,
         )
         if result.returncode != 0 or not pdf_path.is_file() or pdf_path.stat().st_size == 0:
