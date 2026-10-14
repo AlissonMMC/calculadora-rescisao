@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['ultimo_acesso'] = time();
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         db()->prepare('UPDATE usuarios SET ultimo_login = CURRENT_TIMESTAMP WHERE id = ?')->execute([(int)$usuario['id']]);
+        registrarAuditoriaSistema('autenticacao', 'login', (int)$usuario['id'], 'Login realizado com sucesso.');
         header('Location: dashboard.php');
         exit;
     } catch (Throwable $e) {
