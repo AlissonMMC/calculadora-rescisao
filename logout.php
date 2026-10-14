@@ -4,6 +4,10 @@ require __DIR__ . '/api/config.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     validarCsrf();
 }
+$usuarioLogout = usuarioAtual();
+if ($usuarioLogout) {
+    registrarAuditoriaSistema('autenticacao', 'logout', (int)$usuarioLogout['id'], 'Sessão encerrada.');
+}
 $_SESSION = [];
 if (ini_get('session.use_cookies')) {
     $params = session_get_cookie_params();

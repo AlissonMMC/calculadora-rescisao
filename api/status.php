@@ -32,6 +32,7 @@ try {
         $pdo->prepare('UPDATE historico_rescisoes SET cobrado_em = NULL, cobrado_por = NULL WHERE id = ?')->execute([$id]);
     }
     registrarAuditoria($id, (int)$usuario['id'], 'Alteração de status', 'Status: ' . ($row['status'] ?: 'Rascunho') . ' → ' . $status);
+    registrarAuditoriaSistema('rescisoes', 'alteracao_status', $id, 'Status: ' . ($row['status'] ?: 'Rascunho') . ' → ' . $status, (int)$usuario['id']);
     $pdo->commit();
     responder(['ok' => true, 'status' => $status]);
 } catch (Throwable $e) {

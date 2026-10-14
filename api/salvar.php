@@ -21,7 +21,7 @@ try {
     $pdo->beginTransaction();
 
     if ($id > 0) {
-        $stmt = $pdo->prepare('SELECT id, usuario_id, status, nome FROM historico_rescisoes WHERE id = ? LIMIT 1');
+        $stmt = $pdo->prepare('SELECT id, usuario_id, status, nome, endereco, total, total_adm, total_repasse, modo_nome, dados_json FROM historico_rescisoes WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
         $existente = $stmt->fetch();
         if (!$existente) { $pdo->rollBack(); responder(['ok' => false, 'error' => 'Rescisão não encontrada.'], 404); }
@@ -47,6 +47,41 @@ try {
             $stmt->execute([$id]);
         }
         registrarAuditoria($id, (int)$usuario['id'], $acao, $detalhes);
+        $alteracoesCentrais = [];
+        $camposAuditados = [
+            'Locatário' => [(string)$existente['nome'], $nome],
+            'Endereço' => [(string)$existente['endereco'], $endereco],
+            'Total' => [number_format((float)$existente['total'], 2, ',', '.'), number_format($total, 2, ',', '.')],
+            'Taxa administrativa' => [number_format((float)$existente['total_adm'], 2, ',', '.'), number_format($totalAdm, 2, ',', '.')],
+            'Repasse' => [number_format((float)$existente['total_repasse'], 2, ',', '.'), number_format($totalRepasse, 2, ',', '.')],
+            'Modo de cálculo' => [(string)$existente['modo_nome'], $modoNome],
+            'Status' => [((string)$existente['status'] ?: 'Rascunho'), $status],
+        ];
+        foreach ($camposAuditados as $rotulo => [$antes, $depois]) {
+            if ($antes !== $depois) {
+                $alteracoesCentrais[] = $rotulo . ': ' . ($antes === '' ? 'vazio' : $antes) . ' → ' . ($depois === '' ? 'vazio' : $depois);
+            }
+        }
+        $detalhesCentral = $alteracoesCentrais
+            ? 'Alterações: ' . implode('; ', $alteracoesCentrais)
+            : 'Registro salvo sem alterações nos campos principais.';
+        $camposExistentesAuditoria = json_decode((string)($existente['dados_json'] ?? ''), true);
+        $camposExistentesAuditoria = is_array($camposExistentesAuditoria['campos'] ?? null) ? $camposExistentesAuditoria['campos'] : [];
+        $nomeAnteriorAuditoria = (string)$existente['nome'];
+        if ($nomeAnteriorAuditoria === '') {
+            $nomeAnteriorAuditoria = limparTexto($camposExistentesAuditoria['nomeInquilino'] ?? $camposExistentesAuditoria['nomeLocatario'] ?? '', 150);
+        }
+        $camposNovosAuditoria = is_array($dados['campos'] ?? null) ? $dados['campos'] : [];
+        $nomeAtualAuditoria = limparTexto(
+            $nome !== '' ? $nome : ($camposNovosAuditoria['nomeInquilino'] ?? $camposNovosAuditoria['nomeLocatario'] ?? $dados['nomeInquilino'] ?? ''),
+            150
+        );
+        if ($nomeAnteriorAuditoria !== '' || $nomeAtualAuditoria !== '') {
+            $detalhesCentral = 'Locatário: ' . ($nomeAnteriorAuditoria !== '' ? $nomeAnteriorAuditoria : '(não informado)')
+                . ' → ' . ($nomeAtualAuditoria !== '' ? $nomeAtualAuditoria : '(não informado)')
+                . '; ' . $detalhesCentral;
+        }
+        registrarAuditoriaSistema('rescisoes', ((string)$existente['status'] !== $status) ? 'alteracao_status' : 'edicao', $id, $detalhesCentral, (int)$usuario['id']);
     } else {
         $stmt = $pdo->prepare('INSERT INTO historico_rescisoes (usuario_id, ultimo_editor_id, nome, endereco, total, total_adm, total_repasse, modo_nome, status, dados_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([(int)$usuario['id'], (int)$usuario['id'], $nome, $endereco, $total, $totalAdm, $totalRepasse, $modoNome, $status, $jsonDados]);
@@ -57,6 +92,15 @@ try {
             $pdo->prepare('UPDATE historico_rescisoes SET conferido_em = CURRENT_TIMESTAMP, conferido_por = ?, cobrado_em = CURRENT_TIMESTAMP, cobrado_por = ? WHERE id = ?')->execute([(int)$usuario['id'], (int)$usuario['id'], $id]);
         }
         registrarAuditoria($id, (int)$usuario['id'], 'Criação', 'Rescisão criada com status: ' . $status);
+        $camposAuditoria = is_array($dados['campos'] ?? null) ? $dados['campos'] : [];
+        $nomeLocatarioAuditoria = limparTexto(
+            $nome !== '' ? $nome : ($camposAuditoria['nomeInquilino'] ?? $camposAuditoria['nomeLocatario'] ?? $dados['nomeInquilino'] ?? ''),
+            150
+        );
+        if ($nomeLocatarioAuditoria === '') {
+            $nomeLocatarioAuditoria = '(não informado)';
+        }
+        registrarAuditoriaSistema('rescisoes', 'criacao', $id, 'Rescisão criada para ' . $nomeLocatarioAuditoria . '; total: R$ ' . number_format($total, 2, ',', '.') . '; status: ' . $status, (int)$usuario['id']);
     }
 
     // Sempre grava a versão mais recente do JSON após a decisão de criar/editar.
