@@ -80,6 +80,7 @@ try {
         'message'=>'Orçamento removido do histórico pelo administrador.'
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL, FILE_APPEND | LOCK_EX);
 
+    registrarAuditoriaSistema('orcamentos', 'exclusao_historico', null, 'Job: '.$job.'; locatário: '.(string)($removed['locatario']??'').'; endereço: '.(string)($removed['endereco']??'').'; arquivos removidos: '.($removedFiles?'sim':'não').'.', (int)$u['id']);
     resp(['ok'=>true,'message'=>'Orçamento excluído do histórico.', 'arquivos_excluidos'=>$removedFiles]);
 } catch (Throwable $e) {
     resp(['ok'=>false,'error'=>'Erro interno ao excluir o orçamento.','details'=>$e->getMessage()], 500);
