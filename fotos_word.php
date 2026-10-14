@@ -411,7 +411,7 @@ if ($resultado === null) {
         <div>
             <span class="photo-word-eyebrow">Ferramentas de documentos</span>
             <h1>Fotos para Word e PDF</h1>
-            <p>Selecione uma pasta de fotos ou envie um ZIP. O sistema monta um documento com as imagens centralizadas, largura padronizada e proporção preservada.</p>
+            <p>Selecione uma pasta de fotos ou envie um ZIP. O sistema padroniza as imagens, gira fotos verticais altas para a horizontal e organiza duas fotos por página, preservando a proporção.</p>
         </div>
         <div class="photo-word-header-icon" aria-hidden="true">DOC</div>
     </header>
@@ -473,7 +473,7 @@ if ($resultado === null) {
                 </div>
                 <div class="photo-word-output-note">
                     <span class="photo-word-output-icon" aria-hidden="true">W</span>
-                    <span><strong>Word + PDF</strong><small>As imagens serão inseridas centralizadas em páginas A4, na ordem dos nomes dos arquivos.</small></span>
+                    <span><strong>Word + PDF</strong><small>As fotos ficam centralizadas em A4, duas por página. Fotos verticais altas são giradas para caber no espaço.</small></span>
                 </div>
             </div>
 
