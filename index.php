@@ -1,6 +1,21 @@
 <?php
 require __DIR__ . '/api/config.php';
-$usuario = exigirLoginPagina();
+
+$historicoInicialId = max(0, (int)($_GET['historico_id'] ?? 0));
+$novaRescisaoInicial = ($_GET['nova'] ?? '') === '1';
+
+// A tela é protegida de acordo com a operação solicitada:
+// - nova rescisão: precisa ter permissão de criação;
+// - edição pelo histórico: precisa ter permissão de edição;
+// - abertura simples: somente visualização.
+if ($novaRescisaoInicial) {
+    $usuario = exigirPermissaoPagina('rescisao.create');
+} elseif ($historicoInicialId > 0) {
+    $usuario = exigirPermissaoPagina('rescisao.edit');
+} else {
+    $usuario = exigirPermissaoPagina('rescisao.view');
+}
+
 $navPage = 'rescisao';
 $navBase = "";
 $csrf = csrfToken();
@@ -9,7 +24,6 @@ $csrf = csrfToken();
 // diretamente do banco antes de renderizar a calculadora. Assim a edição não
 // depende de uma segunda requisição JavaScript nem corre o risco de iniciar
 // com os valores padrão zerados.
-$historicoInicialId = max(0, (int)($_GET['historico_id'] ?? 0));
 $historicoInicial = null;
 if ($historicoInicialId > 0) {
   try {
@@ -679,10 +693,14 @@ window.USUARIO_LOGADO = <?= json_encode([
       'id' => (int)$usuario['id'],
       'nome' => $usuario['nome'],
       'login' => $usuario['login'],
-      'perfil' => $usuario['perfil']
+      'perfil' => $usuario['perfil'],
+      'podeCriar' => temPermissao($usuario, 'rescisao.create'),
+      'podeEditar' => temPermissao($usuario, 'rescisao.edit')
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    window.PODE_CRIAR_RESCISAO = <?= temPermissao($usuario, 'rescisao.create') ? 'true' : 'false' ?>;
+    window.PODE_EDITAR_RESCISAO = <?= temPermissao($usuario, 'rescisao.edit') ? 'true' : 'false' ?>;
     window.CSRF_TOKEN = <?= json_encode($csrf) ?>;
     window.HISTORICO_INICIAL = <?= json_encode($historicoInicial, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     window.HISTORICO_INICIAL_ID = <?= (int)$historicoInicialId ?>;
 </script>
-<script src="assets/js/pages/calculadora.js?v=money-mask-20261002"></script>
+<script src="assets/js/pages/calculadora.js?v=20261005-auth-flow"></script>

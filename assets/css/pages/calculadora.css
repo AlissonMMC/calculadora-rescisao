@@ -3208,3 +3208,38 @@ html[data-theme="dark"] #calculatorScreen #topicoSeguros .insurance-destinos .ch
         grid-template-columns:1fr;
     }
 }
+
+.workflow-progress{
+    display:inline-flex;
+    align-items:center;
+    min-height:34px;
+    padding:7px 10px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:var(--white);
+    color:var(--muted);
+    font-size:.68rem;
+    font-weight:850;
+    white-space:nowrap
+}
+.workflow-progress.complete{
+    border-color:#bbf7d0;
+    background:#f0fdf4;
+    color:#15803d
+}
+.workflow-step.complete{
+    border-color:var(--orange-line);
+    background:var(--orange-soft)
+}
+.workflow-step.complete .step-num{
+    background:var(--orange);
+    color:#fff
+}
+html[data-theme="dark"] .workflow-progress{
+    background:#171717
+}
+html[data-theme="dark"] .workflow-progress.complete{
+    background:#102419;
+    border-color:#214c2f;
+    color:#86efac
+}

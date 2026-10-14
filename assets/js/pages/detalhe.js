@@ -23,3 +23,26 @@ select?.addEventListener('change',async()=> {
 }
 );
 document.getElementById('btnPrint')?.addEventListener('click',()=>window.print());
+
+document.getElementById('btnExcluirDetalhe')?.addEventListener('click', async () => {
+    const id = Number(window.APP_ID || 0);
+    if (!id || !window.APP_IS_ADMIN) return;
+    if (!confirm('Deseja excluir esta rescisão? Esta ação não pode ser desfeita.')) return;
+
+    try {
+        const r = await fetch(`api/excluir.php?id=${encodeURIComponent(id)}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-Token': window.APP_CSRF
+            },
+            credentials: 'same-origin'
+        });
+        const j = await r.json();
+        if (!r.ok || !j.ok) {
+            throw new Error(j.error || 'Não foi possível excluir a rescisão.');
+        }
+        window.location.href = 'historico.php';
+    } catch (e) {
+        alert(e.message);
+    }
+});

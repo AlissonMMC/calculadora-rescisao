@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/config.php';
-$usuario = exigirLoginApi();
+$usuario = exigirPermissaoApi('detalhe.view');
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') responder(['ok' => false, 'error' => 'Método não permitido.'], 405);
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if (!$id || $id < 1) responder(['ok' => false, 'error' => 'ID inválido.'], 400);

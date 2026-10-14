@@ -25,17 +25,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($acao === 'criar') {
             $nome = limparTexto($_POST['nome'] ?? '', 120);
-            $login = mb_substr(strtolower(trim((string)($_POST['login'] ?? ''))), 0, 60);
+            $email = mb_substr(strtolower(trim((string)($_POST['email'] ?? ''))), 0, 190);
+            $login = $email;
             $senha = (string)($_POST['senha'] ?? '');
-            $perfil = ($_POST['perfil'] ?? 'usuario') === 'admin' ? 'admin' : 'usuario';
-            if ($nome === '' || $login === '' || $senha === '') throw new RuntimeException('Preencha nome, usuário e senha.');
-            if (!preg_match('/^[a-z0-9._-]{3,60}$/', $login)) throw new RuntimeException('O usuário deve ter de 3 a 60 caracteres usando letras, números, ponto, hífen ou sublinhado.');
-            if (mb_strlen($senha) < 8) throw new RuntimeException('A senha deve ter pelo menos 8 caracteres.');
-            $stmt = $pdo->prepare('SELECT COUNT(*) FROM usuarios WHERE login = ?');
-            $stmt->execute([$login]);
-            if ((int)$stmt->fetchColumn() > 0) throw new RuntimeException('Esse usuário já existe.');
-            $stmt = $pdo->prepare('INSERT INTO usuarios (nome, login, senha_hash, perfil, ativo) VALUES (?, ?, ?, ?, 1)');
-            $stmt->execute([$nome, $login, password_hash($senha, PASSWORD_DEFAULT), $perfil]);
+            $perfisPermitidos = ['admin', 'financeiro', 'operacional', 'consulta'];
+            $perfil = (string)($_POST['perfil'] ?? 'operacional');
+            if (!in_array($perfil, $perfisPermitidos, true)) $perfil = 'operacional';
+
+            if ($nome === '' || $email === '' || $senha === '') {
+                throw new RuntimeException('Preencha nome, e-mail e senha inicial.');
+            }
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                throw new RuntimeException('Informe um e-mail válido.');
+            }
+            if (mb_strlen($senha) < 8) {
+                throw new RuntimeException('A senha deve ter pelo menos 8 caracteres.');
+            }
+
+            $stmt = $pdo->prepare('SELECT COUNT(*) FROM usuarios WHERE login = ? OR email = ?');
+            $stmt->execute([$email, $email]);
+            if ((int)$stmt->fetchColumn() > 0) {
+                throw new RuntimeException('Esse e-mail já está cadastrado.');
+            }
+
+            $stmt = $pdo->prepare(
+                'INSERT INTO usuarios (nome, login, email, senha_hash, perfil, ativo)
+                 VALUES (?, ?, ?, ?, ?, 1)'
+            );
+            $stmt->execute([
+                $nome,
+                $login,
+                $email,
+                password_hash($senha, PASSWORD_DEFAULT),
+                $perfil
+            ]);
+
+            registrarAuditoriaSistema(
+                'usuarios',
+                'criar_usuario',
+                (int)$pdo->lastInsertId(),
+                'Perfil: ' . $perfil
+            );
+
             redirecionarComMensagem('ok', 'Usuário criado com sucesso.');
         }
 
@@ -53,15 +84,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $stmt = $pdo->prepare('UPDATE usuarios SET ativo = ? WHERE id = ?');
             $stmt->execute([(int)$alvo['ativo'] ? 0 : 1, $id]);
+            registrarAuditoriaSistema('usuarios', (int)$alvo['ativo'] ? 'bloquear_usuario' : 'ativar_usuario', $id);
             redirecionarComMensagem('ok', (int)$alvo['ativo'] ? 'Usuário bloqueado.' : 'Usuário ativado.');
         }
 
         if ($acao === 'senha') {
             $id = (int)($_POST['id'] ?? 0);
             $novaSenha = (string)($_POST['nova_senha'] ?? '');
-            if ($id < 1 || mb_strlen($novaSenha) < 6) throw new RuntimeException('A nova senha deve ter pelo menos 8 caracteres.');
+            if ($id < 1 || mb_strlen($novaSenha) < 8) throw new RuntimeException('A nova senha deve ter pelo menos 8 caracteres.');
             $stmt = $pdo->prepare('UPDATE usuarios SET senha_hash = ? WHERE id = ?');
             $stmt->execute([password_hash($novaSenha, PASSWORD_DEFAULT), $id]);
+            registrarAuditoriaSistema('usuarios', 'redefinir_senha', $id);
             redirecionarComMensagem('ok', 'Senha redefinida com sucesso.');
         }
 
@@ -73,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $usuarios = [];
 try {
-    $usuarios = db()->query('SELECT id, nome, login, perfil, ativo, criado_em, ultimo_login FROM usuarios ORDER BY ativo DESC, nome ASC')->fetchAll();
+    $usuarios = db()->query('SELECT id, nome, login, email, perfil, ativo, criado_em, ultimo_login FROM usuarios ORDER BY ativo DESC, nome ASC')->fetchAll();
 } catch (Throwable $e) {
     $erro = 'Não foi possível carregar os usuários.';
 }
@@ -93,25 +126,25 @@ $csrf = csrfToken();
   <?php if ($erro): ?><div class="notice err"><?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
   <div class="grid">
     <section class="card">
-      <h2>Novo usuário</h2><p class="sub">Crie acessos individuais para a equipe.</p>
+      <h2>Novo usuário</h2><p class="sub">Cadastre o e-mail de acesso e defina uma senha inicial para o usuário.</p>
       <form method="post">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>"><input type="hidden" name="acao" value="criar">
         <div class="field"><label for="nome">Nome completo</label><input id="nome" name="nome" type="text" required></div>
-        <div class="field"><label for="login">Usuário</label><input id="login" name="login" type="text" pattern="[a-z0-9._-]{3,60}" required></div>
-        <div class="field"><label for="senha">Senha inicial</label><input id="senha" name="senha" type="password" minlength="8" required></div>
-        <div class="field"><label for="perfil">Perfil</label><select id="perfil" name="perfil"><option value="usuario">Usuário</option><option value="admin">Administrador</option></select></div>
+        <div class="field"><label for="email">E-mail de acesso</label><input id="email" name="email" type="email" maxlength="190" autocomplete="email" required><small class="field-help">Este e-mail também será o usuário usado para entrar no sistema.</small></div>
+        <div class="field"><label for="senha">Senha inicial</label><input id="senha" name="senha" type="password" minlength="8" autocomplete="new-password" required></div>
+        <div class="field"><label for="perfil">Perfil</label><select id="perfil" name="perfil"><option value="operacional">Operacional</option><option value="financeiro">Financeiro</option><option value="consulta">Somente consulta</option><option value="admin">Administrador</option></select></div>
         <div class="form-actions"><button class="btn btn-primary" type="submit">Criar usuário</button></div>
       </form>
-      <p class="footnote">Usuários comuns podem usar a calculadora e o histórico. Administradores também podem gerenciar usuários e apagar registros do histórico.</p>
+      <p class="footnote">O e-mail informado será usado como usuário de acesso. A senha inicial pode ser redefinida pelo administrador posteriormente.</p>
     </section>
     <section class="card">
       <h2>Usuários cadastrados</h2><p class="sub">Controle de acesso do sistema.</p>
-      <div class="table-wrap"><table class="table"><thead><tr><th>Nome</th><th>Usuário</th><th>Perfil</th><th>Status</th><th>Último acesso</th><th>Criado em</th><th>Ações</th></tr></thead><tbody>
+      <div class="table-wrap"><table class="table"><thead><tr><th>Nome</th><th>Usuário / e-mail</th><th>Perfil</th><th>Status</th><th>Último acesso</th><th>Criado em</th><th>Ações</th></tr></thead><tbody>
       <?php foreach ($usuarios as $u): ?>
         <tr>
           <td><strong><?= htmlspecialchars($u['nome'], ENT_QUOTES, 'UTF-8') ?></strong></td>
-          <td><?= htmlspecialchars($u['login'], ENT_QUOTES, 'UTF-8') ?></td>
-          <td><span class="role"><?= $u['perfil'] === 'admin' ? 'Administrador' : 'Usuário' ?></span></td>
+          <td><?= htmlspecialchars((string)($u['email'] ?? $u['login'] ?? '—'), ENT_QUOTES, 'UTF-8') ?></td>
+          <td><span class="role"><?= htmlspecialchars(match ($u['perfil']) { 'admin' => 'Administrador', 'financeiro' => 'Financeiro', 'consulta' => 'Somente consulta', default => 'Operacional' }, ENT_QUOTES, 'UTF-8') ?></span></td>
           <td><span class="status <?= (int)$u['ativo'] ? 'active' : 'off' ?>"><?= (int)$u['ativo'] ? 'Ativo' : 'Bloqueado' ?></span></td>
           <td><?= !empty($u['ultimo_login']) ? date('d/m/Y H:i', strtotime($u['ultimo_login'])) : 'Nunca' ?></td><td><?= !empty($u['criado_em']) ? date('d/m/Y H:i', strtotime($u['criado_em'])) : '—' ?></td>
           <td>

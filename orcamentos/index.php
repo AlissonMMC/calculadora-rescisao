@@ -3,8 +3,7 @@ declare(strict_types=1);
 require __DIR__ . '/../api/config.php';
 require __DIR__ . '/includes/storage.php';
 
-$usuario = usuarioAtual();
-if (!$usuario) { header('Location: ../login.php'); exit; }
+$usuario = exigirPermissaoPagina('orcamentos.create');
 $csrf = csrfToken();
 
 function usuarioEhAdmin(array $u): bool {
