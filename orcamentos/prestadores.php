@@ -19,7 +19,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       foreach($data as $p){if((int)($p['id']??0)===$id){$prestadorRemovido=$p;break;}}
       if(!$prestadorRemovido)throw new RuntimeException('Prestador não encontrado.');
       $data=array_values(array_filter($data,fn($p)=>(int)($p['id']??0)!==$id));
-      $auditAction='exclusao';$auditRecordId=$id;$auditDetails='Prestador removido: '.(string)($prestadorRemovido['nome']??'').' (ID '.$id.').';
+      $auditAction='exclusao';$auditRecordId=$id;$auditDetails = 'Prestador removido: ' . (string)($prestadorRemovido['nome'] ?? '') . ' (ID ' . $id . ').';
     }
     else{
       $idInformado=(int)($_POST['id']??0);
@@ -35,8 +35,10 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         if((string)($prestadorAnterior['cpf']??'')!==$provider['cpf'])$camposAlterados[]='CPF alterado';
         if((string)($prestadorAnterior['telefone']??'')!==$provider['telefone'])$camposAlterados[]='Telefone alterado';
         if((string)($prestadorAnterior['endereco']??'')!==$provider['endereco'])$camposAlterados[]='Endereço alterado';
-        $auditDetails='Prestador atualizado (ID '.$id.'): '.($camposAlterados?implode('; ',$camposAlterados):'dados salvos sem mudança nos campos cadastrais visíveis').'.';
-      }else{$auditDetails='Prestador cadastrado: '.$provider['nome'].' (ID '.$id.').';}
+        $auditDetails = 'Prestador atualizado (ID ' . $id . '): ' . ($camposAlterados ? implode('; ', $camposAlterados) : 'dados salvos sem mudança nos campos cadastrais visíveis') . '.';
+      } else {
+        $auditDetails = 'Prestador cadastrado: ' . $provider['nome'] . ' (ID ' . $id . ').';
+      }
       foreach($data as &$p){if((int)($p['id']??0)===$id){$provider['assinatura']=$p['assinatura']??'';$p=$provider;break;}}unset($p);
       if(!array_filter($data,fn($p)=>(int)($p['id']??0)===$id))$data[]=$provider;
       $field='assinatura';if(isset($_FILES[$field])&&($_FILES[$field]['error']??1)===UPLOAD_ERR_OK){$mime=(new finfo(FILEINFO_MIME_TYPE))->file($_FILES[$field]['tmp_name']);$ext=$mime==='image/png'?'png':($mime==='image/jpeg'?'jpg':'');if($ext==='')throw new RuntimeException('A assinatura deve ser PNG ou JPG.');$dest=$sigDir.'/'.$id.'.'.$ext;foreach(glob($sigDir.'/'.$id.'.*')?:[] as $old){if($old!==$dest)@unlink($old);}copy($_FILES[$field]['tmp_name'],$dest);foreach($data as &$p){if((int)$p['id']===$id)$p['assinatura']=basename($dest);}unset($p);}
