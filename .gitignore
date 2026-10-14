@@ -29,6 +29,7 @@ __pycache__/
 
 
 # Mantém o bloqueio HTTP da área privada onde ficam os documentos de fotos.
-# Os DOCX/PDF gerados e pastas por sessão nunca devem entrar no Git.
+# A pasta fica disponível no checkout, mas apenas o .htaccess é versionado.
+!/storage/fotos_word/
 /storage/fotos_word/*
 !/storage/fotos_word/.htaccess
