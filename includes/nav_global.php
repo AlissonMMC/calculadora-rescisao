@@ -1,6 +1,12 @@
 <?php
 declare(strict_types=1);
 
+// O menu global possui formulários de logout. Garanta que sempre exista
+// um token CSRF, mesmo em páginas que não o inicializam individualmente.
+if (function_exists('csrfToken')) {
+    $csrf = csrfToken();
+}
+
 $navBase = (string)($navBase ?? '');
 $navPage = (string)($navPage ?? 'dashboard');
 $navUser = is_array($usuario ?? null) ? $usuario : (is_array($u ?? null) ? $u : (function_exists('usuarioAtual') ? (usuarioAtual() ?: []) : []));
