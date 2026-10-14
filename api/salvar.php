@@ -47,10 +47,24 @@ try {
             $stmt->execute([$id]);
         }
         registrarAuditoria($id, (int)$usuario['id'], $acao, $detalhes);
-        $detalhesCentral = 'Locatário: ' . (string)$existente['nome'] . ' → ' . $nome
-            . '; Endereço: ' . (string)$existente['endereco'] . ' → ' . $endereco
-            . '; Total: R$ ' . number_format((float)$existente['total'], 2, ',', '.') . ' → R$ ' . number_format($total, 2, ',', '.')
-            . '; Status: ' . ((string)$existente['status'] ?: 'Rascunho') . ' → ' . $status;
+        $alteracoesCentrais = [];
+        $camposAuditados = [
+            'Locatário' => [(string)$existente['nome'], $nome],
+            'Endereço' => [(string)$existente['endereco'], $endereco],
+            'Total' => [number_format((float)$existente['total'], 2, ',', '.'), number_format($total, 2, ',', '.')],
+            'Taxa administrativa' => [number_format((float)$existente['total_adm'], 2, ',', '.'), number_format($totalAdm, 2, ',', '.')],
+            'Repasse' => [number_format((float)$existente['total_repasse'], 2, ',', '.'), number_format($totalRepasse, 2, ',', '.')],
+            'Modo de cálculo' => [(string)$existente['modo_nome'], $modoNome],
+            'Status' => [((string)$existente['status'] ?: 'Rascunho'), $status],
+        ];
+        foreach ($camposAuditados as $rotulo => [$antes, $depois]) {
+            if ($antes !== $depois) {
+                $alteracoesCentrais[] = $rotulo . ': ' . ($antes === '' ? 'vazio' : $antes) . ' → ' . ($depois === '' ? 'vazio' : $depois);
+            }
+        }
+        $detalhesCentral = $alteracoesCentrais
+            ? 'Alterações: ' . implode('; ', $alteracoesCentrais)
+            : 'Registro salvo sem alterações nos campos principais.';
         registrarAuditoriaSistema('rescisoes', ((string)$existente['status'] !== $status) ? 'alteracao_status' : 'edicao', $id, $detalhesCentral, (int)$usuario['id']);
     } else {
         $stmt = $pdo->prepare('INSERT INTO historico_rescisoes (usuario_id, ultimo_editor_id, nome, endereco, total, total_adm, total_repasse, modo_nome, status, dados_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
