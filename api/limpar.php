@@ -9,6 +9,7 @@ try {
     $pdo = db();
     $stmt = $pdo->query('SELECT id FROM historico_rescisoes');
     $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    registrarAuditoriaSistema('rescisoes', 'exclusao_em_massa', null, 'Limpeza do histórico; registros removidos: ' . count($ids), (int)$usuario['id']);
     foreach ($ids as $id) registrarAuditoria((int)$id, (int)$usuario['id'], 'Exclusão em massa', 'Histórico limpo pelo administrador');
     $pdo->exec('DELETE FROM historico_rescisoes');
     $pdo->commit();
