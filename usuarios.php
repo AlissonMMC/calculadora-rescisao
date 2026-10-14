@@ -36,6 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ((int)$stmt->fetchColumn() > 0) throw new RuntimeException('Esse usuário já existe.');
             $stmt = $pdo->prepare('INSERT INTO usuarios (nome, login, senha_hash, perfil, ativo) VALUES (?, ?, ?, ?, 1)');
             $stmt->execute([$nome, $login, password_hash($senha, PASSWORD_DEFAULT), $perfil]);
+            $novoId = (int)$pdo->lastInsertId();
+            registrarAuditoriaSistema('usuarios', 'criacao', $novoId, 'Usuário criado: ' . $login . '; perfil: ' . $perfil, (int)$usuarioLogado['id']);
             redirecionarComMensagem('ok', 'Usuário criado com sucesso.');
         }
 
@@ -53,6 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $stmt = $pdo->prepare('UPDATE usuarios SET ativo = ? WHERE id = ?');
             $stmt->execute([(int)$alvo['ativo'] ? 0 : 1, $id]);
+            $acaoAuditoria = (int)$alvo['ativo'] ? 'bloqueio' : 'ativacao';
+            registrarAuditoriaSistema('usuarios', $acaoAuditoria, $id, 'Status alterado de ' . ((int)$alvo['ativo'] ? 'ativo para bloqueado' : 'bloqueado para ativo') . '.', (int)$usuarioLogado['id']);
             redirecionarComMensagem('ok', (int)$alvo['ativo'] ? 'Usuário bloqueado.' : 'Usuário ativado.');
         }
 
@@ -62,6 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($id < 1 || mb_strlen($novaSenha) < 6) throw new RuntimeException('A nova senha deve ter pelo menos 8 caracteres.');
             $stmt = $pdo->prepare('UPDATE usuarios SET senha_hash = ? WHERE id = ?');
             $stmt->execute([password_hash($novaSenha, PASSWORD_DEFAULT), $id]);
+            registrarAuditoriaSistema('usuarios', 'redefinicao_senha', $id, 'Senha redefinida por administrador.', (int)$usuarioLogado['id']);
             redirecionarComMensagem('ok', 'Senha redefinida com sucesso.');
         }
 
