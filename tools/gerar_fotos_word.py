@@ -16,7 +16,7 @@ import sys
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Iterator
 
 try:
     from docx import Document
@@ -32,9 +32,10 @@ except ImportError as exc:
 
 
 SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tif", ".tiff"}
-MAX_PHOTOS = 300
-MAX_IMAGE_BYTES = 20 * 1024 * 1024
-MAX_TOTAL_BYTES = 150 * 1024 * 1024
+MAX_PHOTOS = 800
+MAX_IMAGE_BYTES = 40 * 1024 * 1024
+MAX_TOTAL_BYTES = 700 * 1024 * 1024
+MAX_IMAGE_EDGE = 1800
 
 
 def natural_key(value: str) -> list[object]:
@@ -74,10 +75,8 @@ def locate_soffice() -> str | None:
     return None
 
 
-def image_sources(input_dir: Path | None, zip_path: Path | None) -> list[tuple[str, bytes]]:
-    candidates: list[tuple[str, bytes]] = []
-    total_bytes = 0
-
+def image_sources(input_dir: Path | None, zip_path: Path | None) -> Iterator[tuple[str, bytes]]:
+    """Valida nomes/tamanhos antes de processar e carrega uma imagem por vez."""
     if zip_path is not None:
         try:
             with zipfile.ZipFile(zip_path) as archive:
@@ -89,14 +88,17 @@ def image_sources(input_dir: Path | None, zip_path: Path | None) -> list[tuple[s
                 entries.sort(key=lambda item: natural_key(item.filename.replace("\\", "/").split("/")[-1]))
                 if len(entries) > MAX_PHOTOS:
                     raise ValueError(f"O arquivo contém mais de {MAX_PHOTOS} imagens. Divida-o em dois arquivos.")
+
+                total_bytes = 0
                 for entry in entries:
                     if entry.file_size > MAX_IMAGE_BYTES:
-                        raise ValueError(f"A imagem {Path(entry.filename).name} excede 20 MB.")
+                        raise ValueError(f"A imagem {Path(entry.filename).name} excede 40 MB.")
                     total_bytes += entry.file_size
                     if total_bytes > MAX_TOTAL_BYTES:
-                        raise ValueError("O total das imagens excede 150 MB.")
-                    # Lemos o conteúdo diretamente; nenhum caminho do ZIP é extraído no disco.
-                    candidates.append((Path(entry.filename).name, archive.read(entry)))
+                        raise ValueError("O total das imagens excede 700 MB.")
+                for entry in entries:
+                    # Lê uma única imagem por vez e nunca extrai caminhos do ZIP no disco.
+                    yield Path(entry.filename.replace("\\", "/")).name, archive.read(entry)
         except zipfile.BadZipFile as exc:
             raise ValueError("O arquivo enviado não é um ZIP válido.") from exc
     elif input_dir is not None:
@@ -107,19 +109,16 @@ def image_sources(input_dir: Path | None, zip_path: Path | None) -> list[tuple[s
         paths.sort(key=lambda item: natural_key(item.name))
         if len(paths) > MAX_PHOTOS:
             raise ValueError(f"Selecione no máximo {MAX_PHOTOS} fotos por vez.")
+        total_bytes = 0
         for path in paths:
             size = path.stat().st_size
             if size > MAX_IMAGE_BYTES:
-                raise ValueError(f"A imagem {path.name} excede 20 MB.")
+                raise ValueError(f"A imagem {path.name} excede 40 MB.")
             total_bytes += size
             if total_bytes > MAX_TOTAL_BYTES:
-                raise ValueError("O total das imagens excede 150 MB.")
-            candidates.append((path.name, path.read_bytes()))
-
-    if not candidates:
-        raise ValueError("Nenhuma imagem compatível foi encontrada. Use JPG, PNG, GIF, BMP, WEBP ou TIFF.")
-    return candidates
-
+                raise ValueError("O total das imagens excede 700 MB.")
+        for path in paths:
+            yield path.name, path.read_bytes()
 
 def normalize_images(candidates: Iterable[tuple[str, bytes]], temp_dir: Path) -> list[Path]:
     normalized: list[Path] = []
@@ -131,6 +130,9 @@ def normalize_images(candidates: Iterable[tuple[str, bytes]], temp_dir: Path) ->
                 original.verify()
             with Image.open(io.BytesIO(data)) as original:
                 image = ImageOps.exif_transpose(original)
+                # 1800 px por lado mantém boa qualidade em 12 cm e reduz o peso
+                # dos DOCX/PDF com centenas de fotos.
+                image.thumbnail((MAX_IMAGE_EDGE, MAX_IMAGE_EDGE), Image.Resampling.LANCZOS)
                 has_alpha = (
                     image.mode in ("RGBA", "LA")
                     or (image.mode == "P" and "transparency" in image.info)
@@ -142,7 +144,7 @@ def normalize_images(candidates: Iterable[tuple[str, bytes]], temp_dir: Path) ->
                 else:
                     image = image.convert("RGB")
                     target = temp_dir / f"{len(normalized) + 1:04d}.jpg"
-                    image.save(target, format="JPEG", quality=92, optimize=True)
+                    image.save(target, format="JPEG", quality=88, optimize=True)
                 normalized.append(target)
         except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
             invalid.append(filename)
