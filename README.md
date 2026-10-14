@@ -122,6 +122,19 @@ py -3 -m pip install -r tools/requirements-fotos-word.txt
 
 O módulo Fotos Word/PDF também exige o LibreOffice instalado no computador que executa o PHP, pois ele converte o DOCX gerado em PDF. Se o executável não estiver no PATH ou no caminho padrão, configure a variável de ambiente `LIBREOFFICE_BIN` com o caminho de `soffice.com` ou `soffice.exe`.
 
+Para contratos com centenas de fotos (até 800 por envio e 1 GB de imagens), ajuste o `php.ini` do Apache local e reinicie o Apache:
+
+```ini
+upload_max_filesize = 1050M
+post_max_size = 1100M
+max_file_uploads = 850
+max_execution_time = 1800
+max_input_time = 1800
+memory_limit = 1024M
+```
+
+O computador deve ter espaço livre suficiente para os arquivos enviados e os dois documentos gerados. As imagens são reduzidas para até 1800 px no lado maior para controlar o tamanho dos arquivos de saída. Para contratos acima de 1 GB, processe as fotos em partes.
+
 ### 6. Executar
 
 Com Apache e MySQL ativos no XAMPP, acesse o projeto pelo navegador através do endereço configurado no Apache.
