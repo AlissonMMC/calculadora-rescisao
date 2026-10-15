@@ -8,10 +8,13 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import os
 import re
 import sys
 import tempfile
 import zipfile
+from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Iterable, Iterator
 
@@ -42,38 +45,6 @@ MAX_IMAGE_HEIGHT_CM = 11.2
 def natural_key(value: str) -> list[object]:
     return [int(part) if part.isdigit() else part.casefold()
             for part in re.split(r"(\d+)", value)]
-
-
-def locate_soffice() -> str | None:
-    configured = os.environ.get("LIBREOFFICE_BIN", "").strip()
-    if configured:
-        candidate = Path(configured.strip('"'))
-        if candidate.is_file():
-            return str(candidate)
-        found = shutil.which(configured)
-        if found:
-            return found
-
-    for command in ("soffice.com", "soffice.exe", "soffice", "libreoffice"):
-        found = shutil.which(command)
-        if found:
-            return found
-
-    if os.name == "nt":
-        candidates = [
-            Path(r"C:\Program Files\LibreOffice\program\soffice.com"),
-            Path(r"C:\Program Files\LibreOffice\program\soffice.exe"),
-            Path(r"C:\Program Files (x86)\LibreOffice\program\soffice.com"),
-            Path(r"C:\Program Files (x86)\LibreOffice\program\soffice.exe"),
-        ]
-        for candidate in candidates:
-            if candidate.is_file():
-                return str(candidate)
-    else:
-        for candidate in (Path("/usr/bin/soffice"), Path("/usr/bin/libreoffice")):
-            if candidate.is_file():
-                return str(candidate)
-    return None
 
 
 def image_sources(input_dir: Path | None, zip_path: Path | None) -> Iterator[tuple[str, bytes]]:
@@ -121,57 +92,95 @@ def image_sources(input_dir: Path | None, zip_path: Path | None) -> Iterator[tup
         for path in paths:
             yield path.name, path.read_bytes()
 
+def _normalize_one_image(
+    index: int,
+    filename: str,
+    data: bytes,
+    temp_dir: Path,
+    width_cm: float,
+) -> tuple[Path | None, str | None]:
+    """Decodifica, redimensiona, gira e salva uma imagem independente."""
+    try:
+        with Image.open(io.BytesIO(data)) as original:
+            image = ImageOps.exif_transpose(original)
+            image.load()
+            image.thumbnail(
+                (MAX_IMAGE_EDGE, MAX_IMAGE_EDGE),
+                Image.Resampling.LANCZOS,
+                reducing_gap=3.0,
+            )
+
+            width_px, height_px = image.size
+            if (
+                height_px > width_px
+                and width_cm * height_px / max(width_px, 1) > MAX_IMAGE_HEIGHT_CM
+            ):
+                image = image.transpose(Image.Transpose.ROTATE_270)
+
+            has_alpha = (
+                image.mode in ("RGBA", "LA")
+                or (image.mode == "P" and "transparency" in image.info)
+            )
+            if has_alpha:
+                image = image.convert("RGBA")
+                target = temp_dir / f"{index:04d}.png"
+                image.save(target, format="PNG", optimize=False, compress_level=3)
+            else:
+                image = image.convert("RGB")
+                target = temp_dir / f"{index:04d}.jpg"
+                image.save(target, format="JPEG", quality=86, optimize=False)
+            return target, None
+    except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
+        return None, filename
+
+
 def normalize_images(
     candidates: Iterable[tuple[str, bytes]],
     temp_dir: Path,
     width_cm: float,
 ) -> list[Path]:
+    """Processa imagens em paralelo com fila limitada para controlar a memória."""
     normalized: list[Path] = []
     invalid: list[str] = []
+    workers = max(1, min(4, os.cpu_count() or 1))
+    max_pending = workers * 2
+    source = iter(enumerate(candidates, start=1))
+    pending = deque()
 
-    for filename, data in candidates:
-        try:
-            # Abre e decodifica cada arquivo uma única vez; verify() seguido de
-            # uma segunda abertura custava tempo em contratos com centenas de fotos.
-            with Image.open(io.BytesIO(data)) as original:
-                image = ImageOps.exif_transpose(original)
-                image.load()
+    with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="foto") as executor:
+        # Mantemos no máximo 2 tarefas por trabalhador em memória.
+        for _ in range(max_pending):
+            try:
+                index, (filename, data) = next(source)
+            except StopIteration:
+                break
+            pending.append(
+                executor.submit(_normalize_one_image, index, filename, data, temp_dir, width_cm)
+            )
 
-                # Reduz imagens grandes usando o caminho otimizado do Pillow.
-                image.thumbnail(
-                    (MAX_IMAGE_EDGE, MAX_IMAGE_EDGE),
-                    Image.Resampling.LANCZOS,
-                    reducing_gap=3.0,
-                )
-
-                # Fotos verticais altas são giradas uma vez aqui e reutilizadas
-                # tanto pelo Word quanto pelo PDF, evitando trabalho duplicado.
-                largura_px, altura_px = image.size
-                altura_se_largura_maxima = width_cm * altura_px / max(largura_px, 1)
-                if altura_px > largura_px and altura_se_largura_maxima > MAX_IMAGE_HEIGHT_CM:
-                    image = image.transpose(Image.Transpose.ROTATE_270)
-
-                has_alpha = (
-                    image.mode in ("RGBA", "LA")
-                    or (image.mode == "P" and "transparency" in image.info)
-                )
-                if has_alpha:
-                    image = image.convert("RGBA")
-                    target = temp_dir / f"{len(normalized) + 1:04d}.png"
-                    # Compressão rápida: priorizamos tempo no lote de centenas de fotos.
-                    image.save(target, format="PNG", optimize=False, compress_level=3)
-                else:
-                    image = image.convert("RGB")
-                    target = temp_dir / f"{len(normalized) + 1:04d}.jpg"
-                    image.save(target, format="JPEG", quality=86, optimize=False)
+        while pending:
+            future = pending.popleft()
+            target, filename_invalido = future.result()
+            if target is not None:
                 normalized.append(target)
-        except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
-            invalid.append(filename)
+            if filename_invalido is not None:
+                invalid.append(filename_invalido)
+
+            try:
+                index, (filename, data) = next(source)
+            except StopIteration:
+                continue
+            pending.append(
+                executor.submit(_normalize_one_image, index, filename, data, temp_dir, width_cm)
+            )
 
     if not normalized:
         raise ValueError("Os arquivos enviados não contêm imagens válidas.")
     if invalid:
-        print(f"Aviso: {len(invalid)} arquivo(s) inválido(s) ou corrompido(s) foram ignorados.", file=sys.stderr)
+        print(
+            f"Aviso: {len(invalid)} arquivo(s) inválido(s) ou corrompido(s) foram ignorados.",
+            file=sys.stderr,
+        )
     return normalized
 
 def image_dimensions(image_path: Path, width_cm: float) -> tuple[float, float]:
@@ -273,8 +282,12 @@ def main() -> int:
     candidates = image_sources(args.input_dir, args.zip_file)
     with tempfile.TemporaryDirectory(prefix="fotos-word-images-") as temp:
         normalized = normalize_images(candidates, Path(temp), args.width)
-        build_docx(normalized, docx_path, args.width)
-        build_pdf(normalized, pdf_path, args.width)
+        # Word e PDF são documentos independentes: monte os dois em paralelo.
+        with ThreadPoolExecutor(max_workers=2, thread_name_prefix="documento") as executor:
+            docx_future = executor.submit(build_docx, normalized, docx_path, args.width)
+            pdf_future = executor.submit(build_pdf, normalized, pdf_path, args.width)
+            docx_future.result()
+            pdf_future.result()
         stats = {
             "ok": True,
             "photos": len(normalized),
