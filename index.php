@@ -133,6 +133,12 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
     <section id="calculatorScreen" class="hidden">
       <div class="print-meta" id="printMeta">Cálculo de rescisão de locação — gerado em <span id="printDate"></span></div>
       <div class="print-only" id="printOnlyHeader">RESCISÃO DE CONTRATO DE LOCAÇÃO</div>
+      <div class="print-only moveout-print-summary" id="moveoutPrintSummary">
+        <strong>Dados da desocupação</strong>
+        <div><span>Data do aviso de desocupação:</span> <b id="printDataAvisoDesocupacao">Não informada</b></div>
+        <div><span>Data em que o proprietário foi avisado:</span> <b id="printDataAvisoProprietario">Não informada</b></div>
+        <div><span>Motivo da desocupação:</span> <b id="printMotivoDesocupacao">Não informado</b></div>
+      </div>
       <div class="selected-mode" style="margin-bottom:12px;">
         <span><span class="info-chip">Critério</span> <strong id="currentModeText"></strong> <span class="info-chip lock-badge">🔒 Revisão bloqueada</span></span>
         <div class="buttons" style="margin-top:0;">
