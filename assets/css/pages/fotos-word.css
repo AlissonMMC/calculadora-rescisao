@@ -56,3 +56,61 @@
 html[data-theme="dark"] .photo-word-notice.error{border-color:#633034;background:#291719;color:#ff9e9e}
 html[data-theme="dark"] .photo-word-result-icon{background:#10251a;color:#8ee5aa}
 @media(max-width:760px){.photo-word-page{width:calc(100% - 26px);padding-top:22px}.photo-word-header{align-items:flex-start}.photo-word-header-icon{flex-basis:52px;height:52px;border-radius:13px}.photo-word-card-heading{padding:18px;flex-direction:column}.photo-word-form{padding:17px}.photo-word-settings{grid-template-columns:1fr}.photo-word-width-input{max-width:100%}.photo-word-zip{align-items:flex-start;flex-direction:column}.photo-word-zip input{max-width:100%}.photo-word-file-row{grid-template-columns:minmax(0,1fr) auto}.photo-word-upload-picker{min-height:62px;padding:8px 10px;gap:8px}.photo-word-upload-picker .file-picker-icon{width:36px;height:36px;flex-basis:36px}.photo-word-clear-file{min-width:68px;padding:9px 11px}.photo-word-result{align-items:flex-start;flex-wrap:wrap}.photo-word-downloads{width:100%}.photo-word-downloads .photo-word-button{flex:1}.photo-word-result-copy{padding-top:3px}} @media(max-width:480px){.photo-word-file-row{grid-template-columns:1fr}.photo-word-clear-file{min-height:38px;justify-self:end;min-width:90px}}
+
+/* Refinamento visual — mantém a identidade escura e laranja do sistema */
+.photo-word-page{width:min(1240px,calc(100% - 48px));padding:26px 0 48px}
+.photo-word-header{margin-bottom:20px}
+.photo-word-header>div:first-child{min-width:0}
+.photo-word-header h1{font-size:clamp(1.85rem,2.8vw,2.45rem);line-height:1.06;margin:8px 0 9px}
+.photo-word-header p{max-width:800px;font-size:.76rem;line-height:1.6}
+.photo-word-card{border-radius:15px}
+.photo-word-card-heading{padding:20px 24px}
+.photo-word-form{padding:22px 24px 24px}
+.photo-word-file-row{gap:10px}
+.photo-word-upload-picker{min-height:66px;border-radius:12px}
+.photo-word-clear-file{min-width:92px}
+.photo-word-file-help{margin:8px 1px 0!important;font-size:.65rem!important;line-height:1.5!important;color:var(--global-muted)!important}
+.photo-word-settings{gap:14px;margin-top:22px}
+.photo-word-width-field{padding:16px;border:1px solid var(--global-border);border-radius:12px;background:var(--global-surface-2)}
+.photo-word-width-field>label{font-size:.7rem}
+.photo-word-width-field>small{font-size:.63rem}
+.photo-word-output-note{min-height:100%;padding:17px;border-radius:12px}
+.photo-word-output-icon{flex-basis:40px;height:40px}
+.photo-word-output-note strong{font-size:.74rem}
+.photo-word-output-note small{font-size:.64rem}
+.photo-word-submit{margin-top:20px;min-height:46px;border-radius:10px}
+.photo-word-privacy{font-size:.62rem}
+.photo-word-result{gap:14px;margin-bottom:18px;padding:15px 17px;border-radius:13px}
+.photo-word-result-copy strong{font-size:.78rem}
+.photo-word-result-copy span{font-size:.66rem;line-height:1.5}
+.photo-word-downloads .photo-word-button{min-height:44px}
+.photo-word-notice{margin-bottom:18px}
+@media(max-width:760px){
+ .photo-word-page{width:calc(100% - 28px);padding-top:20px}
+ .photo-word-header{gap:14px;margin-bottom:18px}
+ .photo-word-header h1{font-size:clamp(1.65rem,6vw,2rem)}
+ .photo-word-header p{font-size:.72rem}
+ .photo-word-card-heading{padding:17px 18px}
+ .photo-word-form{padding:17px 18px 20px}
+ .photo-word-file-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}
+ .photo-word-upload-picker{min-height:62px;padding:9px 11px}
+ .photo-word-clear-file{min-width:76px;padding:9px 12px}
+ .photo-word-settings{margin-top:18px;gap:12px}
+ .photo-word-width-field{padding:14px}
+ .photo-word-output-note{padding:14px}
+ .photo-word-result{gap:11px;padding:14px;align-items:center}
+ .photo-word-downloads{width:100%;display:grid;grid-template-columns:1fr 1fr}
+ .photo-word-downloads .photo-word-button{padding:10px 9px;font-size:.64rem}
+}
+@media(max-width:480px){
+ .photo-word-page{width:calc(100% - 22px)}
+ .photo-word-header-icon{flex-basis:48px;height:48px}
+ .photo-word-header-icon svg{width:31px;height:31px}
+ .photo-word-file-row{grid-template-columns:1fr}
+ .photo-word-clear-file{justify-self:end;min-height:38px}
+ .photo-word-upload-picker .file-picker-copy strong{font-size:.7rem}
+ .photo-word-upload-picker .file-picker-copy small{font-size:.6rem}
+ .photo-word-result{align-items:flex-start}
+ .photo-word-downloads{grid-template-columns:1fr}
+}
+
