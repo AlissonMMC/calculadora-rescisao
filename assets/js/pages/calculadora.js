@@ -1,5 +1,5 @@
 const campos = [
-'dataInicial', 'dataFinal', 'dataInicioContrato', 'dataInicioAviso', 'dataFimAviso', 'aluguel', 'iptu', 'condominio', 'agua', 'luz', 'internet',
+'dataAvisoDesocupacao', 'dataAvisoProprietario', 'motivoDesocupacao', 'dataInicial', 'dataFinal', 'dataInicioContrato', 'dataInicioAviso', 'dataFimAviso', 'aluguel', 'iptu', 'condominio', 'agua', 'luz', 'internet',
 'mesesFaltantes', 'percentualProp', 'percentualAdm', 'valorAluguelInteiro', 'semAluguelInteiro',
 'manutencao', 'chaveiro', 'seguroIncendio', 'seguroIncendioExtras',
 'seguroFianca', 'seguroFiancaExtras',
