@@ -39,7 +39,7 @@ SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tif"
 MAX_PHOTOS = 800
 MAX_IMAGE_BYTES = 40 * 1024 * 1024
 MAX_TOTAL_BYTES = 1024 * 1024 * 1024
-MAX_IMAGE_EDGE = 1800
+MAX_IMAGE_EDGE = 1400
 MAX_IMAGE_HEIGHT_CM = 11.2
 
 
@@ -130,7 +130,7 @@ def _normalize_one_image(
             else:
                 image = image.convert("RGB")
                 target = temp_dir / f"{index:04d}.jpg"
-                image.save(target, format="JPEG", quality=86, optimize=False)
+                image.save(target, format="JPEG", quality=80, optimize=False)
             return target, None, time.perf_counter() - started
     except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
         return None, filename, time.perf_counter() - started
