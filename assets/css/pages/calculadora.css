@@ -3350,4 +3350,17 @@ html[data-theme="dark"] #calculatorScreen #topicoSeguros .insurance-destinos .ch
  #calculatorScreen #topicoSeguros .insurance-grid{grid-template-columns:1fr!important}
  #calculatorScreen #topicoSeguros .insurance-card-field{grid-template-columns:minmax(0,1fr) 70px!important}
 }
+/* v36 — ajuste final: igualar altura do card Seguros aos tópicos vizinhos */
+#calculatorScreen #topicoSeguros{padding:10px!important}
+#calculatorScreen #topicoSeguros .section-heading{margin-bottom:5px!important}
+#calculatorScreen #topicoSeguros .insurance-options-head{padding:6px 8px!important;min-height:0!important}
+#calculatorScreen #topicoSeguros .insurance-grid{gap:6px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field{padding:6px!important;row-gap:3px!important}
+#calculatorScreen #topicoSeguros .insurance-field-title{min-height:23px!important;gap:3px!important}
+#calculatorScreen #topicoSeguros .insurance-field-title label{font-size:.59rem!important;line-height:1.08!important}
+#calculatorScreen #topicoSeguros .insurance-count{font-size:.45rem!important;padding:2px 3px!important;white-space:nowrap!important}
+#calculatorScreen #topicoSeguros .insurance-card-field>input[type="number"]{height:30px!important;min-height:30px!important;padding:4px 7px!important;font-size:.73rem!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row{gap:1px!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row label{font-size:.47rem!important;line-height:1!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row input{height:26px!important;min-height:26px!important;padding:3px!important;font-size:.68rem!important}
 
