@@ -3372,4 +3372,13 @@ html[data-theme="dark"] #calculatorScreen #topicoSeguros .insurance-destinos .ch
 #calculatorScreen #topicoSeguros .insurance-field-title{min-height:20px!important}
 #calculatorScreen #topicoSeguros .insurance-card-field>input[type="number"]{height:28px!important;min-height:28px!important}
 #calculatorScreen #topicoSeguros .insurance-extra-row input{height:25px!important;min-height:25px!important}
+/* v38 — manter cabeçalhos consistentes e equalizar cards da última linha */
+#calculatorScreen #topicoSeguros .section-heading{display:flex!important;justify-content:flex-start!important;align-items:flex-start!important;gap:10px!important}
+#calculatorScreen #topicoSeguros .section-heading>.section-number{flex:0 0 auto!important}
+#calculatorScreen #topicoSeguros .section-heading>div:nth-child(2){width:auto!important;flex:1 1 auto!important;text-align:left!important}
+#calculatorScreen #topicoSeguros .section-heading .section-title{text-align:left!important;margin:0!important}
+#calculatorScreen #topicoChaveiro,
+#calculatorScreen #topicoSeguros{box-sizing:border-box!important;align-self:stretch!important;min-height:0!important}
+#calculatorScreen #topicoChaveiro{padding:15px!important}
+#calculatorScreen #topicoSeguros{padding:10px!important}
 
