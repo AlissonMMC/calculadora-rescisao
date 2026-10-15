@@ -3208,3 +3208,311 @@ html[data-theme="dark"] #calculatorScreen #topicoSeguros .insurance-destinos .ch
         grid-template-columns:1fr;
     }
 }
+
+/* Dados de desocupação — bloco introdutório da folha de cálculo */
+.moveout-info-card{margin:0 0 16px;padding:17px 18px;border:1px solid var(--border);border-radius:13px;background:var(--white);box-shadow:0 2px 8px rgba(0,0,0,.025)}
+.moveout-info-heading{display:flex;align-items:flex-start;gap:11px;margin-bottom:15px}
+.moveout-info-icon{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:9px;background:var(--orange-soft);color:var(--orange-dark);font-weight:900;font-size:1rem}
+.moveout-info-heading h2{margin:1px 0 4px;color:var(--text);font-size:.92rem;font-weight:850}
+.moveout-info-heading p{margin:0;color:var(--muted);font-size:.7rem;line-height:1.45}
+.moveout-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.moveout-info-grid .field{min-width:0;margin:0}
+.moveout-info-grid .field label{font-size:.7rem}
+.moveout-info-grid .field input{width:100%;min-width:0}
+.moveout-reason-field{grid-column:1/-1}
+.moveout-print-summary{margin:10px 0 14px;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:9pt}
+.moveout-print-summary>strong{display:block;margin-bottom:5px;font-size:10pt}
+.moveout-print-summary>div{margin-top:3px}
+.moveout-print-summary span{font-weight:600}
+@media(max-width:700px){.moveout-info-card{padding:14px}.moveout-info-grid{grid-template-columns:1fr;gap:11px}.moveout-reason-field{grid-column:auto}}
+@media print{.moveout-info-card{display:none!important}.moveout-print-summary{display:block!important;break-inside:avoid}}
+/* Ajuste compacto do bloco de desocupação */
+.moveout-info-card{margin:0 0 14px;padding:16px 18px;border:1px solid var(--border);border-radius:13px;background:var(--white);box-shadow:none}
+.moveout-info-heading{align-items:center;gap:10px;margin-bottom:13px}
+.moveout-info-icon{flex-basis:30px;width:30px;height:30px;border-radius:8px}
+.moveout-info-heading h2{margin:0 0 3px;font-size:.88rem;letter-spacing:-.01em}
+.moveout-info-heading p{font-size:.66rem;line-height:1.4}
+.moveout-info-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}
+.moveout-info-grid .field{display:flex;flex-direction:column;gap:6px}
+.moveout-info-grid .field label{display:block;min-height:30px;margin:0;font-size:.66rem;line-height:1.35;color:var(--text)}
+.moveout-info-grid .field input{box-sizing:border-box;min-height:42px;padding:10px 12px;border-radius:9px;font-size:.76rem}
+.moveout-reason-field{grid-column:auto}
+@media(max-width:900px){.moveout-info-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.moveout-reason-field{grid-column:1/-1}.moveout-info-grid .field label{min-height:0}}
+@media(max-width:600px){.moveout-info-card{padding:13px}.moveout-info-heading{align-items:flex-start;margin-bottom:12px}.moveout-info-heading p{max-width:38ch}.moveout-info-grid{grid-template-columns:minmax(0,1fr);gap:10px}.moveout-reason-field{grid-column:auto}.moveout-info-grid .field label{min-height:0}.moveout-info-grid .field input{min-height:40px}}
+/* v33 — seguros mais compactos, sem altura excessiva no card */
+#calculatorScreen #topicoSeguros{padding:13px!important}
+#calculatorScreen #topicoSeguros .section-heading{margin-bottom:9px!important}
+#calculatorScreen #topicoSeguros .insurance-grid{gap:8px!important}
+#calculatorScreen #topicoSeguros .insurance-options-head{padding:8px 10px!important;border-radius:10px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field{padding:9px!important;border-radius:11px!important}
+#calculatorScreen #topicoSeguros .insurance-field-title{align-items:flex-start!important;gap:5px!important;margin-bottom:6px!important}
+#calculatorScreen #topicoSeguros .insurance-field-title label{font-size:.66rem!important;line-height:1.3!important}
+#calculatorScreen #topicoSeguros .insurance-count{padding:3px 5px!important;font-size:.54rem!important}
+#calculatorScreen #topicoSeguros .insurance-card-field>input[type="number"]{min-height:38px!important;padding:8px 10px!important;font-size:.82rem!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row{grid-template-columns:minmax(0,1fr) 70px!important;gap:6px!important;margin-top:5px!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row label{font-size:.61rem!important;line-height:1.25!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row input{min-height:36px!important;padding:7px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field>.hint{margin-top:5px!important;font-size:.57rem!important;line-height:1.35!important}
+#calculatorScreen #topicoSeguros .insurance-destinos{gap:5px!important;margin-top:6px!important;padding-top:6px!important}
+#calculatorScreen #topicoSeguros .insurance-destino-label{font-size:.58rem!important}
+#calculatorScreen #topicoSeguros .insurance-destinos .check-inline{padding:5px 7px!important;font-size:.58rem!important}
+@media(max-width:700px){
+ #calculatorScreen #topicoSeguros{padding:11px!important}
+ #calculatorScreen #topicoSeguros .insurance-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #calculatorScreen #topicoSeguros .insurance-card-field{padding:8px!important}
+ #calculatorScreen #topicoSeguros .insurance-field-title{flex-wrap:wrap!important}
+ #calculatorScreen #topicoSeguros .insurance-extra-row{grid-template-columns:minmax(0,1fr) 62px!important}
+}
+@media(max-width:420px){
+ #calculatorScreen #topicoSeguros .insurance-grid{grid-template-columns:1fr!important}
+}
+/* v34 — reduzir altura total do tópico Seguros, não apenas os espaçamentos */
+#calculatorScreen #topicoSeguros{padding:12px!important}
+#calculatorScreen #topicoSeguros .section-heading{margin-bottom:7px!important}
+#calculatorScreen #topicoSeguros .topic-tools{margin-top:3px!important}
+#calculatorScreen #topicoSeguros .insurance-grid{gap:7px!important}
+#calculatorScreen #topicoSeguros .insurance-options-head{padding:7px 9px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field{padding:8px!important}
+#calculatorScreen #topicoSeguros .insurance-field-title{margin-bottom:5px!important}
+#calculatorScreen #topicoSeguros .insurance-field-title label{font-size:.63rem!important;line-height:1.2!important}
+#calculatorScreen #topicoSeguros .insurance-count{font-size:.51rem!important;padding:3px 4px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field>input[type="number"]{min-height:34px!important;padding:6px 8px!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row{grid-template-columns:minmax(0,1fr) 56px!important;gap:5px!important;margin-top:4px!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row label{font-size:.58rem!important;line-height:1.15!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row input{min-height:31px!important;padding:5px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field>.hint{display:none!important}
+#calculatorScreen #topicoSeguros .insurance-destinos{margin-top:5px!important;padding-top:5px!important;gap:4px!important}
+#calculatorScreen #topicoSeguros .insurance-destinos .check-inline{padding:4px 6px!important;font-size:.55rem!important}
+/* v35 — layout interno dos seguros em duas colunas para reduzir altura real */
+#calculatorScreen #topicoSeguros .insurance-card-field{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) 76px!important;
+ grid-template-rows:auto auto auto!important;
+ column-gap:8px!important;
+ row-gap:5px!important;
+ align-content:start!important;
+ padding:8px!important;
+}
+#calculatorScreen #topicoSeguros .insurance-field-title{
+ grid-column:1/-1!important;
+ grid-row:1!important;
+ display:flex!important;
+ align-items:center!important;
+ flex-wrap:nowrap!important;
+ min-height:28px!important;
+ margin:0!important;
+}
+#calculatorScreen #topicoSeguros .insurance-field-title label{
+ font-size:.63rem!important;
+ line-height:1.15!important;
+}
+#calculatorScreen #topicoSeguros .insurance-count{font-size:.49rem!important;padding:3px 4px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field>input[type="number"]{
+ grid-column:1!important;
+ grid-row:2!important;
+ min-width:0!important;
+ width:100%!important;
+ min-height:32px!important;
+ height:32px!important;
+ padding:5px 8px!important;
+ font-size:.78rem!important;
+}
+#calculatorScreen #topicoSeguros .insurance-extra-row{
+ grid-column:2!important;
+ grid-row:2!important;
+ display:flex!important;
+ flex-direction:column!important;
+ align-items:stretch!important;
+ justify-content:center!important;
+ gap:2px!important;
+ min-width:0!important;
+ margin:0!important;
+}
+#calculatorScreen #topicoSeguros .insurance-extra-row label{
+ font-size:.52rem!important;
+ line-height:1.05!important;
+ text-align:center!important;
+}
+#calculatorScreen #topicoSeguros .insurance-extra-row input{
+ width:100%!important;
+ min-height:28px!important;
+ height:28px!important;
+ padding:3px!important;
+ font-size:.72rem!important;
+}
+#calculatorScreen #topicoSeguros .insurance-card-field>.hint{display:none!important}
+#calculatorScreen #topicoSeguros .insurance-destinos{margin-top:5px!important;padding-top:5px!important}
+@media(max-width:700px){
+ #calculatorScreen #topicoSeguros .insurance-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #calculatorScreen #topicoSeguros .insurance-card-field{grid-template-columns:minmax(0,1fr) 58px!important;column-gap:5px!important}
+}
+@media(max-width:420px){
+ #calculatorScreen #topicoSeguros .insurance-grid{grid-template-columns:1fr!important}
+ #calculatorScreen #topicoSeguros .insurance-card-field{grid-template-columns:minmax(0,1fr) 70px!important}
+}
+/* v36 — ajuste final: igualar altura do card Seguros aos tópicos vizinhos */
+#calculatorScreen #topicoSeguros{padding:10px!important}
+#calculatorScreen #topicoSeguros .section-heading{margin-bottom:5px!important}
+#calculatorScreen #topicoSeguros .insurance-options-head{padding:6px 8px!important;min-height:0!important}
+#calculatorScreen #topicoSeguros .insurance-grid{gap:6px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field{padding:6px!important;row-gap:3px!important}
+#calculatorScreen #topicoSeguros .insurance-field-title{min-height:23px!important;gap:3px!important}
+#calculatorScreen #topicoSeguros .insurance-field-title label{font-size:.59rem!important;line-height:1.08!important}
+#calculatorScreen #topicoSeguros .insurance-count{font-size:.45rem!important;padding:2px 3px!important;white-space:nowrap!important}
+#calculatorScreen #topicoSeguros .insurance-card-field>input[type="number"]{height:30px!important;min-height:30px!important;padding:4px 7px!important;font-size:.73rem!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row{gap:1px!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row label{font-size:.47rem!important;line-height:1!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row input{height:26px!important;min-height:26px!important;padding:3px!important;font-size:.68rem!important}
+/* v37 — alinhamento vertical com os demais cards da grade */
+#calculatorScreen #topicoSeguros{padding-top:8px!important;padding-bottom:8px!important}
+#calculatorScreen #topicoSeguros .section-heading{margin-bottom:3px!important}
+#calculatorScreen #topicoSeguros .topic-tools{margin-top:0!important}
+#calculatorScreen #topicoSeguros .insurance-options-head{padding:5px 8px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field{padding:5px!important;row-gap:2px!important}
+#calculatorScreen #topicoSeguros .insurance-field-title{min-height:20px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field>input[type="number"]{height:28px!important;min-height:28px!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row input{height:25px!important;min-height:25px!important}
+/* v38 — manter cabeçalhos consistentes e equalizar cards da última linha */
+#calculatorScreen #topicoSeguros .section-heading{display:flex!important;justify-content:flex-start!important;align-items:flex-start!important;gap:10px!important}
+#calculatorScreen #topicoSeguros .section-heading>.section-number{flex:0 0 auto!important}
+#calculatorScreen #topicoSeguros .section-heading>div:nth-child(2){width:auto!important;flex:1 1 auto!important;text-align:left!important}
+#calculatorScreen #topicoSeguros .section-heading .section-title{text-align:left!important;margin:0!important}
+#calculatorScreen #topicoChaveiro,
+#calculatorScreen #topicoSeguros{box-sizing:border-box!important;align-self:stretch!important;min-height:0!important}
+#calculatorScreen #topicoChaveiro{padding:15px!important}
+#calculatorScreen #topicoSeguros{padding:10px!important}
+/* v39 — alturas uniformes para os quatro cards de cobranças adicionais */
+#calculatorScreen .optional-topics-columns{align-items:stretch!important}
+#calculatorScreen .optional-topics-column{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important}
+#calculatorScreen .optional-topics-column>.compact-topic-card{
+ box-sizing:border-box!important;
+ width:100%!important;
+ min-height:0!important;
+}
+#calculatorScreen #topicoAluguelInteiro,
+#calculatorScreen #topicoManutencao,
+#calculatorScreen #topicoChaveiro,
+#calculatorScreen #topicoSeguros{height:304px!important;min-height:304px!important}
+#calculatorScreen #topicoAluguelInteiro,
+#calculatorScreen #topicoManutencao,
+#calculatorScreen #topicoChaveiro{padding:15px!important}
+#calculatorScreen #topicoSeguros{padding:10px!important}
+@media(max-width:760px){
+ #calculatorScreen #topicoAluguelInteiro,
+ #calculatorScreen #topicoManutencao,
+ #calculatorScreen #topicoChaveiro,
+ #calculatorScreen #topicoSeguros{height:auto!important;min-height:0!important}
+}
+/* v40 — grade simétrica e melhor distribuição do espaço nos seguros */
+#calculatorScreen .optional-topics-columns{
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ align-items:stretch!important;
+ gap:12px!important;
+}
+#calculatorScreen .optional-topics-column{
+ display:flex!important;
+ flex-direction:column!important;
+ align-items:stretch!important;
+ min-width:0!important;
+ width:100%!important;
+}
+#calculatorScreen .optional-topics-column>.compact-topic-card{
+ width:100%!important;
+ min-width:0!important;
+}
+#calculatorScreen #topicoAluguelInteiro,
+#calculatorScreen #topicoManutencao,
+#calculatorScreen #topicoChaveiro,
+#calculatorScreen #topicoSeguros{
+ width:100%!important;
+ min-width:0!important;
+ height:304px!important;
+ min-height:304px!important;
+ box-sizing:border-box!important;
+}
+#calculatorScreen #topicoSeguros{padding:10px!important}
+#calculatorScreen #topicoSeguros .insurance-options-head{margin-bottom:8px!important;padding:8px 10px!important}
+#calculatorScreen #topicoSeguros .insurance-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field{
+ min-width:0!important;
+ padding:8px!important;
+ column-gap:7px!important;
+ row-gap:5px!important;
+}
+#calculatorScreen #topicoSeguros .insurance-field-title{
+ min-height:30px!important;
+ align-items:flex-start!important;
+ gap:5px!important;
+}
+#calculatorScreen #topicoSeguros .insurance-field-title label{font-size:.62rem!important;line-height:1.2!important}
+#calculatorScreen #topicoSeguros .insurance-count{flex:0 0 auto!important;margin-left:auto!important}
+#calculatorScreen #topicoSeguros .insurance-card-field>input[type="number"]{min-width:0!important;width:100%!important;height:34px!important;min-height:34px!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row{
+ min-width:0!important;
+ display:flex!important;
+ flex-direction:column!important;
+ justify-content:flex-end!important;
+ align-items:stretch!important;
+ gap:4px!important;
+ margin:0!important;
+}
+#calculatorScreen #topicoSeguros .insurance-extra-row label{font-size:.55rem!important;line-height:1.15!important;text-align:center!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row input{width:100%!important;height:30px!important;min-height:30px!important}
+@media(max-width:760px){
+ #calculatorScreen .optional-topics-columns{grid-template-columns:minmax(0,1fr)!important}
+ #calculatorScreen #topicoAluguelInteiro,
+ #calculatorScreen #topicoManutencao,
+ #calculatorScreen #topicoChaveiro,
+ #calculatorScreen #topicoSeguros{height:auto!important;min-height:0!important}
+}
+/* v41 — dimensões rigorosamente iguais para os quatro cards */
+#calculatorScreen .optional-topics-columns{
+ display:grid!important;
+ width:100%!important;
+ max-width:100%!important;
+ grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+ grid-auto-columns:minmax(0,1fr)!important;
+ align-items:stretch!important;
+ justify-items:stretch!important;
+ gap:12px!important;
+}
+#calculatorScreen .optional-topics-column{
+ width:100%!important;
+ min-width:0!important;
+ max-width:none!important;
+ justify-self:stretch!important;
+ display:grid!important;
+ grid-template-rows:304px 304px!important;
+ grid-auto-rows:304px!important;
+ align-content:start!important;
+ align-items:stretch!important;
+ gap:12px!important;
+}
+#calculatorScreen .optional-topics-column>.compact-topic-card,
+#calculatorScreen #topicoAluguelInteiro,
+#calculatorScreen #topicoManutencao,
+#calculatorScreen #topicoChaveiro,
+#calculatorScreen #topicoSeguros{
+ display:block!important;
+ width:100%!important;
+ min-width:0!important;
+ max-width:none!important;
+ height:304px!important;
+ min-height:304px!important;
+ max-height:304px!important;
+ margin:0!important;
+ justify-self:stretch!important;
+ align-self:stretch!important;
+ box-sizing:border-box!important;
+}
+@media(max-width:760px){
+ #calculatorScreen .optional-topics-columns{grid-template-columns:minmax(0,1fr)!important}
+ #calculatorScreen .optional-topics-column{grid-template-rows:auto!important;grid-auto-rows:auto!important}
+ #calculatorScreen .optional-topics-column>.compact-topic-card,
+ #calculatorScreen #topicoAluguelInteiro,
+ #calculatorScreen #topicoManutencao,
+ #calculatorScreen #topicoChaveiro,
+ #calculatorScreen #topicoSeguros{height:auto!important;min-height:0!important;max-height:none!important}
+}
+
