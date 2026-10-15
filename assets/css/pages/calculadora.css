@@ -3363,4 +3363,13 @@ html[data-theme="dark"] #calculatorScreen #topicoSeguros .insurance-destinos .ch
 #calculatorScreen #topicoSeguros .insurance-extra-row{gap:1px!important}
 #calculatorScreen #topicoSeguros .insurance-extra-row label{font-size:.47rem!important;line-height:1!important}
 #calculatorScreen #topicoSeguros .insurance-extra-row input{height:26px!important;min-height:26px!important;padding:3px!important;font-size:.68rem!important}
+/* v37 — alinhamento vertical com os demais cards da grade */
+#calculatorScreen #topicoSeguros{padding-top:8px!important;padding-bottom:8px!important}
+#calculatorScreen #topicoSeguros .section-heading{margin-bottom:3px!important}
+#calculatorScreen #topicoSeguros .topic-tools{margin-top:0!important}
+#calculatorScreen #topicoSeguros .insurance-options-head{padding:5px 8px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field{padding:5px!important;row-gap:2px!important}
+#calculatorScreen #topicoSeguros .insurance-field-title{min-height:20px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field>input[type="number"]{height:28px!important;min-height:28px!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row input{height:25px!important;min-height:25px!important}
 
