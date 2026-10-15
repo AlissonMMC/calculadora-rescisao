@@ -437,26 +437,25 @@ if ($resultado === null) {
         <form method="post" enctype="multipart/form-data" class="photo-word-form" id="photoWordForm">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
 
-            <div class="photo-word-dropzone" id="photoWordDropzone">
-                <span class="photo-word-upload-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"></path>
-                        <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"></path>
-                    </svg>
-                </span>
-                <strong>Escolha um ZIP ou várias fotos</strong>
-                <span>Um arquivo .ZIP ou imagens JPG, PNG, GIF, BMP, WEBP e TIFF</span>
-                <input class="photo-word-file-input" id="arquivos" name="arquivos[]" type="file" multiple accept=".zip,application/zip,.jpg,.jpeg,.png,.gif,.bmp,.webp,.tif,.tiff,image/jpeg,image/png,image/gif,image/bmp,image/webp,image/tiff">
-                <label class="photo-word-file-picker" for="arquivos">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"></path>
-                        <path d="M5 14v4a2 2 0 0 0 2 2h14"></path>
-                    </svg>
-                    <span>Escolher arquivo(s)</span>
+            <div class="photo-word-file-row" id="photoWordFileRow">
+                <label class="file-picker photo-word-file-picker" for="arquivos">
+                    <input id="arquivos" name="arquivos[]" type="file" multiple accept=".zip,application/zip,.jpg,.jpeg,.png,.gif,.bmp,.webp,.tif,.tiff,image/jpeg,image/png,image/gif,image/bmp,image/webp,image/tiff">
+                    <span class="file-picker-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 16V4"></path>
+                            <path d="m7 9 5-5 5 5"></path>
+                            <path d="M5 20h14"></path>
+                        </svg>
+                    </span>
+                    <span class="file-picker-copy">
+                        <strong id="uploadSummaryName">Selecionar arquivo ZIP ou imagens</strong>
+                        <small id="uploadSummaryHint">Um ZIP ou várias imagens JPG, PNG, GIF, BMP, WEBP e TIFF</small>
+                    </span>
+                    <span class="file-picker-arrow" aria-hidden="true">›</span>
                 </label>
-                <span class="photo-word-file-summary" id="uploadSummary" aria-live="polite">Nenhum arquivo selecionado</span>
-                <small class="photo-word-upload-hint">Para enviar imagens separadas, selecione todas de uma vez. Se preferir ZIP, selecione somente o ZIP.</small>
+                <button class="photo-word-button secondary photo-word-clear-file" id="clearUpload" type="button">Limpar</button>
             </div>
+            <p class="photo-word-file-help" id="uploadSummary" aria-live="polite">Você pode selecionar várias imagens de uma vez ou enviar um único arquivo ZIP.</p>
 
             <div class="photo-word-settings">
                 <div class="photo-word-width-field">
@@ -482,11 +481,15 @@ if ($resultado === null) {
 <script>
 (function () {
     const upload = document.getElementById('arquivos');
+    const summaryName = document.getElementById('uploadSummaryName');
+    const summaryHint = document.getElementById('uploadSummaryHint');
     const summary = document.getElementById('uploadSummary');
-    const dropzone = document.getElementById('photoWordDropzone');
+    const fileRow = document.getElementById('photoWordFileRow');
+    const clearButton = document.getElementById('clearUpload');
     const form = document.getElementById('photoWordForm');
     const button = document.getElementById('generateButton');
 
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tif', 'tiff'];
     const formatBytes = function (bytes) {
         if (!Number.isFinite(bytes) || bytes <= 0) return '';
         const units = ['B', 'KB', 'MB', 'GB'];
@@ -499,50 +502,72 @@ if ($resultado === null) {
         return value.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' ' + units[unit];
     };
 
-    upload.addEventListener('change', function () {
+    const setInvalid = function (message) {
+        fileRow.classList.add('has-error');
+        summaryName.textContent = 'Seleção inválida';
+        summaryHint.textContent = message;
+        summary.textContent = message;
+    };
+
+    const updateSummary = function () {
         const files = Array.from(upload.files || []);
+        fileRow.classList.remove('has-files', 'has-error');
+
+        if (!files.length) {
+            summaryName.textContent = 'Selecionar arquivo ZIP ou imagens';
+            summaryHint.textContent = 'Um ZIP ou várias imagens JPG, PNG, GIF, BMP, WEBP e TIFF';
+            summary.textContent = 'Você pode selecionar várias imagens de uma vez ou enviar um único arquivo ZIP.';
+            return;
+        }
+
         const zipFiles = files.filter(function (file) {
             return /\.zip$/i.test(file.name);
         });
 
-        dropzone.classList.remove('has-files', 'has-error');
-        if (!files.length) {
-            summary.textContent = 'Nenhum arquivo selecionado';
-            return;
-        }
-
         if (zipFiles.length && (files.length !== 1 || zipFiles.length !== 1)) {
-            summary.textContent = 'Seleção inválida: envie um ZIP sozinho ou selecione apenas imagens.';
-            dropzone.classList.add('has-error');
+            setInvalid('Envie um ZIP sozinho ou selecione apenas imagens. Não misture ZIP e fotos.');
             return;
         }
 
         if (zipFiles.length === 1) {
-            summary.textContent = zipFiles[0].name + ' · ' + formatBytes(zipFiles[0].size);
+            summaryName.textContent = zipFiles[0].name;
+            summaryHint.textContent = 'Arquivo ZIP · ' + formatBytes(zipFiles[0].size);
+            summary.textContent = 'ZIP selecionado. Todas as fotos contidas nele serão processadas.';
         } else {
+            const unsupported = files.filter(function (file) {
+                const extension = file.name.split('.').pop().toLowerCase();
+                return !imageExtensions.includes(extension);
+            });
+            if (unsupported.length) {
+                setInvalid('Formato não suportado: ' + unsupported[0].name);
+                return;
+            }
             const totalSize = files.reduce(function (sum, file) { return sum + file.size; }, 0);
-            summary.textContent = files.length + ' imagem(ns) selecionada(s) · ' + formatBytes(totalSize);
+            summaryName.textContent = files.length + (files.length === 1 ? ' imagem selecionada' : ' imagens selecionadas');
+            summaryHint.textContent = 'Total dos arquivos · ' + formatBytes(totalSize);
+            summary.textContent = 'As imagens serão ordenadas pelo nome do arquivo antes da geração.';
         }
-        dropzone.classList.add('has-files');
+
+        fileRow.classList.add('has-files');
+    };
+
+    upload.addEventListener('change', updateSummary);
+    clearButton.addEventListener('click', function () {
+        upload.value = '';
+        updateSummary();
     });
 
     form.addEventListener('submit', function (event) {
-        const files = Array.from(upload.files || []);
-        if (!files.length) {
+        if (!upload.files || upload.files.length === 0) {
             event.preventDefault();
-            dropzone.classList.add('has-error');
-            summary.textContent = 'Selecione um arquivo ZIP ou uma ou mais imagens.';
+            setInvalid('Selecione um ZIP ou uma ou mais imagens antes de gerar os documentos.');
             upload.focus();
             return;
         }
 
-        const zipFiles = files.filter(function (file) {
-            return /\.zip$/i.test(file.name);
-        });
-        if (zipFiles.length && (files.length !== 1 || zipFiles.length !== 1)) {
+        updateSummary();
+        if (fileRow.classList.contains('has-error')) {
             event.preventDefault();
-            dropzone.classList.add('has-error');
-            summary.textContent = 'Envie um ZIP sozinho ou selecione somente imagens.';
             return;
         }
 
