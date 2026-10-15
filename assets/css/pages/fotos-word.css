@@ -56,3 +56,55 @@
 html[data-theme="dark"] .photo-word-notice.error{border-color:#633034;background:#291719;color:#ff9e9e}
 html[data-theme="dark"] .photo-word-result-icon{background:#10251a;color:#8ee5aa}
 @media(max-width:760px){.photo-word-page{width:calc(100% - 26px);padding-top:22px}.photo-word-header{align-items:flex-start}.photo-word-header-icon{flex-basis:52px;height:52px;border-radius:13px}.photo-word-card-heading{padding:18px;flex-direction:column}.photo-word-form{padding:17px}.photo-word-settings{grid-template-columns:1fr}.photo-word-width-input{max-width:100%}.photo-word-zip{align-items:flex-start;flex-direction:column}.photo-word-zip input{max-width:100%}.photo-word-result{align-items:flex-start;flex-wrap:wrap}.photo-word-downloads{width:100%}.photo-word-downloads .photo-word-button{flex:1}.photo-word-result-copy{padding-top:3px}}
+
+/* Controles de upload alinhados ao tema visual da Folha de Cálculo */
+.photo-word-dropzone input[type="file"],
+.photo-word-zip input[type="file"] {
+    max-width: 100%;
+    color: var(--global-muted);
+    font: inherit;
+    font-size: .68rem;
+}
+
+.photo-word-dropzone input[type="file"]::file-selector-button,
+.photo-word-zip input[type="file"]::file-selector-button {
+    margin-right: 9px;
+    padding: 8px 12px;
+    border: 1px solid var(--global-border);
+    border-radius: 7px;
+    background: var(--global-surface-2);
+    color: var(--global-text);
+    font: inherit;
+    font-size: .68rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+}
+
+.photo-word-dropzone input[type="file"]::file-selector-button:hover,
+.photo-word-zip input[type="file"]::file-selector-button:hover {
+    border-color: var(--global-accent);
+    background: var(--global-accent-soft);
+    color: var(--global-accent-strong);
+}
+
+.photo-word-dropzone input[type="file"]:focus-visible,
+.photo-word-zip input[type="file"]:focus-visible {
+    outline: 2px solid var(--global-accent);
+    outline-offset: 3px;
+}
+
+.photo-word-dropzone input[type="file"]::-webkit-file-upload-button,
+.photo-word-zip input[type="file"]::-webkit-file-upload-button {
+    margin-right: 9px;
+    padding: 8px 12px;
+    border: 1px solid var(--global-border);
+    border-radius: 7px;
+    background: var(--global-surface-2);
+    color: var(--global-text);
+    font: inherit;
+    font-size: .68rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
