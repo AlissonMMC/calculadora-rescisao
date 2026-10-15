@@ -143,6 +143,30 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
       <div class="save-status" id="saveStatus"><span class="save-dot"></span><span id="saveStatusText">Salvamento automático ativo</span></div>
       <div class="alert-box" id="alertBox"></div>
 
+      <section class="moveout-info-card" aria-labelledby="moveoutInfoTitle">
+        <div class="moveout-info-heading">
+          <span class="moveout-info-icon" aria-hidden="true">i</span>
+          <div>
+            <h2 id="moveoutInfoTitle">Dados da desocupação</h2>
+            <p>Registre as datas dos avisos e o motivo informado antes de iniciar os cálculos.</p>
+          </div>
+        </div>
+        <div class="moveout-info-grid">
+          <div class="field">
+            <label for="dataAvisoDesocupacao">Data do aviso de desocupação</label>
+            <input id="dataAvisoDesocupacao" type="date" />
+          </div>
+          <div class="field">
+            <label for="dataAvisoProprietario">Data em que o proprietário foi avisado</label>
+            <input id="dataAvisoProprietario" type="date" />
+          </div>
+          <div class="field moveout-reason-field">
+            <label for="motivoDesocupacao">Motivo da desocupação</label>
+            <input id="motivoDesocupacao" type="text" maxlength="500" placeholder="Ex.: mudança, encerramento do contrato, compra de imóvel..." />
+          </div>
+        </div>
+      </section>
+
       <div class="calculator-toolbar" aria-label="Fluxo compacto da calculadora">
         <div class="calculator-toolbar-top">
           <div class="calculator-toolbar-title">
