@@ -12,6 +12,7 @@ import os
 import re
 import sys
 import tempfile
+import time
 import zipfile
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
@@ -98,8 +99,9 @@ def _normalize_one_image(
     data: bytes,
     temp_dir: Path,
     width_cm: float,
-) -> tuple[Path | None, str | None]:
+) -> tuple[Path | None, str | None, float]:
     """Decodifica, redimensiona, gira e salva uma imagem independente."""
+    started = time.perf_counter()
     try:
         with Image.open(io.BytesIO(data)) as original:
             image = ImageOps.exif_transpose(original)
@@ -129,9 +131,9 @@ def _normalize_one_image(
                 image = image.convert("RGB")
                 target = temp_dir / f"{index:04d}.jpg"
                 image.save(target, format="JPEG", quality=86, optimize=False)
-            return target, None
+            return target, None, time.perf_counter() - started
     except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
-        return None, filename
+        return None, filename, time.perf_counter() - started
 
 
 def normalize_images(
@@ -142,6 +144,9 @@ def normalize_images(
     """Processa imagens em paralelo com fila limitada para controlar a memória."""
     normalized: list[Path] = []
     invalid: list[str] = []
+    source_read_seconds = 0.0
+    image_processing_seconds = 0.0
+    normalize_started = time.perf_counter()
     workers = max(1, min(4, os.cpu_count() or 1))
     max_pending = workers
     source = iter(enumerate(candidates, start=1))
@@ -151,7 +156,9 @@ def normalize_images(
         # Mantemos no máximo uma tarefa por trabalhador para limitar o uso de memória.
         for _ in range(max_pending):
             try:
+                read_started = time.perf_counter()
                 index, (filename, data) = next(source)
+                source_read_seconds += time.perf_counter() - read_started
             except StopIteration:
                 break
             pending.append(
@@ -160,14 +167,17 @@ def normalize_images(
 
         while pending:
             future = pending.popleft()
-            target, filename_invalido = future.result()
+            target, filename_invalido, worker_seconds = future.result()
+            image_processing_seconds += worker_seconds
             if target is not None:
                 normalized.append(target)
             if filename_invalido is not None:
                 invalid.append(filename_invalido)
 
             try:
+                read_started = time.perf_counter()
                 index, (filename, data) = next(source)
+                source_read_seconds += time.perf_counter() - read_started
             except StopIteration:
                 continue
             pending.append(
@@ -181,6 +191,13 @@ def normalize_images(
             f"Aviso: {len(invalid)} arquivo(s) inválido(s) ou corrompido(s) foram ignorados.",
             file=sys.stderr,
         )
+    normalize_wall_seconds = time.perf_counter() - normalize_started
+    normalize_images.last_timings = {
+        "source_read_seconds": round(source_read_seconds, 3),
+        "image_processing_worker_seconds_sum": round(image_processing_seconds, 3),
+        "normalize_wall_seconds": round(normalize_wall_seconds, 3),
+        "image_workers": workers,
+    }
     return normalized
 
 def image_dimensions(image_path: Path, width_cm: float) -> tuple[float, float]:
@@ -262,7 +279,14 @@ def build_pdf(images: list[Path], output_path: Path, width_cm: float) -> None:
 
     pdf.save()
 
+def _timed_build(function, *args) -> float:
+    started = time.perf_counter()
+    function(*args)
+    return time.perf_counter() - started
+
+
 def main() -> int:
+    total_started = time.perf_counter()
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-dir", type=Path)
     parser.add_argument("--zip-file", type=Path)
@@ -282,18 +306,28 @@ def main() -> int:
     candidates = image_sources(args.input_dir, args.zip_file)
     with tempfile.TemporaryDirectory(prefix="fotos-word-images-") as temp:
         normalized = normalize_images(candidates, Path(temp), args.width)
+        normalization_timings = normalize_images.last_timings
         # Word e PDF são documentos independentes: monte os dois em paralelo.
+        documents_started = time.perf_counter()
         with ThreadPoolExecutor(max_workers=2, thread_name_prefix="documento") as executor:
-            docx_future = executor.submit(build_docx, normalized, docx_path, args.width)
-            pdf_future = executor.submit(build_pdf, normalized, pdf_path, args.width)
-            docx_future.result()
-            pdf_future.result()
+            docx_future = executor.submit(_timed_build, build_docx, normalized, docx_path, args.width)
+            pdf_future = executor.submit(_timed_build, build_pdf, normalized, pdf_path, args.width)
+            docx_seconds = docx_future.result()
+            pdf_seconds = pdf_future.result()
+        documents_wall_seconds = time.perf_counter() - documents_started
         stats = {
             "ok": True,
             "photos": len(normalized),
             "width_cm": args.width,
             "docx": docx_path.name,
             "pdf": pdf_path.name,
+            "timings_seconds": {
+                **normalization_timings,
+                "docx_seconds": round(docx_seconds, 3),
+                "pdf_seconds": round(pdf_seconds, 3),
+                "documents_wall_seconds": round(documents_wall_seconds, 3),
+                "python_total_seconds": round(time.perf_counter() - total_started, 3),
+            },
         }
         print(json.dumps(stats, ensure_ascii=False))
     return 0
