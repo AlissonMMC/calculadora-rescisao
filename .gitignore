@@ -26,3 +26,10 @@ __pycache__/
 # IDE
 .vscode/
 .idea/
+
+
+# Mantém o bloqueio HTTP da área privada onde ficam os documentos de fotos.
+# A pasta fica disponível no checkout, mas apenas o .htaccess é versionado.
+!/storage/fotos_word/
+/storage/fotos_word/*
+!/storage/fotos_word/.htaccess

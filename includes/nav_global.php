@@ -21,6 +21,7 @@ $links = [
     ['key'=>'rescisao','label'=>'Nova rescisão','href'=>$navBase.'index.php?nova=1','icon'=>'calc'],
     ['key'=>'gerador','label'=>'Gerador de orçamentos','href'=>$navBase.'orcamentos/','icon'=>'file'],
     ['key'=>'historico_rescisoes','label'=>'Rescisões','href'=>$navBase.'historico.php','icon'=>'clock'],
+    ['key'=>'fotos_word','label'=>'Fotos Word/PDF','href'=>$navBase.'fotos_word.php','icon'=>'file'],
     ['key'=>'historico_orcamentos','label'=>'Orçamentos','href'=>$navBase.'orcamentos/historico_orcamentos.php','icon'=>'archive'],
 ];
 
@@ -31,7 +32,7 @@ if ($isAdmin) {
 }
 
 $linksPrimary = array_values(array_filter($links, static function (array $link): bool {
-    return in_array($link['key'], ['dashboard', 'rescisao', 'historico_rescisoes'], true);
+    return in_array($link['key'], ['dashboard', 'rescisao', 'historico_rescisoes', 'fotos_word'], true);
 }));
 
 $linksOrcamentos = array_values(array_filter($links, static function (array $link): bool {

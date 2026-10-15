@@ -22,6 +22,7 @@ O projeto foi desenvolvido com foco em uso profissional, organização de proces
 - 🔎 Conferência antes da cobrança
 - 🕵️ Registro de alterações e auditoria
 - 📊 Módulo de geração e processamento de orçamentos
+- 🖼️ Geração de documentos Word/PDF a partir de pastas de fotos, com proporção preservada, rotação automática de fotos verticais altas e duas fotos por página
 - 📑 Integração com planilhas
 - 🐍 Processamento auxiliar com Python
 
@@ -105,11 +106,34 @@ Use .env.example como referência para as variáveis do ambiente.
 
 **Nunca coloque credenciais reais no Git.**
 
-### 5. Instalar dependências do módulo de orçamentos
+### 5. Instalar dependências Python
+
+Para o módulo de orçamentos:
 
 ```bash
-python -m pip install openpyxl
+py -3 -m pip install openpyxl
 ```
+
+Para o módulo Fotos Word/PDF:
+
+```bash
+py -3 -m pip install -r tools/requirements-fotos-word.txt
+```
+
+O módulo Fotos Word/PDF usa ReportLab para criar o PDF diretamente, sem depender do LibreOffice. Isso reduz a etapa de conversão em contratos com centenas de imagens.
+
+Para contratos com centenas de fotos (até 800 por envio e 1 GB de imagens), ajuste o `php.ini` do Apache local e reinicie o Apache:
+
+```ini
+upload_max_filesize = 1050M
+post_max_size = 1100M
+max_file_uploads = 850
+max_execution_time = 1800
+max_input_time = 1800
+memory_limit = 1024M
+```
+
+O computador deve ter espaço livre suficiente para os arquivos enviados e os dois documentos gerados. As imagens são reduzidas para até 1800 px no lado maior para controlar o tamanho dos arquivos de saída. Para contratos acima de 1 GB, processe as fotos em partes.
 
 ### 6. Executar
 
