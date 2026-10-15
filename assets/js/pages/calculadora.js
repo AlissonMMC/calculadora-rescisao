@@ -1813,6 +1813,14 @@ function imprimirCalculo() {
     const nomePrint = document.getElementById('nomeInquilino').value.trim() || 'Inquilino não informado';
     const enderecoPrint = document.getElementById('enderecoImovel').value.trim() || 'Imóvel não informado';
     document.getElementById('printOnlyHeader').textContent = `RESCISÃO DE LOCAÇÃO — ${nomePrint} — ${enderecoPrint}`;
+    const formatarDataInformada = valor => {
+        if (!valor) return 'Não informada';
+        const partes = valor.split('-');
+        return partes.length === 3 ? partes[2] + '/' + partes[1] + '/' + partes[0] : valor;
+    };
+    document.getElementById('printDataAvisoDesocupacao').textContent = formatarDataInformada(document.getElementById('dataAvisoDesocupacao').value);
+    document.getElementById('printDataAvisoProprietario').textContent = formatarDataInformada(document.getElementById('dataAvisoProprietario').value);
+    document.getElementById('printMotivoDesocupacao').textContent = document.getElementById('motivoDesocupacao').value.trim() || 'Não informado';
     document.body.classList.add('modo-impressao');
     // O diálogo nativo de impressão precisa ser chamado diretamente pelo clique.
     window.print();
