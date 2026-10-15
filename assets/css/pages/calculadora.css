@@ -3208,3 +3208,22 @@ html[data-theme="dark"] #calculatorScreen #topicoSeguros .insurance-destinos .ch
         grid-template-columns:1fr;
     }
 }
+
+/* Dados de desocupação — bloco introdutório da folha de cálculo */
+.moveout-info-card{margin:0 0 16px;padding:17px 18px;border:1px solid var(--border);border-radius:13px;background:var(--white);box-shadow:0 2px 8px rgba(0,0,0,.025)}
+.moveout-info-heading{display:flex;align-items:flex-start;gap:11px;margin-bottom:15px}
+.moveout-info-icon{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:9px;background:var(--orange-soft);color:var(--orange-dark);font-weight:900;font-size:1rem}
+.moveout-info-heading h2{margin:1px 0 4px;color:var(--text);font-size:.92rem;font-weight:850}
+.moveout-info-heading p{margin:0;color:var(--muted);font-size:.7rem;line-height:1.45}
+.moveout-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.moveout-info-grid .field{min-width:0;margin:0}
+.moveout-info-grid .field label{font-size:.7rem}
+.moveout-info-grid .field input{width:100%;min-width:0}
+.moveout-reason-field{grid-column:1/-1}
+.moveout-print-summary{margin:10px 0 14px;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:9pt}
+.moveout-print-summary>strong{display:block;margin-bottom:5px;font-size:10pt}
+.moveout-print-summary>div{margin-top:3px}
+.moveout-print-summary span{font-weight:600}
+@media(max-width:700px){.moveout-info-card{padding:14px}.moveout-info-grid{grid-template-columns:1fr;gap:11px}.moveout-reason-field{grid-column:auto}}
+@media print{.moveout-info-card{display:none!important}.moveout-print-summary{display:block!important;break-inside:avoid}}
+
