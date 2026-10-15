@@ -143,12 +143,12 @@ def normalize_images(
     normalized: list[Path] = []
     invalid: list[str] = []
     workers = max(1, min(4, os.cpu_count() or 1))
-    max_pending = workers * 2
+    max_pending = workers
     source = iter(enumerate(candidates, start=1))
     pending = deque()
 
     with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="foto") as executor:
-        # Mantemos no máximo 2 tarefas por trabalhador em memória.
+        # Mantemos no máximo uma tarefa por trabalhador para limitar o uso de memória.
         for _ in range(max_pending):
             try:
                 index, (filename, data) = next(source)
