@@ -166,6 +166,11 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
             <label for="dataAvisoProprietario">Data em que o proprietário foi avisado</label>
             <input id="dataAvisoProprietario" type="date" />
           </div>
+          <div class="field">
+            <label for="dataFinal">Data da desocupação (entrega das chaves)</label>
+            <input id="dataFinal" type="date" />
+            <span class="field-error" id="erroDataFinal">A entrega deve ser igual ou posterior à data inicial.</span>
+          </div>
           <div class="field moveout-reason-field">
             <label for="motivoDesocupacao">Motivo da desocupação</label>
             <input id="motivoDesocupacao" type="text" maxlength="500" placeholder="Ex.: mudança, encerramento do contrato, compra de imóvel..." />
@@ -202,7 +207,7 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
               <div class="section-number">1</div>
               <div>
                 <h2 class="section-title">Valores dos dias finais</h2>
-                <p class="section-subtitle">Informe a data inicial e a data de entrega das chaves. A contagem considera as duas datas.</p>
+                <p class="section-subtitle">Informe a data inicial e a data da desocupação. A contagem considera as duas datas.</p>
                 <div class="topic-tools"><button class="help-btn" type="button" data-help="explicaDias">?</button><button class="btn-mini" type="button" data-clear-topic="dias">Limpar tópico</button></div>
               </div>
             </div>
@@ -212,12 +217,6 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
                 <label for="dataInicial">Data inicial</label>
                 <input id="dataInicial" type="date" />
                 <span class="field-error" id="erroDataInicial">Informe uma data válida.</span>
-              </div>
-              <div class="date-arrow" aria-hidden="true">→</div>
-              <div class="field">
-                <label for="dataFinal">Entrega das chaves</label>
-                <input id="dataFinal" type="date" />
-                <span class="field-error" id="erroDataFinal">A entrega deve ser igual ou posterior à data inicial.</span>
               </div>
             </div>
 
