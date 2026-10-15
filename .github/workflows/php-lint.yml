@@ -34,3 +34,36 @@ jobs:
 
       - name: Validate photo generator imports
         run: python3 tools/gerar_fotos_word.py --help
+
+      - name: Smoke test Word and PDF generation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_root="$(mktemp -d)"
+          trap 'rm -rf "$test_root"' EXIT
+          mkdir -p "$test_root/photos" "$test_root/output"
+          python3 - "$test_root/photos" <<'PY'
+          import sys
+          from pathlib import Path
+          from PIL import Image
+
+          folder = Path(sys.argv[1])
+          Image.new("RGB", (600, 900), (210, 70, 50)).save(folder / "foto_1.jpg")
+          Image.new("RGB", (1200, 600), (60, 150, 80)).save(folder / "foto_2.jpg")
+          Image.new("RGB", (900, 600), (50, 80, 210)).save(folder / "foto_10.jpg")
+          PY
+          python3 tools/gerar_fotos_word.py --input-dir "$test_root/photos" --output-dir "$test_root/output" --width 12
+          python3 - "$test_root/output" <<'PY'
+          import sys
+          import zipfile
+          from pathlib import Path
+          from docx import Document
+
+          out = Path(sys.argv[1])
+          docx_path = out / "fotos_redimensionadas.docx"
+          pdf_path = out / "fotos_redimensionadas.pdf"
+          assert zipfile.is_zipfile(docx_path), "DOCX inválido"
+          assert pdf_path.is_file() and pdf_path.read_bytes().startswith(b"%PDF-"), "PDF inválido"
+          assert len(Document(docx_path).inline_shapes) == 3, "Nem todas as imagens foram incluídas no Word"
+          print("Smoke test Word/PDF aprovado")
+          PY
