@@ -210,7 +210,7 @@ def image_dimensions(image_path: Path, width_cm: float) -> tuple[float, float]:
     return width_px * scale, height_px * scale
 
 
-def build_docx(images: list[Path], output_path: Path, width_cm: float) -> None:
+def build_docx(images: list[Path], output_path: Path, width_cm: float) -> dict[str, float]:
     document = Document()
     section = document.sections[0]
     section.page_width = Cm(21)
@@ -225,9 +225,14 @@ def build_docx(images: list[Path], output_path: Path, width_cm: float) -> None:
     normal.font.size = Pt(10)
     normal.paragraph_format.space_after = Pt(0)
 
+    # Cronometra dimensões, inserção de imagens e gravação do arquivo separadamente.
+    dimensions_seconds = 0.0
+    insert_started = time.perf_counter()
     # Duas fotos por página; cada imagem cabe em uma caixa com altura máxima.
     for index, image_path in enumerate(images):
+        stage_started = time.perf_counter()
         largura_final, altura_final = image_dimensions(image_path, width_cm)
+        dimensions_seconds += time.perf_counter() - stage_started
         paragraph = document.add_paragraph()
         paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
         paragraph.paragraph_format.space_before = Pt(3)
@@ -241,10 +246,19 @@ def build_docx(images: list[Path], output_path: Path, width_cm: float) -> None:
         if (index + 1) % 2 == 0 and index + 1 < len(images):
             document.add_page_break()
 
+    insert_seconds = time.perf_counter() - insert_started
+    save_started = time.perf_counter()
     document.save(output_path)
+    save_seconds = time.perf_counter() - save_started
+    return {
+        "dimensions_seconds": round(dimensions_seconds, 3),
+        "insert_images_seconds": round(max(0.0, insert_seconds - dimensions_seconds), 3),
+        "save_docx_seconds": round(save_seconds, 3),
+        "docx_bytes": float(output_path.stat().st_size),
+    }
 
 
-def build_pdf(images: list[Path], output_path: Path, width_cm: float) -> None:
+def build_pdf(images: list[Path], output_path: Path, width_cm: float) -> dict[str, float]:
     """Renderiza o PDF diretamente, sem abrir/converter o DOCX no LibreOffice."""
     page_width, page_height = A4
     max_height = MAX_IMAGE_HEIGHT_CM * cm
@@ -254,8 +268,12 @@ def build_pdf(images: list[Path], output_path: Path, width_cm: float) -> None:
     width_limit = min(width_cm * cm, page_width - (2 * side_margin))
 
     pdf = canvas.Canvas(str(output_path), pagesize=A4, pageCompression=1)
+    dimensions_seconds = 0.0
+    draw_started = time.perf_counter()
     for index, image_path in enumerate(images):
+        stage_started = time.perf_counter()
         draw_width_cm, draw_height_cm = image_dimensions(image_path, width_limit / cm)
+        dimensions_seconds += time.perf_counter() - stage_started
         draw_width = draw_width_cm * cm
         draw_height = draw_height_cm * cm
 
@@ -277,12 +295,21 @@ def build_pdf(images: list[Path], output_path: Path, width_cm: float) -> None:
         if (index + 1) % 2 == 0 and index + 1 < len(images):
             pdf.showPage()
 
+    draw_seconds = time.perf_counter() - draw_started
+    save_started = time.perf_counter()
     pdf.save()
+    save_seconds = time.perf_counter() - save_started
+    return {
+        "dimensions_seconds": round(dimensions_seconds, 3),
+        "draw_images_seconds": round(max(0.0, draw_seconds - dimensions_seconds), 3),
+        "save_pdf_seconds": round(save_seconds, 3),
+        "pdf_bytes": float(output_path.stat().st_size),
+    }
 
-def _timed_build(function, *args) -> float:
+def _timed_build(function, *args) -> tuple[float, object]:
     started = time.perf_counter()
-    function(*args)
-    return time.perf_counter() - started
+    details = function(*args)
+    return time.perf_counter() - started, details
 
 
 def main() -> int:
@@ -312,8 +339,8 @@ def main() -> int:
         with ThreadPoolExecutor(max_workers=2, thread_name_prefix="documento") as executor:
             docx_future = executor.submit(_timed_build, build_docx, normalized, docx_path, args.width)
             pdf_future = executor.submit(_timed_build, build_pdf, normalized, pdf_path, args.width)
-            docx_seconds = docx_future.result()
-            pdf_seconds = pdf_future.result()
+            docx_seconds, docx_details = docx_future.result()
+            pdf_seconds, pdf_details = pdf_future.result()
         documents_wall_seconds = time.perf_counter() - documents_started
         stats = {
             "ok": True,
@@ -324,7 +351,9 @@ def main() -> int:
             "timings_seconds": {
                 **normalization_timings,
                 "docx_seconds": round(docx_seconds, 3),
+                "docx_details": docx_details,
                 "pdf_seconds": round(pdf_seconds, 3),
+                "pdf_details": pdf_details,
                 "documents_wall_seconds": round(documents_wall_seconds, 3),
                 "python_total_seconds": round(time.perf_counter() - total_started, 3),
             },
