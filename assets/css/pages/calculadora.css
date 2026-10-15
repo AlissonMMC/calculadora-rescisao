@@ -3466,4 +3466,53 @@ html[data-theme="dark"] #calculatorScreen #topicoSeguros .insurance-destinos .ch
  #calculatorScreen #topicoChaveiro,
  #calculatorScreen #topicoSeguros{height:auto!important;min-height:0!important}
 }
+/* v41 — dimensões rigorosamente iguais para os quatro cards */
+#calculatorScreen .optional-topics-columns{
+ display:grid!important;
+ width:100%!important;
+ max-width:100%!important;
+ grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+ grid-auto-columns:minmax(0,1fr)!important;
+ align-items:stretch!important;
+ justify-items:stretch!important;
+ gap:12px!important;
+}
+#calculatorScreen .optional-topics-column{
+ width:100%!important;
+ min-width:0!important;
+ max-width:none!important;
+ justify-self:stretch!important;
+ display:grid!important;
+ grid-template-rows:304px 304px!important;
+ grid-auto-rows:304px!important;
+ align-content:start!important;
+ align-items:stretch!important;
+ gap:12px!important;
+}
+#calculatorScreen .optional-topics-column>.compact-topic-card,
+#calculatorScreen #topicoAluguelInteiro,
+#calculatorScreen #topicoManutencao,
+#calculatorScreen #topicoChaveiro,
+#calculatorScreen #topicoSeguros{
+ display:block!important;
+ width:100%!important;
+ min-width:0!important;
+ max-width:none!important;
+ height:304px!important;
+ min-height:304px!important;
+ max-height:304px!important;
+ margin:0!important;
+ justify-self:stretch!important;
+ align-self:stretch!important;
+ box-sizing:border-box!important;
+}
+@media(max-width:760px){
+ #calculatorScreen .optional-topics-columns{grid-template-columns:minmax(0,1fr)!important}
+ #calculatorScreen .optional-topics-column{grid-template-rows:auto!important;grid-auto-rows:auto!important}
+ #calculatorScreen .optional-topics-column>.compact-topic-card,
+ #calculatorScreen #topicoAluguelInteiro,
+ #calculatorScreen #topicoManutencao,
+ #calculatorScreen #topicoChaveiro,
+ #calculatorScreen #topicoSeguros{height:auto!important;min-height:0!important;max-height:none!important}
+}
 
