@@ -3403,4 +3403,67 @@ html[data-theme="dark"] #calculatorScreen #topicoSeguros .insurance-destinos .ch
  #calculatorScreen #topicoChaveiro,
  #calculatorScreen #topicoSeguros{height:auto!important;min-height:0!important}
 }
+/* v40 — grade simétrica e melhor distribuição do espaço nos seguros */
+#calculatorScreen .optional-topics-columns{
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ align-items:stretch!important;
+ gap:12px!important;
+}
+#calculatorScreen .optional-topics-column{
+ display:flex!important;
+ flex-direction:column!important;
+ align-items:stretch!important;
+ min-width:0!important;
+ width:100%!important;
+}
+#calculatorScreen .optional-topics-column>.compact-topic-card{
+ width:100%!important;
+ min-width:0!important;
+}
+#calculatorScreen #topicoAluguelInteiro,
+#calculatorScreen #topicoManutencao,
+#calculatorScreen #topicoChaveiro,
+#calculatorScreen #topicoSeguros{
+ width:100%!important;
+ min-width:0!important;
+ height:304px!important;
+ min-height:304px!important;
+ box-sizing:border-box!important;
+}
+#calculatorScreen #topicoSeguros{padding:10px!important}
+#calculatorScreen #topicoSeguros .insurance-options-head{margin-bottom:8px!important;padding:8px 10px!important}
+#calculatorScreen #topicoSeguros .insurance-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+#calculatorScreen #topicoSeguros .insurance-card-field{
+ min-width:0!important;
+ padding:8px!important;
+ column-gap:7px!important;
+ row-gap:5px!important;
+}
+#calculatorScreen #topicoSeguros .insurance-field-title{
+ min-height:30px!important;
+ align-items:flex-start!important;
+ gap:5px!important;
+}
+#calculatorScreen #topicoSeguros .insurance-field-title label{font-size:.62rem!important;line-height:1.2!important}
+#calculatorScreen #topicoSeguros .insurance-count{flex:0 0 auto!important;margin-left:auto!important}
+#calculatorScreen #topicoSeguros .insurance-card-field>input[type="number"]{min-width:0!important;width:100%!important;height:34px!important;min-height:34px!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row{
+ min-width:0!important;
+ display:flex!important;
+ flex-direction:column!important;
+ justify-content:flex-end!important;
+ align-items:stretch!important;
+ gap:4px!important;
+ margin:0!important;
+}
+#calculatorScreen #topicoSeguros .insurance-extra-row label{font-size:.55rem!important;line-height:1.15!important;text-align:center!important}
+#calculatorScreen #topicoSeguros .insurance-extra-row input{width:100%!important;height:30px!important;min-height:30px!important}
+@media(max-width:760px){
+ #calculatorScreen .optional-topics-columns{grid-template-columns:minmax(0,1fr)!important}
+ #calculatorScreen #topicoAluguelInteiro,
+ #calculatorScreen #topicoManutencao,
+ #calculatorScreen #topicoChaveiro,
+ #calculatorScreen #topicoSeguros{height:auto!important;min-height:0!important}
+}
 
