@@ -21,7 +21,7 @@ $links = [
     ['key'=>'rescisao','label'=>'Nova rescisão','href'=>$navBase.'index.php?nova=1','icon'=>'calc'],
     ['key'=>'gerador','label'=>'Gerador de orçamentos','href'=>$navBase.'orcamentos/','icon'=>'file'],
     ['key'=>'historico_rescisoes','label'=>'Rescisões','href'=>$navBase.'historico.php','icon'=>'clock'],
-    ['key'=>'fotos_word','label'=>'Fotos Word/PDF','href'=>$navBase.'fotos_word.php','icon'=>'file'],
+    ['key'=>'fotos_word','label'=>'Fotos Word/PDF','href'=>$navBase.'fotos_word.php','icon'=>'images'],
     ['key'=>'historico_orcamentos','label'=>'Orçamentos','href'=>$navBase.'orcamentos/historico_orcamentos.php','icon'=>'archive'],
 ];
 
@@ -48,6 +48,7 @@ function navIcon(string $name): string {
         'home' => '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/>',
         'calc' => '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/>',
         'file' => '<path d="M6 3h9l3 3v15H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
+        'images' => '<rect x="3" y="5" width="15" height="14" rx="2"/><circle cx="13" cy="9" r="1.2"/><path d="m5 16 4-4 3 3 2-2 3 3M8 3h11a2 2 0 0 1 2 2v13"/>',
         'clock' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
         'archive' => '<path d="M4 7h16l-1 13H5L4 7Z"/><path d="M6 4h12l1 3H5l1-3ZM9 11h6"/>',
         'users' => '<path d="M16 21v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 19.5V21"/><circle cx="10" cy="8" r="3.5"/><path d="M16 5a3.5 3.5 0 0 1 0 6.5M17 15.5h1.5A3.5 3.5 0 0 1 22 19v2"/>',
