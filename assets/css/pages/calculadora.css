@@ -3381,4 +3381,26 @@ html[data-theme="dark"] #calculatorScreen #topicoSeguros .insurance-destinos .ch
 #calculatorScreen #topicoSeguros{box-sizing:border-box!important;align-self:stretch!important;min-height:0!important}
 #calculatorScreen #topicoChaveiro{padding:15px!important}
 #calculatorScreen #topicoSeguros{padding:10px!important}
+/* v39 — alturas uniformes para os quatro cards de cobranças adicionais */
+#calculatorScreen .optional-topics-columns{align-items:stretch!important}
+#calculatorScreen .optional-topics-column{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important}
+#calculatorScreen .optional-topics-column>.compact-topic-card{
+ box-sizing:border-box!important;
+ width:100%!important;
+ min-height:0!important;
+}
+#calculatorScreen #topicoAluguelInteiro,
+#calculatorScreen #topicoManutencao,
+#calculatorScreen #topicoChaveiro,
+#calculatorScreen #topicoSeguros{height:304px!important;min-height:304px!important}
+#calculatorScreen #topicoAluguelInteiro,
+#calculatorScreen #topicoManutencao,
+#calculatorScreen #topicoChaveiro{padding:15px!important}
+#calculatorScreen #topicoSeguros{padding:10px!important}
+@media(max-width:760px){
+ #calculatorScreen #topicoAluguelInteiro,
+ #calculatorScreen #topicoManutencao,
+ #calculatorScreen #topicoChaveiro,
+ #calculatorScreen #topicoSeguros{height:auto!important;min-height:0!important}
+}
 
