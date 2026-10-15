@@ -116,6 +116,8 @@ if (isset($_GET['baixar'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $tempoInicioPost = microtime(true);
+    $tempoInicioPython = null;
     $diretorioTemporario = '';
     $diretorioResultado = '';
     $geracaoConcluida = false;
@@ -315,6 +317,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             1 => ['pipe', 'w'],
             2 => ['pipe', 'w'],
         ];
+        $tempoInicioPython = microtime(true);
         $processo = @proc_open($comando, $descritores, $pipes, __DIR__);
         if (!is_resource($processo)) {
             throw new RuntimeException('Não foi possível iniciar o processador de fotos. Verifique a instalação do Python.');
@@ -351,6 +354,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             error_log('Fotos Word/PDF: retorno inesperado do processador. ' . (string)$saidaPython);
             throw new RuntimeException('O sistema não confirmou a criação dos arquivos Word e PDF. Tente novamente.');
         }
+
+        $timingsPython = is_array($estatisticas['timings_seconds'] ?? null)
+            ? $estatisticas['timings_seconds']
+            : [];
+        error_log('Fotos Word/PDF desempenho: ' . json_encode([
+            'fotos' => (int)($estatisticas['photos'] ?? 0),
+            'php_pre_python_seconds' => round(($tempoInicioPython ?? microtime(true)) - $tempoInicioPost, 3),
+            'python_process_seconds' => round(microtime(true) - ($tempoInicioPython ?? microtime(true)), 3),
+            'php_total_seconds' => round(microtime(true) - $tempoInicioPost, 3),
+            'python' => $timingsPython,
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
         $resultado = [
             'id' => $idSaida,
