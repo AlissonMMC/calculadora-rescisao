@@ -1766,19 +1766,24 @@ function initFinanceDetails() {
     );
 }
 function initMiniCollapses() {
-    // Esta inicialização pode ser chamada mais de uma vez quando a calculadora
-    // restaura um cálculo ou troca o critério da multa. Evitamos registrar
-    // dois listeners no mesmo botão, pois isso faria um clique abrir e fechar
-    // o painel imediatamente.
-    document.querySelectorAll('[data-collapse-target]').forEach(btn => {
-        if (btn.dataset.miniCollapseBound === '1') return;
-        btn.dataset.miniCollapseBound = '1';
-        btn.addEventListener('click', () => {
-            const box = document.getElementById(btn.dataset.collapseTarget);
-            if (!box) return;
-            const collapsed = box.classList.toggle('is-collapsed');
-            btn.textContent = collapsed ? 'Mostrar' : 'Ocultar';
-        });
+    // Delegação no documento: os botões continuam funcionais mesmo quando
+    // a tela é restaurada/trocada sem reinicializar os elementos individuais.
+    // O marcador evita registrar o mesmo listener mais de uma vez.
+    if (document.documentElement.dataset.miniCollapseDelegationBound === '1') return;
+    document.documentElement.dataset.miniCollapseDelegationBound = '1';
+
+    document.addEventListener('click', event => {
+        const btn = event.target.closest('[data-collapse-target]');
+        if (!btn) return;
+
+        const box = document.getElementById(btn.dataset.collapseTarget);
+        if (!box) return;
+
+        event.preventDefault();
+        const collapsed = box.classList.toggle('is-collapsed');
+        btn.textContent = collapsed ? 'Mostrar' : 'Ocultar';
+        btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        btn.setAttribute('aria-controls', box.id);
     });
 }
 function iniciarModo(modo) {
