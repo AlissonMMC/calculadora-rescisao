@@ -2082,6 +2082,9 @@ historicoCarregando = true;
 renderizarHistorico();
 
 // Em "Nova rescisão" a tela é independente do histórico.
+// Registra os controles de expansão assim que a tela termina de carregar.
+initMiniCollapses();
+
 // A consulta central será feita quando o usuário abrir/atualizar o histórico.
 if (!novaRescisaoInicial) {
     carregarHistoricoServidor();
