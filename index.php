@@ -703,4 +703,4 @@ window.USUARIO_LOGADO = <?= json_encode([
     window.HISTORICO_INICIAL = <?= json_encode($historicoInicial, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     window.HISTORICO_INICIAL_ID = <?= (int)$historicoInicialId ?>;
 </script>
-<script src="assets/js/pages/calculadora.js?v=20261005-auth-flow"></script>
+<script src="assets/js/pages/calculadora.js?v=20261021-collapse-fix"></script>
