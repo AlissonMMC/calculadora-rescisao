@@ -165,12 +165,26 @@ def find_soffice():
     if found:return found
     raise RuntimeError('LibreOffice não foi encontrado no servidor.')
 
-def recalc_input(source,job):
-    soffice=find_soffice();outdir=job/'_recalc';outdir.mkdir(exist_ok=True);profile=job/'_lo_recalc_profile'
+def recalc_input(source,job,strict=False):
+    # Recalcula fórmulas com LibreOffice em uma cópia separada. Remove saída
+    # antiga para nunca aceitar, por engano, um cache de uma geração anterior.
+    source=Path(source);job=Path(job)
+    soffice=find_soffice()
+    outdir=job/'_recalc';outdir.mkdir(exist_ok=True)
+    profile=job/'_lo_recalc_profile'
+    cand=outdir/source.name
+    cand.unlink(missing_ok=True)
     cmd=[soffice,'--headless',f'-env:UserInstallation={profile.as_uri()}','--convert-to','xlsx','--outdir',str(outdir),str(source)]
-    proc=subprocess.run(cmd,capture_output=True,text=True,timeout=180)
-    cand=outdir/source.name;shutil.rmtree(profile,ignore_errors=True)
-    return cand if proc.returncode==0 and cand.is_file() else source
+    try:
+        proc=subprocess.run(cmd,capture_output=True,text=True,timeout=180)
+    finally:
+        shutil.rmtree(profile,ignore_errors=True)
+    if proc.returncode==0 and cand.is_file():
+        return cand
+    detail=(proc.stderr or proc.stdout or 'LibreOffice não gerou a cópia recalculada.').strip()
+    if strict:
+        raise RuntimeError(f'Não foi possível recalcular as fórmulas antes de gerar o PDF: {detail}')
+    return source
 
 def make_workbook(cfg):
     source=Path(cfg['source']);job=Path(cfg['job_dir']);requested=cfg['sheet'];settings=cfg.get('signature_settings',{})
@@ -204,18 +218,50 @@ def make_workbook(cfg):
     out=job/'Planilha de Acionamento.xlsx';wb.calculation.fullCalcOnLoad=True;wb.calculation.forceFullCalc=True;wb.save(out);cache_wb.close();wb.close();return out
 
 def export_pdf(xlsx,job,sheet,index):
-    soffice=find_soffice();temp=job/f'_pdf_{index}.xlsx';profile=job/f'_lo_profile_{index}';wb=load_workbook(xlsx,data_only=False)
+    soffice=find_soffice()
+    temp=job/f'_pdf_{index}.xlsx'
+    profile=job/f'_lo_profile_{index}'
+
+    # Materializa os resultados das fórmulas usando uma cópia recalculada.
+    # O openpyxl preserva a fórmula, mas não calcula nem atualiza seu resultado
+    # em cache; por isso um PDF podia exibir valores antigos em algumas células.
+    recalculated=recalc_input(xlsx,job,strict=True)
+    wb=load_workbook(xlsx,data_only=False)
+    cache_wb=load_workbook(recalculated,data_only=True)
     try:
-        for ws in list(wb.worksheets):
-            if ws.title!=sheet:wb.remove(ws)
-        ws=wb[sheet];ws.page_setup.fitToWidth=1;ws.page_setup.fitToHeight=0;ws.sheet_properties.pageSetUpPr.fitToPage=True;wb.calculation.fullCalcOnLoad=True;wb.calculation.forceFullCalc=True;wb.save(temp)
-    finally:wb.close()
-    cmd=[soffice,'--headless',f'-env:UserInstallation={profile.as_uri()}','--convert-to','pdf','--outdir',str(job),str(temp)];proc=subprocess.run(cmd,capture_output=True,text=True,timeout=180);generated=job/f'{temp.stem}.pdf';target=job/f'{sheet}.pdf'
-    if proc.returncode!=0 or not generated.is_file():raise RuntimeError((proc.stderr or proc.stdout or f'LibreOffice não criou {sheet}.pdf').strip())
-    if target.exists(): target.unlink()
-    generated.replace(target)
-    temp.unlink(missing_ok=True)
-    shutil.rmtree(profile,ignore_errors=True)
+        if sheet not in wb.sheetnames or sheet not in cache_wb.sheetnames:
+            raise RuntimeError(f"A aba '{sheet}' não existe no arquivo recalculado.")
+        ws=wb[sheet]
+        cache_ws=cache_wb[sheet]
+        for row in ws.iter_rows():
+            for cell in row:
+                if isinstance(cell.value,str) and cell.value.startswith('='):
+                    cached=cache_ws[cell.coordinate].value
+                    if cached is not None:
+                        cell.value=cached
+        for other in list(wb.worksheets):
+            if other.title!=sheet:wb.remove(other)
+        ws=wb[sheet]
+        ws.page_setup.fitToWidth=1
+        ws.page_setup.fitToHeight=0
+        ws.sheet_properties.pageSetUpPr.fitToPage=True
+        wb.save(temp)
+    finally:
+        cache_wb.close()
+        wb.close()
+
+    cmd=[soffice,'--headless',f'-env:UserInstallation={profile.as_uri()}','--convert-to','pdf','--outdir',str(job),str(temp)]
+    try:
+        proc=subprocess.run(cmd,capture_output=True,text=True,timeout=180)
+        generated=job/f'{temp.stem}.pdf'
+        target=job/f'{sheet}.pdf'
+        if proc.returncode!=0 or not generated.is_file():
+            raise RuntimeError((proc.stderr or proc.stdout or f'LibreOffice não criou {sheet}.pdf').strip())
+        if target.exists():target.unlink()
+        generated.replace(target)
+    finally:
+        temp.unlink(missing_ok=True)
+        shutil.rmtree(profile,ignore_errors=True)
 
 def main():
     try:
