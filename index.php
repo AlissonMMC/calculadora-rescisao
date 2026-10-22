@@ -480,8 +480,8 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
             <div class="grid insurance-grid">
               <div class="field full insurance-options-head">
                 <label class="check-inline"><input id="semSeguros" type="checkbox" /> Não há seguros neste contrato</label>
-                <span class="hint">Informe o valor de uma parcela. Ela é cobrada sempre nos dias finais e no aluguel inteiro. Use “Parcelas extras” quando houver mais parcelas além da primeira.</span>
-                <div class="explain-box" id="explicaSeguros">Os seguros não têm ADM nem repasse ao proprietário. Cada valor informado é tratado como uma parcela. Use “Parcelas extras” para informar quantas parcelas adicionais serão cobradas. A cobrança dos seguros é automática nos dias finais e no aluguel inteiro.</div>
+                <span class="hint">A parcela informada entra uma vez nos dias finais e uma vez no aluguel inteiro. Parcelas extras são cobradas separadamente, apenas uma vez cada.</span>
+                <div class="explain-box" id="explicaSeguros">Os seguros não têm ADM nem repasse ao proprietário. A parcela normal é cobrada uma vez nos dias finais e uma vez no aluguel inteiro. As parcelas extras são somadas separadamente ao total geral, uma única vez cada.</div>
               </div>
 
               <div class="field optional-debt-field insurance-card-field">
@@ -539,8 +539,10 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
               <div class="sub-total"><span>Repasse da multa ao proprietário</span><strong id="resumoRepasseMulta">R$ 0,00</strong></div>
               <div class="sub-total"><span>ADM do aluguel</span><strong id="resumoAdmAluguel">R$ 0,00</strong></div>
               <div class="sub-total"><span>Repasse do aluguel ao proprietário</span><strong id="resumoRepasseAluguel">R$ 0,00</strong></div>
-              <div class="sub-total"><span>Seguro incêndio (não repassado)</span><strong id="resumoIncendio">R$ 0,00</strong></div>
-              <div class="sub-total"><span>Seguro fiança (não repassado)</span><strong id="resumoFianca">R$ 0,00</strong></div>
+              <div class="sub-total"><span>Seguro incêndio (parcela normal)</span><strong id="resumoIncendio">R$ 0,00</strong></div>
+              <div class="sub-total"><span>Seguro fiança (parcela normal)</span><strong id="resumoFianca">R$ 0,00</strong></div>
+              <div class="sub-total"><span>Parcelas extras — seguro incêndio</span><strong id="resumoExtrasIncendio">R$ 0,00</strong></div>
+              <div class="sub-total"><span>Parcelas extras — seguro fiança</span><strong id="resumoExtrasFianca">R$ 0,00</strong></div>
 
               <div class="summary-note">
               <strong>Critério da multa:</strong> <span id="resumoModo">—</span><br />
