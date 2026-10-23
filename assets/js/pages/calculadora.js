@@ -1297,32 +1297,37 @@ function calcular() {
     const luz = numero('luz');
     const internet = numero('internet');
     const chaveiro = numero('chaveiro');
-    // Seguros: o valor informado é o valor de UMA parcela.
-    // Parcelas extras são somadas à primeira e cada destino pode ser ativado separadamente.
+    // O valor informado de cada seguro corresponde a uma única parcela.
+    // A parcela normal entra no aluguel inteiro; cada parcela extra é contabilizada separadamente.
     const seguroIncendioParcela = numero('seguroIncendio');
     const seguroIncendioExtras = Math.floor(numero('seguroIncendioExtras'));
-    const seguroIncendioTotal = seguroIncendioParcela * (1 + seguroIncendioExtras);
+    const seguroIncendioTotal = seguroIncendioParcela;
+    const seguroIncendioExtrasTotal = seguroIncendioParcela * seguroIncendioExtras;
+
     const seguroFiancaParcela = numero('seguroFianca');
     const seguroFiancaExtras = Math.floor(numero('seguroFiancaExtras'));
-    const seguroFiancaTotal = seguroFiancaParcela * (1 + seguroFiancaExtras);
-    // Seguros sempre são cobrados nas duas frentes da rescisão: dias finais e aluguel inteiro.
-    // O único controle do usuário é a quantidade de parcelas extras. O checkbox
-    // “Não há seguros” continua sendo a exceção para desativar toda a cobrança.
-    const seguroIncendioDias = !document.getElementById('semSeguros')?.checked;
-    const seguroIncendioAluguel = !document.getElementById('semSeguros')?.checked;
-    const seguroFiancaDias = !document.getElementById('semSeguros')?.checked;
-    const seguroFiancaAluguel = !document.getElementById('semSeguros')?.checked;
-    const seguroIncendioDiasValor = seguroIncendioDias ? seguroIncendioTotal : 0;
-    const seguroFiancaDiasValor = seguroFiancaDias ? seguroFiancaTotal : 0;
-    const seguroIncendioAluguelValor = seguroIncendioAluguel ? seguroIncendioTotal : 0;
-    const seguroFiancaAluguelValor = seguroFiancaAluguel ? seguroFiancaTotal : 0;
-    const segurosDiasFinais = seguroIncendioDiasValor + seguroFiancaDiasValor;
+    const seguroFiancaTotal = seguroFiancaParcela;
+    const seguroFiancaExtrasTotal = seguroFiancaParcela * seguroFiancaExtras;
+
+    const semSeguros = document.getElementById('semSeguros')?.checked ?? false;
+    const totalParcelasExtrasSeguro = semSeguros
+        ? 0
+        : seguroIncendioExtrasTotal + seguroFiancaExtrasTotal;
+
+    // A primeira parcela de cada seguro entra uma única vez no aluguel inteiro.
+    // As parcelas extras são somadas à parte e discriminadas individualmente no e-mail.
+    const seguroIncendioDias = false;
+    const seguroFiancaDias = false;
+    const seguroIncendioDiasValor = 0;
+    const seguroFiancaDiasValor = 0;
+    const seguroIncendioAluguelValor = !semSeguros && temAluguelInteiro ? seguroIncendioTotal : 0;
+    const seguroFiancaAluguelValor = !semSeguros && temAluguelInteiro ? seguroFiancaTotal : 0;
+    const segurosDiasFinais = 0;
     const segurosAluguelInteiro = seguroIncendioAluguelValor + seguroFiancaAluguelValor;
-    // No aluguel inteiro, entram o aluguel, os encargos e somente os seguros destinados a esta seção.
-    // A ADM incide somente sobre o aluguel. Seguros não fazem parte do repasse ao proprietário.
-    const encargosAluguelInteiro = iptu + condominio + agua + luz + internet + segurosAluguelInteiro;
+    // A ADM incide somente sobre o aluguel; os seguros não entram no repasse ao proprietário.
+    const encargosAluguelInteiro = iptu + condominio + agua + luz + internet;
     const aluguelInteiro = temAluguelInteiro
-    ? aluguel + encargosAluguelInteiro
+    ? aluguel + encargosAluguelInteiro + segurosAluguelInteiro
     : 0;
     let totalProporcionais = 0;
     let aluguelDiasFinais = 0;
@@ -1383,7 +1388,7 @@ function calcular() {
     // Chaveiro é cobrado integralmente do inquilino e não participa de ADM/repasse.
     // Os seguros são contabilizados apenas nos destinos selecionados:
     // dias finais e/ou aluguel inteiro. Não há soma automática adicional fora dessas seções.
-    const total = totalProporcionais + totalAviso + multa + aluguelInteiro + manutencao + chaveiro;
+    const total = totalProporcionais + totalAviso + multa + aluguelInteiro + manutencao + chaveiro + totalParcelasExtrasSeguro;
     document.getElementById('totalProporcionais').textContent = formatar(totalProporcionais);
     document.getElementById('resumoProporcionais').textContent = formatar(totalProporcionais);
     document.getElementById('resumoAdmDiasFinais').textContent = formatar(admDiasFinais);
@@ -1401,8 +1406,8 @@ function calcular() {
     document.getElementById('resumoFianca').textContent = formatar(seguroFiancaTotal);
     document.getElementById('resumoParcelasIncendio').textContent = `${1 + seguroIncendioExtras} ${(1 + seguroIncendioExtras) === 1 ? 'parcela' : 'parcelas'}`;
     document.getElementById('resumoParcelasFianca').textContent = `${1 + seguroFiancaExtras} ${(1 + seguroFiancaExtras) === 1 ? 'parcela' : 'parcelas'}`;
-    document.getElementById('resumoCobrancaIncendio').textContent = `Cobrança automática: dias finais + aluguel inteiro · ${formatar(seguroIncendioTotal)}`;
-    document.getElementById('resumoCobrancaFianca').textContent = `Cobrança automática: dias finais + aluguel inteiro · ${formatar(seguroFiancaTotal)}`;
+    document.getElementById('resumoCobrancaIncendio').textContent = `Cobrança automática: aluguel inteiro + parcelas extras · ${formatar(seguroIncendioTotal)}`;
+    document.getElementById('resumoCobrancaFianca').textContent = `Cobrança automática: aluguel inteiro + parcelas extras · ${formatar(seguroFiancaTotal)}`;
     document.getElementById('totalGeral').textContent = formatar(total);
     atualizarConferenciaInterna(admDiasFinais, admAviso, admMulta, admAluguel, repasseDiasFinais, repasseAviso, repasseMulta, repasseAluguel);
     atualizarChecklist( {
@@ -1459,6 +1464,10 @@ function calcular() {
     atualizarModeloEmail( {
         totalProporcionais, admDiasFinais, repasseDiasFinais, totalAviso, multa, aluguelInteiro, manutencao, chaveiro,
         seguroIncendio: seguroIncendioTotal, seguroFianca: seguroFiancaTotal, segurosDiasFinais, segurosAluguelInteiro,
+        seguroIncendioExtrasTotal: semSeguros ? 0 : seguroIncendioExtrasTotal,
+        seguroFiancaExtrasTotal: semSeguros ? 0 : seguroFiancaExtrasTotal,
+        seguroIncendioParcelasExtras: semSeguros ? 0 : seguroIncendioExtras,
+        seguroFiancaParcelasExtras: semSeguros ? 0 : seguroFiancaExtras,
         temAluguelInteiro, semAluguelInteiro, total,
         dataInicial, dataFinal, dataInicioAviso, dataFimAviso,
         detalhamentoFinais, detalhamentoAviso, detalhamentoAluguelInteiro
@@ -1480,7 +1489,28 @@ function atualizarModeloEmail(dados) {
     if (dados.aluguelInteiro > 0.005) addLinha(linhasDebitos, 'Aluguel inteiro + encargos', dados.aluguelInteiro);
     if (dados.manutencao > 0.005) addLinha(linhasDebitos, 'Melhorias / manutenção', dados.manutencao);
     if (dados.chaveiro > 0.005) addLinha(linhasDebitos, 'Chaveiro', dados.chaveiro);
-    // Os seguros aparecem no e-mail conforme o destino selecionado: dias finais e/ou aluguel inteiro.
+    // Cada parcela extra aparece em uma linha, pelo valor individual da parcela.
+    const adicionarParcelasExtras = (descricao, valorTotal, quantidade) => {
+        const total = Number(valorTotal) || 0;
+        const qtd = Math.max(0, Math.floor(Number(quantidade) || 0));
+        if (total <= 0.005 || qtd === 0) return;
+        const valorParcela = total / qtd;
+        for (let i = 1; i <= qtd; i++) {
+            addLinha(linhasDebitos, `${descricao} - parcela ${i} de ${qtd}`, valorParcela);
+        }
+    };
+
+    adicionarParcelasExtras(
+        'Seguro incêndio extra',
+        dados.seguroIncendioExtrasTotal,
+        dados.seguroIncendioParcelasExtras
+    );
+
+    adicionarParcelasExtras(
+        'Seguro fiança extra',
+        dados.seguroFiancaExtrasTotal,
+        dados.seguroFiancaParcelasExtras
+    );
     const dataEntrega = dados.dataFinal ? formatarData(dados.dataFinal) : 'não informada';
     const periodo = dados.dataInicial && dados.dataFinal
     ? `${formatarData(dados.dataInicial)} até ${formatarData(dados.dataFinal)}`
