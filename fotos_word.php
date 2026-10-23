@@ -142,27 +142,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new RuntimeException('A largura deve ficar entre 5 cm e 17,4 cm para caber na página A4.');
         }
 
-        $arquivosZip = $_FILES['arquivo_zip'] ?? null;
-        $zipEnviado = is_array($arquivosZip) && (int)($arquivosZip['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
-        $arquivosFotos = $_FILES['fotos'] ?? null;
-        $fotosEnviadas = false;
+        $arquivosUpload = $_FILES['arquivos'] ?? null;
+        $listaUpload = [];
+        $nomesUpload = is_array($arquivosUpload['name'] ?? null) ? $arquivosUpload['name'] : [];
+        $temporariosUpload = is_array($arquivosUpload['tmp_name'] ?? null) ? $arquivosUpload['tmp_name'] : [];
+        $tamanhosUpload = is_array($arquivosUpload['size'] ?? null) ? $arquivosUpload['size'] : [];
+        $errosUpload = is_array($arquivosUpload['error'] ?? null) ? $arquivosUpload['error'] : [];
 
-        if (is_array($arquivosFotos) && isset($arquivosFotos['error']) && is_array($arquivosFotos['error'])) {
-            foreach ($arquivosFotos['error'] as $erroUpload) {
-                if ((int)$erroUpload !== UPLOAD_ERR_NO_FILE) {
-                    $fotosEnviadas = true;
-                    break;
-                }
+        foreach ($errosUpload as $indice => $erroUpload) {
+            $erroUpload = (int)$erroUpload;
+            if ($erroUpload === UPLOAD_ERR_NO_FILE) {
+                continue;
             }
+            if ($erroUpload !== UPLOAD_ERR_OK) {
+                $mensagensUpload = [
+                    UPLOAD_ERR_INI_SIZE => 'Um dos arquivos excedeu upload_max_filesize do PHP.',
+                    UPLOAD_ERR_FORM_SIZE => 'Um dos arquivos excedeu o limite permitido pelo formulário.',
+                    UPLOAD_ERR_PARTIAL => 'Um dos arquivos foi enviado parcialmente. Tente novamente.',
+                    UPLOAD_ERR_NO_TMP_DIR => 'A pasta temporária de uploads do PHP não está disponível.',
+                    UPLOAD_ERR_CANT_WRITE => 'O servidor não conseguiu gravar um arquivo recebido.',
+                    UPLOAD_ERR_EXTENSION => 'O PHP interrompeu o envio de um arquivo.',
+                ];
+                throw new RuntimeException($mensagensUpload[$erroUpload] ?? 'Falha ao receber um dos arquivos.');
+            }
+
+            $nome = basename((string)($nomesUpload[$indice] ?? 'arquivo'));
+            $listaUpload[] = [
+                'nome' => $nome,
+                'tmp' => (string)($temporariosUpload[$indice] ?? ''),
+                'tamanho' => (int)($tamanhosUpload[$indice] ?? 0),
+                'extensao' => strtolower(pathinfo($nome, PATHINFO_EXTENSION)),
+            ];
         }
 
-        if ($zipEnviado && $fotosEnviadas) {
-            throw new RuntimeException('Escolha uma pasta de fotos ou um arquivo ZIP, não os dois ao mesmo tempo.');
-        }
-        if (!$zipEnviado && !$fotosEnviadas) {
-            throw new RuntimeException('Selecione uma pasta com fotos ou envie um arquivo ZIP.');
+        if (count($listaUpload) < 1) {
+            throw new RuntimeException('Selecione um arquivo ZIP ou uma ou mais imagens.');
         }
 
+        $arquivosZip = array_values(array_filter(
+            $listaUpload,
+            static fn(array $arquivo): bool => $arquivo['extensao'] === 'zip'
+        ));
+        $extensoesImagem = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tif', 'tiff'];
         $idSaida = bin2hex(random_bytes(16));
         $diretorioTemporario = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'fotos-word-' . bin2hex(random_bytes(12));
         if (!mkdir($diretorioTemporario, 0700, true) && !is_dir($diretorioTemporario)) {
@@ -172,125 +193,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $argumentoEntrada = '';
         $quantidadeRecebida = 0;
 
-        if ($zipEnviado) {
-            $erroZip = (int)($arquivosZip['error'] ?? UPLOAD_ERR_NO_FILE);
-            if ($erroZip !== UPLOAD_ERR_OK) {
-                $mensagemUpload = [
-                    UPLOAD_ERR_INI_SIZE => 'O ZIP excedeu upload_max_filesize do PHP.',
-                    UPLOAD_ERR_FORM_SIZE => 'O ZIP excedeu o limite permitido pelo formulário.',
-                    UPLOAD_ERR_PARTIAL => 'O ZIP foi enviado parcialmente. Tente novamente.',
-                    UPLOAD_ERR_NO_TMP_DIR => 'A pasta temporária de uploads do PHP não está disponível.',
-                    UPLOAD_ERR_CANT_WRITE => 'O servidor não conseguiu gravar o ZIP recebido.',
-                    UPLOAD_ERR_EXTENSION => 'O PHP interrompeu o envio do ZIP.',
-                ];
-                throw new RuntimeException($mensagemUpload[$erroZip] ?? 'Falha ao receber o arquivo ZIP.');
+        if (count($arquivosZip) > 0) {
+            if (count($listaUpload) !== 1 || count($arquivosZip) !== 1) {
+                throw new RuntimeException('Envie um único arquivo ZIP ou selecione várias imagens. Não misture ZIP e imagens no mesmo envio.');
             }
 
-            $nomeZip = (string)($arquivosZip['name'] ?? '');
-            if (strtolower(pathinfo($nomeZip, PATHINFO_EXTENSION)) !== 'zip') {
-                throw new RuntimeException('O arquivo enviado precisa estar no formato .zip.');
-            }
-            if ((int)($arquivosZip['size'] ?? 0) > 1024 * 1024 * 1024) {
+            $arquivoZip = $arquivosZip[0];
+            if ($arquivoZip['tamanho'] > 1024 * 1024 * 1024) {
                 throw new RuntimeException('O ZIP pode ter no máximo 1 GB.');
             }
 
             $caminhoZip = $diretorioTemporario . DIRECTORY_SEPARATOR . 'fotos.zip';
-            if (!is_uploaded_file((string)($arquivosZip['tmp_name'] ?? '')) ||
-                !move_uploaded_file((string)$arquivosZip['tmp_name'], $caminhoZip)) {
+            if (!is_uploaded_file($arquivoZip['tmp']) || !move_uploaded_file($arquivoZip['tmp'], $caminhoZip)) {
                 throw new RuntimeException('Não foi possível receber o arquivo ZIP.');
             }
             $argumentoEntrada = ' --zip-file ' . escapeshellarg($caminhoZip);
         } else {
-            $lista = [];
-            $nomes = $arquivosFotos['name'] ?? [];
-            $temporarios = $arquivosFotos['tmp_name'] ?? [];
-            $tamanhos = $arquivosFotos['size'] ?? [];
-            $erros = $arquivosFotos['error'] ?? [];
-
-            foreach ($erros as $indice => $erroFoto) {
-                $erroFoto = (int)$erroFoto;
-                if ($erroFoto === UPLOAD_ERR_NO_FILE) {
-                    continue;
+            foreach ($listaUpload as $arquivo) {
+                if (!in_array($arquivo['extensao'], $extensoesImagem, true)) {
+                    throw new RuntimeException('Formato não suportado: ' . $arquivo['nome'] . '. Escolha um ZIP ou imagens JPG, JPEG, PNG, GIF, BMP, WEBP ou TIFF.');
                 }
-                if ($erroFoto !== UPLOAD_ERR_OK) {
-                    $mensagemUpload = [
-                        UPLOAD_ERR_INI_SIZE => 'Uma das fotos excedeu upload_max_filesize do PHP. Tente enviar um ZIP menor.',
-                        UPLOAD_ERR_FORM_SIZE => 'Uma das fotos excedeu o limite de envio.',
-                        UPLOAD_ERR_PARTIAL => 'Uma das fotos foi enviada parcialmente. Tente novamente.',
-                        UPLOAD_ERR_NO_TMP_DIR => 'A pasta temporária de uploads do PHP não está disponível.',
-                        UPLOAD_ERR_CANT_WRITE => 'O servidor não conseguiu gravar uma foto recebida.',
-                        UPLOAD_ERR_EXTENSION => 'O PHP interrompeu o envio de uma foto.',
-                    ];
-                    throw new RuntimeException($mensagemUpload[$erroFoto] ?? 'Falha ao receber uma das fotos.');
+                if ($arquivo['tamanho'] > 40 * 1024 * 1024) {
+                    throw new RuntimeException('A imagem ' . $arquivo['nome'] . ' excede 40 MB.');
                 }
-
-                $nome = basename((string)($nomes[$indice] ?? 'foto'));
-                $extensao = strtolower(pathinfo($nome, PATHINFO_EXTENSION));
-                $permitidas = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tif', 'tiff'];
-                if (!in_array($extensao, $permitidas, true)) {
-                    continue;
-                }
-
-                $tamanho = (int)($tamanhos[$indice] ?? 0);
-                if ($tamanho > 40 * 1024 * 1024) {
-                    throw new RuntimeException('A foto ' . $nome . ' excede 40 MB.');
-                }
-
-                $lista[] = [
-                    'nome' => $nome,
-                    'tmp' => (string)($temporarios[$indice] ?? ''),
-                    'tamanho' => $tamanho,
-                ];
             }
 
-            usort($lista, static function (array $a, array $b): int {
+            usort($listaUpload, static function (array $a, array $b): int {
                 return strnatcasecmp($a['nome'], $b['nome']);
             });
 
-            if (count($lista) < 1) {
-                throw new RuntimeException('Nenhuma imagem compatível foi encontrada na pasta selecionada.');
-            }
-            if (count($lista) > 800) {
+            if (count($listaUpload) > 800) {
                 throw new RuntimeException('Selecione no máximo 800 fotos por vez.');
             }
 
-            $totalBytes = 0;
+            $totalBytes = array_sum(array_column($listaUpload, 'tamanho'));
+            if ($totalBytes > 1024 * 1024 * 1024) {
+                throw new RuntimeException('O total das fotos excede 1 GB. Divida as fotos em dois envios.');
+            }
+
             $pastaFotos = $diretorioTemporario . DIRECTORY_SEPARATOR . 'fotos';
             if (!mkdir($pastaFotos, 0700, true) && !is_dir($pastaFotos)) {
                 throw new RuntimeException('Não foi possível preparar as fotos recebidas.');
             }
 
-            foreach ($lista as $foto) {
-                $totalBytes += $foto['tamanho'];
-                if ($totalBytes > 1024 * 1024 * 1024) {
-                    throw new RuntimeException('O total das fotos excede 1 GB. Divida as fotos em dois envios.');
-                }
+            $extensoesMime = [
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/gif' => 'gif',
+                'image/bmp' => 'bmp',
+                'image/x-ms-bmp' => 'bmp',
+                'image/webp' => 'webp',
+                'image/tiff' => 'tif',
+            ];
 
-                $temporario = $foto['tmp'];
+            foreach ($listaUpload as $arquivo) {
+                $temporario = $arquivo['tmp'];
                 $infoImagem = is_file($temporario) ? @getimagesize($temporario) : false;
                 $mime = is_array($infoImagem) ? (string)($infoImagem['mime'] ?? '') : '';
-                $extensoesMime = [
-                    'image/jpeg' => 'jpg',
-                    'image/png' => 'png',
-                    'image/gif' => 'gif',
-                    'image/bmp' => 'bmp',
-                    'image/x-ms-bmp' => 'bmp',
-                    'image/webp' => 'webp',
-                    'image/tiff' => 'tif',
-                ];
                 if (!isset($extensoesMime[$mime])) {
-                    continue;
+                    throw new RuntimeException('O arquivo ' . $arquivo['nome'] . ' não parece ser uma imagem válida.');
                 }
 
                 $quantidadeRecebida++;
                 $destino = $pastaFotos . DIRECTORY_SEPARATOR . sprintf('%04d.%s', $quantidadeRecebida, $extensoesMime[$mime]);
                 if (!is_uploaded_file($temporario) || !move_uploaded_file($temporario, $destino)) {
-                    throw new RuntimeException('Não foi possível salvar uma das fotos recebidas.');
+                    throw new RuntimeException('Não foi possível salvar a imagem ' . $arquivo['nome'] . '.');
                 }
-            }
-
-            if ($quantidadeRecebida < 1) {
-                throw new RuntimeException('Os arquivos enviados não continham imagens válidas.');
             }
 
             $argumentoEntrada = ' --input-dir ' . escapeshellarg($pastaFotos);
@@ -425,9 +393,18 @@ if ($resultado === null) {
         <div>
             <span class="photo-word-eyebrow">Ferramentas de documentos</span>
             <h1>Fotos para Word e PDF</h1>
-            <p>Selecione uma pasta de fotos ou envie um ZIP. O sistema padroniza as imagens, gira fotos verticais altas para a horizontal e organiza duas fotos por página, preservando a proporção.</p>
+            <p>Envie um ZIP ou selecione várias imagens no mesmo campo. O sistema padroniza as fotos e organiza duas por página, preservando a proporção.</p>
         </div>
-        <div class="photo-word-header-icon" aria-hidden="true">DOC</div>
+        <div class="photo-word-header-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="7" width="25" height="25" rx="4"></rect>
+                <circle cx="22" cy="14" r="3"></circle>
+                <path d="m8 27 7-7 5 4 3-3 4 4"></path>
+                <path d="M18 36h17a4 4 0 0 0 4-4V17"></path>
+                <path d="M14 37v-1a4 4 0 0 1 4-4h12l4 4v7H18a4 4 0 0 1-4-4v-2Z"></path>
+                <path d="M30 32v5h4"></path>
+            </svg>
+        </div>
     </header>
 
     <?php if ($mensagemErro !== ''): ?>
@@ -460,21 +437,25 @@ if ($resultado === null) {
         <form method="post" enctype="multipart/form-data" class="photo-word-form" id="photoWordForm">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
 
-            <label class="photo-word-dropzone" for="fotos">
-                <span class="photo-word-upload-icon" aria-hidden="true">↑</span>
-                <strong>Selecionar uma pasta do computador</strong>
-                <span>JPG, PNG, GIF, BMP, WEBP ou TIFF</span>
-                <input id="fotos" name="fotos[]" type="file" webkitdirectory directory multiple accept="image/jpeg,image/png,image/gif,image/bmp,image/webp,image/tiff">
-                <span class="photo-word-file-summary" id="folderSummary">Nenhuma pasta selecionada</span>
-            </label>
-
-            <div class="photo-word-or"><span>ou</span></div>
-
-            <label class="photo-word-zip">
-                <span><strong>Enviar pasta compactada (.zip)</strong><small>Recomendado para muitas fotos ou quando o navegador não permite selecionar pastas.</small></span>
-                <input id="arquivo_zip" name="arquivo_zip" type="file" accept=".zip,application/zip">
-            </label>
-            <p class="photo-word-file-summary" id="zipSummary">Nenhum arquivo ZIP selecionado</p>
+            <div class="photo-word-file-row" id="photoWordFileRow">
+                <label class="file-picker photo-word-upload-picker" for="arquivos">
+                    <input id="arquivos" name="arquivos[]" type="file" multiple accept=".zip,application/zip,.jpg,.jpeg,.png,.gif,.bmp,.webp,.tif,.tiff,image/jpeg,image/png,image/gif,image/bmp,image/webp,image/tiff">
+                    <span class="file-picker-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 16V4"></path>
+                            <path d="m7 9 5-5 5 5"></path>
+                            <path d="M5 20h14"></path>
+                        </svg>
+                    </span>
+                    <span class="file-picker-copy">
+                        <strong id="uploadSummaryName">Selecionar arquivo ZIP ou imagens</strong>
+                        <small id="uploadSummaryHint">Um ZIP ou várias imagens JPG, PNG, GIF, BMP, WEBP e TIFF</small>
+                    </span>
+                    <span class="file-picker-arrow" aria-hidden="true">›</span>
+                </label>
+                <button class="photo-word-button secondary photo-word-clear-file" id="clearUpload" type="button">Limpar</button>
+            </div>
+            <p class="photo-word-file-help" id="uploadSummary" aria-live="polite">Você pode selecionar várias imagens de uma vez ou enviar um único arquivo ZIP.</p>
 
             <div class="photo-word-settings">
                 <div class="photo-word-width-field">
@@ -499,30 +480,97 @@ if ($resultado === null) {
 
 <script>
 (function () {
-    const folder = document.getElementById('fotos');
-    const zip = document.getElementById('arquivo_zip');
-    const folderSummary = document.getElementById('folderSummary');
-    const zipSummary = document.getElementById('zipSummary');
+    const upload = document.getElementById('arquivos');
+    const summaryName = document.getElementById('uploadSummaryName');
+    const summaryHint = document.getElementById('uploadSummaryHint');
+    const summary = document.getElementById('uploadSummary');
+    const fileRow = document.getElementById('photoWordFileRow');
+    const clearButton = document.getElementById('clearUpload');
     const form = document.getElementById('photoWordForm');
     const button = document.getElementById('generateButton');
 
-    folder.addEventListener('change', function () {
-        const count = folder.files ? folder.files.length : 0;
-        folderSummary.textContent = count ? count + ' arquivo(s) selecionado(s)' : 'Nenhuma pasta selecionada';
-        if (count) {
-            zip.value = '';
-            zipSummary.textContent = 'Nenhum arquivo ZIP selecionado';
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tif', 'tiff'];
+    const formatBytes = function (bytes) {
+        if (!Number.isFinite(bytes) || bytes <= 0) return '';
+        const units = ['B', 'KB', 'MB', 'GB'];
+        let value = bytes;
+        let unit = 0;
+        while (value >= 1024 && unit < units.length - 1) {
+            value /= 1024;
+            unit++;
         }
-    });
-    zip.addEventListener('change', function () {
-        const file = zip.files && zip.files[0];
-        zipSummary.textContent = file ? file.name : 'Nenhum arquivo ZIP selecionado';
-        if (file) {
-            folder.value = '';
-            folderSummary.textContent = 'Nenhuma pasta selecionada';
+        return value.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' ' + units[unit];
+    };
+
+    const setInvalid = function (message) {
+        fileRow.classList.add('has-error');
+        summaryName.textContent = 'Seleção inválida';
+        summaryHint.textContent = message;
+        summary.textContent = message;
+    };
+
+    const updateSummary = function () {
+        const files = Array.from(upload.files || []);
+        fileRow.classList.remove('has-files', 'has-error');
+
+        if (!files.length) {
+            summaryName.textContent = 'Selecionar arquivo ZIP ou imagens';
+            summaryHint.textContent = 'Um ZIP ou várias imagens JPG, PNG, GIF, BMP, WEBP e TIFF';
+            summary.textContent = 'Você pode selecionar várias imagens de uma vez ou enviar um único arquivo ZIP.';
+            return;
         }
+
+        const zipFiles = files.filter(function (file) {
+            return /\.zip$/i.test(file.name);
+        });
+
+        if (zipFiles.length && (files.length !== 1 || zipFiles.length !== 1)) {
+            setInvalid('Envie um ZIP sozinho ou selecione apenas imagens. Não misture ZIP e fotos.');
+            return;
+        }
+
+        if (zipFiles.length === 1) {
+            summaryName.textContent = zipFiles[0].name;
+            summaryHint.textContent = 'Arquivo ZIP · ' + formatBytes(zipFiles[0].size);
+            summary.textContent = 'ZIP selecionado. Todas as fotos contidas nele serão processadas.';
+        } else {
+            const unsupported = files.filter(function (file) {
+                const extension = file.name.split('.').pop().toLowerCase();
+                return !imageExtensions.includes(extension);
+            });
+            if (unsupported.length) {
+                setInvalid('Formato não suportado: ' + unsupported[0].name);
+                return;
+            }
+            const totalSize = files.reduce(function (sum, file) { return sum + file.size; }, 0);
+            summaryName.textContent = files.length + (files.length === 1 ? ' imagem selecionada' : ' imagens selecionadas');
+            summaryHint.textContent = 'Total dos arquivos · ' + formatBytes(totalSize);
+            summary.textContent = 'As imagens serão ordenadas pelo nome do arquivo antes da geração.';
+        }
+
+        fileRow.classList.add('has-files');
+    };
+
+    upload.addEventListener('change', updateSummary);
+    clearButton.addEventListener('click', function () {
+        upload.value = '';
+        updateSummary();
     });
-    form.addEventListener('submit', function () {
+
+    form.addEventListener('submit', function (event) {
+        if (!upload.files || upload.files.length === 0) {
+            event.preventDefault();
+            setInvalid('Selecione um ZIP ou uma ou mais imagens antes de gerar os documentos.');
+            upload.focus();
+            return;
+        }
+
+        updateSummary();
+        if (fileRow.classList.contains('has-error')) {
+            event.preventDefault();
+            return;
+        }
+
         button.disabled = true;
         button.textContent = 'Processando fotos...';
     });
