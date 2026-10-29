@@ -1306,36 +1306,35 @@ function calcular() {
     const luz = numero('luz');
     const internet = numero('internet');
     const chaveiro = numero('chaveiro');
-    // Seguros: o valor informado é o valor de UMA parcela.
-    // Parcelas extras são somadas à primeira e cada destino pode ser ativado separadamente.
+    // O campo de cada seguro representa o valor de uma parcela.
+    // A parcela normal é cobrada uma vez em cada seção ativa; extras são cobradas uma única vez no total.
     const seguroIncendioParcela = numero('seguroIncendio');
-    const seguroIncendioExtras = Math.floor(numero('seguroIncendioExtras'));
+    const seguroIncendioExtras = Math.max(0, Math.floor(numero('seguroIncendioExtras')));
     const seguroIncendioTotal = seguroIncendioParcela;
     const seguroIncendioExtrasTotal = seguroIncendioParcela * seguroIncendioExtras;
     const seguroFiancaParcela = numero('seguroFianca');
-    const seguroFiancaExtras = Math.floor(numero('seguroFiancaExtras'));
+    const seguroFiancaExtras = Math.max(0, Math.floor(numero('seguroFiancaExtras')));
     const seguroFiancaTotal = seguroFiancaParcela;
     const seguroFiancaExtrasTotal = seguroFiancaParcela * seguroFiancaExtras;
-    const totalParcelasExtrasSeguro = seguroIncendioExtrasTotal + seguroFiancaExtrasTotal;
-    // Seguros sempre são cobrados nas duas frentes da rescisão: dias finais e aluguel inteiro.
-    // O único controle do usuário é a quantidade de parcelas extras. O checkbox
-    // “Não há seguros” continua sendo a exceção para desativar toda a cobrança.
-    const seguroIncendioDias = !document.getElementById('semSeguros')?.checked;
-    const seguroIncendioAluguel = !document.getElementById('semSeguros')?.checked;
-    const seguroFiancaDias = !document.getElementById('semSeguros')?.checked;
-    const seguroFiancaAluguel = !document.getElementById('semSeguros')?.checked;
+    const semSeguros = document.getElementById('semSeguros')?.checked ?? false;
+    const seguroIncendioDias = !semSeguros && !invalido && dias > 0;
+    const seguroFiancaDias = !semSeguros && !invalido && dias > 0;
+    const seguroIncendioAluguel = !semSeguros && temAluguelInteiro;
+    const seguroFiancaAluguel = !semSeguros && temAluguelInteiro;
     const seguroIncendioDiasValor = seguroIncendioDias ? seguroIncendioTotal : 0;
     const seguroFiancaDiasValor = seguroFiancaDias ? seguroFiancaTotal : 0;
     const seguroIncendioAluguelValor = seguroIncendioAluguel ? seguroIncendioTotal : 0;
     const seguroFiancaAluguelValor = seguroFiancaAluguel ? seguroFiancaTotal : 0;
     const segurosDiasFinais = seguroIncendioDiasValor + seguroFiancaDiasValor;
     const segurosAluguelInteiro = seguroIncendioAluguelValor + seguroFiancaAluguelValor;
-    // No aluguel inteiro, entram o aluguel, os encargos e somente os seguros destinados a esta seção.
-    // A ADM incide somente sobre o aluguel. Seguros não fazem parte do repasse ao proprietário.
+    const totalParcelasExtrasSeguro = semSeguros
+        ? 0
+        : seguroIncendioExtrasTotal + seguroFiancaExtrasTotal;
+    // Os seguros ficam fora da base de ADM e repasse ao proprietário.
     const encargosAluguelInteiro = iptu + condominio + agua + luz + internet + segurosAluguelInteiro;
     const aluguelInteiro = temAluguelInteiro
-    ? aluguel + encargosAluguelInteiro
-    : 0;
+        ? aluguel + encargosAluguelInteiro
+        : 0;
     let totalProporcionais = 0;
     let aluguelDiasFinais = 0;
     const corpo = document.getElementById('proporcionaisBody');
@@ -1397,22 +1396,28 @@ function calcular() {
     // dias finais e/ou aluguel inteiro. Não há soma automática adicional fora dessas seções.
     const total = totalProporcionais + totalAviso + multa + aluguelInteiro + manutencao + chaveiro + totalParcelasExtrasSeguro;
     document.getElementById('totalProporcionais').textContent = formatar(totalProporcionais);
-    document.getElementById('resumoProporcionais').textContent = formatar(totalProporcionais);
+    document.getElementById('resumoProporcionais').textContent = formatar(Math.max(totalProporcionais - segurosDiasFinais, 0));
     document.getElementById('resumoAdmDiasFinais').textContent = formatar(admDiasFinais);
     document.getElementById('resumoRepasseDiasFinais').textContent = formatar(repasseDiasFinais);
     document.getElementById('resumoAviso').textContent = formatar(totalAviso);
     document.getElementById('resumoMulta').textContent = formatar(multa);
     document.getElementById('resumoAdmMulta').textContent = formatar(admMulta);
     document.getElementById('resumoRepasseMulta').textContent = formatar(repasseMulta);
-    document.getElementById('resumoAluguelInteiro').textContent = formatar(aluguelInteiro);
+    document.getElementById('resumoAluguelInteiro').textContent = formatar(Math.max(aluguelInteiro - segurosAluguelInteiro, 0));
     document.getElementById('resumoAdmAluguel').textContent = formatar(admAluguel);
     document.getElementById('resumoRepasseAluguel').textContent = formatar(repasseAluguel);
     document.getElementById('resumoManutencao').textContent = formatar(manutencao);
     document.getElementById('resumoChaveiro').textContent = formatar(chaveiro);
-    document.getElementById('resumoIncendio').textContent = formatar(seguroIncendioTotal);
-    document.getElementById('resumoFianca').textContent = formatar(seguroFiancaTotal);
-    document.getElementById('resumoExtrasIncendio').textContent = formatar(seguroIncendioExtrasTotal);
-    document.getElementById('resumoExtrasFianca').textContent = formatar(seguroFiancaExtrasTotal);
+    document.getElementById('resumoIncendio').textContent = formatar(seguroIncendioAluguelValor);
+    document.getElementById('resumoFianca').textContent = formatar(seguroFiancaAluguelValor);
+    document.getElementById('resumoIncendioDias').textContent = formatar(seguroIncendioDiasValor);
+    document.getElementById('resumoFiancaDias').textContent = formatar(seguroFiancaDiasValor);
+    document.getElementById('resumoExtrasIncendio').textContent = formatar(semSeguros ? 0 : seguroIncendioExtrasTotal);
+    document.getElementById('resumoExtrasFianca').textContent = formatar(semSeguros ? 0 : seguroFiancaExtrasTotal);
+    document.getElementById('resumoExtrasIncendioLabel').textContent = `Seguro incêndio (x${seguroIncendioExtras})`;
+    document.getElementById('resumoExtrasFiancaLabel').textContent = `Seguro fiança (x${seguroFiancaExtras})`;
+    document.getElementById('linhaExtrasIncendio').hidden = semSeguros || seguroIncendioExtras <= 0;
+    document.getElementById('linhaExtrasFianca').hidden = semSeguros || seguroFiancaExtras <= 0;
     document.getElementById('resumoParcelasIncendio').textContent = `${1 + seguroIncendioExtras} ${(1 + seguroIncendioExtras) === 1 ? 'parcela' : 'parcelas'}`;
     document.getElementById('resumoParcelasFianca').textContent = `${1 + seguroFiancaExtras} ${(1 + seguroFiancaExtras) === 1 ? 'parcela' : 'parcelas'}`;
     document.getElementById('resumoCobrancaIncendio').textContent = `Parcela normal nos dias finais e no aluguel inteiro · extras separados: ${formatar(seguroIncendioExtrasTotal)}`;
@@ -1729,6 +1734,10 @@ function initCompactTopics() {
 function topicMoney(id) {
     return document.getElementById(id)?.textContent || 'R$ 0,00';
 }
+function topicMoneyValue(id) {
+    const value = topicMoney(id);
+    return Number(value.replace(/[^0-9,-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+}
 function updateTopicSummaries() {
     const values = {
         topicoDiasFinais: (() => {
@@ -1767,9 +1776,12 @@ function updateTopicSummaries() {
         )(),
         topicoSeguros: (() => {
             if(document.getElementById('semSeguros')?.checked) return 'Não aplicável';
-            const a=Number((topicMoney('resumoIncendio')||'').replace(/[^0-9,-]/g,'').replace('.','').replace(',','.'))||0;
-            const b=Number((topicMoney('resumoFianca')||'').replace(/[^0-9,-]/g,'').replace('.','').replace(',','.'))||0;
-            return formatar(a+b);
+            const ids = [
+                'resumoIncendio', 'resumoFianca',
+                'resumoIncendioDias', 'resumoFiancaDias',
+                'resumoExtrasIncendio', 'resumoExtrasFianca'
+            ];
+            return formatar(ids.reduce((total, id) => total + topicMoneyValue(id), 0));
         }
         )()
     }
@@ -1778,16 +1790,7 @@ function updateTopicSummaries() {
         if(el)el.textContent=text;
     }
     );
-    const inc=topicMoney('resumoIncendio'), fia=topicMoney('resumoFianca');
-    const sc=document.getElementById('resumoSegurosCompacto');
-    if(sc) {
-        if(document.getElementById('semSeguros')?.checked) sc.textContent='R$ 0,00';
-        else {
-            const n1=Number((inc||'').replace(/[^0-9,-]/g,'').replace('.','').replace(',','.'))||0;
-            const n2=Number((fia||'').replace(/[^0-9,-]/g,'').replace('.','').replace(',','.'))||0;
-            sc.textContent=formatar(n1+n2);
-        }
-    }
+
 }
 function initFinanceDetails() {
     const btn=document.getElementById('btnFinanceDetails');
