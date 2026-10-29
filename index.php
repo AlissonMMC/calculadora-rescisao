@@ -521,13 +521,20 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
               <strong id="totalGeral">R$ 0,00</strong>
             </div>
 
+            <div class="sub-total"><span>Aluguel inteiro</span><strong id="resumoAluguelInteiro">R$ 0,00</strong></div>
+            <div class="sub-total insurance-breakdown-line"><span>Seguro incêndio</span><strong id="resumoIncendio">R$ 0,00</strong></div>
+            <div class="sub-total insurance-breakdown-line"><span>Seguro fiança</span><strong id="resumoFianca">R$ 0,00</strong></div>
+
             <div class="sub-total"><span>Dias finais</span><strong id="resumoProporcionais">R$ 0,00</strong></div>
+            <div class="sub-total insurance-breakdown-line"><span>Seguro incêndio</span><strong id="resumoIncendioDias">R$ 0,00</strong></div>
+            <div class="sub-total insurance-breakdown-line"><span>Seguro fiança</span><strong id="resumoFiancaDias">R$ 0,00</strong></div>
+            <div class="sub-total insurance-breakdown-extra" id="linhaExtrasIncendio"><span id="resumoExtrasIncendioLabel">Seguro incêndio (x0)</span><strong id="resumoExtrasIncendio">R$ 0,00</strong></div>
+            <div class="sub-total insurance-breakdown-extra" id="linhaExtrasFianca"><span id="resumoExtrasFiancaLabel">Seguro fiança (x0)</span><strong id="resumoExtrasFianca">R$ 0,00</strong></div>
+
             <div class="sub-total"><span>Aviso prévio</span><strong id="resumoAviso">R$ 0,00</strong></div>
             <div class="sub-total"><span>Multa rescisória</span><strong id="resumoMulta">R$ 0,00</strong></div>
-            <div class="sub-total"><span>Aluguel inteiro</span><strong id="resumoAluguelInteiro">R$ 0,00</strong></div>
             <div class="sub-total"><span>Manutenção</span><strong id="resumoManutencao">R$ 0,00</strong></div>
             <div class="sub-total"><span>Chaveiro</span><strong id="resumoChaveiro">R$ 0,00</strong></div>
-            <div class="sub-total"><span>Seguros</span><strong id="resumoSegurosCompacto">R$ 0,00</strong></div>
 
             <div class="finance-toggle-wrap">
               <button class="finance-toggle" id="btnFinanceDetails" type="button" aria-expanded="false"><span>Ver ADM, repasses e detalhes financeiros</span><span>＋</span></button>
@@ -539,10 +546,6 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
               <div class="sub-total"><span>Repasse da multa ao proprietário</span><strong id="resumoRepasseMulta">R$ 0,00</strong></div>
               <div class="sub-total"><span>ADM do aluguel</span><strong id="resumoAdmAluguel">R$ 0,00</strong></div>
               <div class="sub-total"><span>Repasse do aluguel ao proprietário</span><strong id="resumoRepasseAluguel">R$ 0,00</strong></div>
-              <div class="sub-total"><span>Seguro incêndio (parcela normal)</span><strong id="resumoIncendio">R$ 0,00</strong></div>
-              <div class="sub-total"><span>Seguro fiança (parcela normal)</span><strong id="resumoFianca">R$ 0,00</strong></div>
-              <div class="sub-total"><span>Parcelas extras — seguro incêndio</span><strong id="resumoExtrasIncendio">R$ 0,00</strong></div>
-              <div class="sub-total"><span>Parcelas extras — seguro fiança</span><strong id="resumoExtrasFianca">R$ 0,00</strong></div>
 
               <div class="summary-note">
               <strong>Critério da multa:</strong> <span id="resumoModo">—</span><br />
