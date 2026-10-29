@@ -137,6 +137,7 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
         <strong>Dados da desocupação</strong>
         <div><span>Data do aviso de desocupação:</span> <b id="printDataAvisoDesocupacao">Não informada</b></div>
         <div><span>Data em que o proprietário foi avisado:</span> <b id="printDataAvisoProprietario">Não informada</b></div>
+        <div><span>Data de entrega das chaves:</span> <b id="printDataEntregaChaves">Não informada</b></div>
         <div><span>Motivo da desocupação:</span> <b id="printMotivoDesocupacao">Não informado</b></div>
       </div>
       <div class="selected-mode" style="margin-bottom:12px;">
@@ -154,7 +155,7 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
           <span class="moveout-info-icon" aria-hidden="true">i</span>
           <div>
             <h2 id="moveoutInfoTitle">Dados da desocupação</h2>
-            <p>Registre as datas dos avisos e o motivo informado antes de iniciar os cálculos.</p>
+            <p>Registre as datas dos avisos, a entrega das chaves e o motivo informado.</p>
           </div>
         </div>
         <div class="moveout-info-grid">
@@ -165,6 +166,11 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
           <div class="field">
             <label for="dataAvisoProprietario">Data em que o proprietário foi avisado</label>
             <input id="dataAvisoProprietario" type="date" />
+          </div>
+          <div class="field">
+            <label for="dataFinal">Data de entrega das chaves</label>
+            <input id="dataFinal" type="date" />
+            <span class="field-error" id="erroDataFinal">A entrega deve ser igual ou posterior à data inicial.</span>
           </div>
           <div class="field moveout-reason-field">
             <label for="motivoDesocupacao">Motivo da desocupação</label>
@@ -202,29 +208,23 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
               <div class="section-number">1</div>
               <div>
                 <h2 class="section-title">Valores dos dias finais</h2>
-                <p class="section-subtitle">Informe a data inicial e a data de entrega das chaves. A contagem considera as duas datas.</p>
+                <p class="section-subtitle">Informe a data inicial. A entrega das chaves é preenchida em “Dados da desocupação”.</p>
                 <div class="topic-tools"><button class="help-btn" type="button" data-help="explicaDias">?</button><button class="btn-mini" type="button" data-clear-topic="dias">Limpar tópico</button></div>
               </div>
             </div>
 
-            <div class="date-range">
+            <div class="date-range date-range-single">
               <div class="field">
                 <label for="dataInicial">Data inicial</label>
                 <input id="dataInicial" type="date" />
                 <span class="field-error" id="erroDataInicial">Informe uma data válida.</span>
-              </div>
-              <div class="date-arrow" aria-hidden="true">→</div>
-              <div class="field">
-                <label for="dataFinal">Entrega das chaves</label>
-                <input id="dataFinal" type="date" />
-                <span class="field-error" id="erroDataFinal">A entrega deve ser igual ou posterior à data inicial.</span>
               </div>
             </div>
 
             <div class="days-result" aria-live="polite">
               <div>
                 <div class="label">Dias corridos no período</div>
-                <span class="hint" id="periodoTexto">Informe as duas datas</span>
+                <span class="hint" id="periodoTexto">Informe a data inicial e a entrega das chaves acima</span>
               </div>
               <strong id="diasCalculados">0 dias</strong>
             </div>
@@ -555,8 +555,12 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
               <div class="sub-total"><span>Repasse da multa ao proprietário</span><strong id="resumoRepasseMulta">R$ 0,00</strong></div>
               <div class="sub-total"><span>ADM do aluguel</span><strong id="resumoAdmAluguel">R$ 0,00</strong></div>
               <div class="sub-total"><span>Repasse do aluguel ao proprietário</span><strong id="resumoRepasseAluguel">R$ 0,00</strong></div>
-              <div class="sub-total"><span>Seguro incêndio (não repassado)</span><strong id="resumoIncendio">R$ 0,00</strong></div>
-              <div class="sub-total"><span>Seguro fiança (não repassado)</span><strong id="resumoFianca">R$ 0,00</strong></div>
+              <div class="sub-total"><span>Seguro incêndio — dias finais</span><strong id="resumoIncendio">R$ 0,00</strong></div>
+              <div class="sub-total"><span>Seguro fiança — dias finais</span><strong id="resumoFianca">R$ 0,00</strong></div>
+              <div class="sub-total"><span>Seguro incêndio — aluguel inteiro</span><strong id="resumoIncendioAluguel">R$ 0,00</strong></div>
+              <div class="sub-total"><span>Seguro fiança — aluguel inteiro</span><strong id="resumoFiancaAluguel">R$ 0,00</strong></div>
+              <div class="sub-total"><span id="resumoExtrasIncendioLabel">Parcelas extras — seguro incêndio</span><strong id="resumoExtrasIncendio">R$ 0,00</strong></div>
+              <div class="sub-total"><span id="resumoExtrasFiancaLabel">Parcelas extras — seguro fiança</span><strong id="resumoExtrasFianca">R$ 0,00</strong></div>
 
               <div class="summary-note">
               <strong>Critério da multa:</strong> <span id="resumoModo">—</span><br />
