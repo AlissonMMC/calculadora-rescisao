@@ -3243,3 +3243,24 @@ html[data-theme="dark"] .workflow-progress.complete{
     border-color:#214c2f;
     color:#86efac
 }
+
+/* Discriminação dos seguros no resumo da rescisão */
+#calculatorScreen .insurance-breakdown-line {
+    padding: 5px 0 5px 14px;
+    border-bottom: 0;
+    font-size: .66rem;
+}
+#calculatorScreen .insurance-breakdown-line span:first-child::before {
+    content: "↳ ";
+    color: var(--muted);
+}
+#calculatorScreen .insurance-breakdown-line strong {
+    font-weight: 700;
+}
+#calculatorScreen .insurance-breakdown-extra {
+    padding: 6px 0;
+    font-size: .68rem;
+}
+#calculatorScreen .insurance-breakdown-extra[hidden] {
+    display: none !important;
+}
