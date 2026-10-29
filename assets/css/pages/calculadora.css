@@ -3236,7 +3236,7 @@ html[data-theme="dark"] #calculatorScreen #topicoSeguros .insurance-destinos .ch
 .moveout-info-grid .field{display:flex;flex-direction:column;gap:6px}
 .moveout-info-grid .field label{display:block;min-height:30px;margin:0;font-size:.66rem;line-height:1.35;color:var(--text)}
 .moveout-info-grid .field input{box-sizing:border-box;min-height:42px;padding:10px 12px;border-radius:9px;font-size:.76rem}
-.moveout-reason-field{grid-column:auto}
+.moveout-reason-field{grid-column:1/-1}
 @media(max-width:900px){.moveout-info-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.moveout-reason-field{grid-column:1/-1}.moveout-info-grid .field label{min-height:0}}
 @media(max-width:600px){.moveout-info-card{padding:13px}.moveout-info-heading{align-items:flex-start;margin-bottom:12px}.moveout-info-heading p{max-width:38ch}.moveout-info-grid{grid-template-columns:minmax(0,1fr);gap:10px}.moveout-reason-field{grid-column:auto}.moveout-info-grid .field label{min-height:0}.moveout-info-grid .field input{min-height:40px}}
 /* v33 — seguros mais compactos, sem altura excessiva no card */
@@ -3516,3 +3516,8 @@ html[data-theme="dark"] #calculatorScreen #topicoSeguros .insurance-destinos .ch
  #calculatorScreen #topicoSeguros{height:auto!important;min-height:0!important;max-height:none!important}
 }
 
+
+
+/* Campo isolado da data inicial após mover a entrega das chaves para os dados da desocupação. */
+#topicoDiasFinais .date-range-single{grid-template-columns:minmax(0,420px);}
+@media(max-width:600px){#topicoDiasFinais .date-range-single{grid-template-columns:minmax(0,1fr);}}
