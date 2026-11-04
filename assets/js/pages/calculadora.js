@@ -1,5 +1,5 @@
 const campos = [
-'dataInicial', 'dataFinal', 'dataInicioContrato', 'dataInicioAviso', 'dataFimAviso', 'aluguel', 'iptu', 'condominio', 'agua', 'luz', 'internet',
+'dataAvisoDesocupacao', 'dataAvisoProprietario', 'motivoDesocupacao', 'dataInicial', 'dataFinal', 'dataInicioContrato', 'dataInicioAviso', 'dataFimAviso', 'aluguel', 'iptu', 'condominio', 'agua', 'luz', 'internet',
 'mesesFaltantes', 'percentualProp', 'percentualAdm', 'valorAluguelInteiro', 'semAluguelInteiro',
 'manutencao', 'chaveiro', 'seguroIncendio', 'seguroIncendioExtras',
 'seguroFianca', 'seguroFiancaExtras',
@@ -282,7 +282,7 @@ function obterDadosFormulario() {
         if (!el) continue;
         dados.campos[id] = el.type === 'checkbox' ? el.checked : el.value;
     }
-    ['nomeInquilino','cpfInquilino','enderecoImovel','assuntoEmail'].forEach(id => {
+    ['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','assuntoEmail'].forEach(id => {
         const el = document.getElementById(id);
         if (el) dados.campos[id] = el.value;
     }
@@ -820,7 +820,7 @@ function decodificarDadosHistorico(item) {
         }
         if (valor && typeof valor === 'object') {
             if (valor.campos && typeof valor.campos === 'object') return valor;
-            const idsCampos = [...campos, 'nomeInquilino','cpfInquilino','enderecoImovel','assuntoEmail'];
+            const idsCampos = [...campos, 'nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','assuntoEmail'];
             const possiveis = {
             }
             idsCampos.forEach(campoId => {
@@ -919,7 +919,7 @@ async function abrirHistoricoPorId(id, itemPreCarregado = null) {
         }
         // Campos textuais são tratados explicitamente para garantir que não
         // dependam de uma estrutura antiga do JSON.
-        ['nomeInquilino','cpfInquilino','enderecoImovel','assuntoEmail'].forEach(idCampo => {
+        ['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','assuntoEmail'].forEach(idCampo => {
             const el = document.getElementById(idCampo);
             if (el && Object.prototype.hasOwnProperty.call(camposSalvos,idCampo)) el.value = camposSalvos[idCampo] ?? '';
         }
@@ -1484,62 +1484,81 @@ function calcular() {
     );
 }
 function atualizarModeloEmail(dados) {
-    const nome = document.getElementById('nomeInquilino').value.trim() || 'Sr.(a)';
-    const cpf = document.getElementById('cpfInquilino').value.trim();
-    const endereco = document.getElementById('enderecoImovel').value.trim();
-    const assunto = document.getElementById('assuntoEmail').value.trim() || 'Declaração de valores em aberto - encerramento da locação';
-    const addLinha = (lista, descricao, valor) => {
-        if (valor > 0.005) lista.push(`- ${descricao}: ${formatar(valor)}`);
-    }
-    const linhasDebitos = [];
-    dados.detalhamentoFinais.forEach(item => addLinha(linhasDebitos, `${item.nome} - período final`, item.valor));
-    dados.detalhamentoAviso.forEach(item => addLinha(linhasDebitos, `${item.nome} - aviso prévio`, item.valor));
-    if (dados.multa > 0.005) addLinha(linhasDebitos, 'Multa rescisória', dados.multa);
-    if (dados.aluguelInteiro > 0.005) addLinha(linhasDebitos, 'Aluguel inteiro + encargos', dados.aluguelInteiro);
-    if (dados.manutencao > 0.005) addLinha(linhasDebitos, 'Melhorias / manutenção', dados.manutencao);
-    if (dados.chaveiro > 0.005) addLinha(linhasDebitos, 'Chaveiro', dados.chaveiro);
-    
-const adicionarParcelasExtras = (descricao, valorTotal, quantidade) => {
-    const total = Number(valorTotal) || 0;
-    const qtd = Math.max(0, Math.floor(Number(quantidade) || 0));
+    const nome = document.getElementById('nomeInquilino')?.value.trim() || 'não informado';
+    const cpf = document.getElementById('cpfInquilino')?.value.trim() || '';
+    const endereco = document.getElementById('enderecoImovel')?.value.trim() || 'não informado';
+    const cep = document.getElementById('cepImovel')?.value.trim() || 'não informado';
+    const assunto = document.getElementById('assuntoEmail')?.value.trim()
+        || 'Declaração de valores em aberto - encerramento da locação';
 
-    if (total <= 0.005 || qtd === 0) return;
+    const formatarItem = (descricao, valor) =>
+        Number(valor) > 0.005 ? '• ' + descricao + ' = ' + formatar(Number(valor)) : '';
 
-    const valorParcela = total / qtd;
+    // Todos os valores são apresentados em uma única lista, sem títulos de seção.
+    // Nos dias finais, somente aluguel/IPTU recebem a identificação de proporcionalidade.
+    const itens = (dados.detalhamentoFinais || []).map(item => {
+        const nomeItem = String(item.nome || '').trim();
+        const descricao = /seguro/i.test(nomeItem)
+            ? nomeItem
+            : nomeItem + ' - dias finais';
+        return formatarItem(descricao, item.valor);
+    });
 
-    for (let i = 1; i <= qtd; i++) {
-        addLinha(linhasDebitos, `${descricao} - parcela ${i} de ${qtd}`, valorParcela);
-    }
-};
+    (dados.detalhamentoAluguelInteiro || []).forEach(item => {
+        itens.push(formatarItem(String(item.nome || '').trim(), item.valor));
+    });
 
-adicionarParcelasExtras(
-    'Seguro incêndio extra',
-    dados.seguroIncendioExtrasTotal,
-    dados.seguroIncendioParcelasExtras
-);
+    (dados.detalhamentoAviso || []).forEach(item => {
+        itens.push(formatarItem(String(item.nome || '').trim() + ' - aviso prévio', item.valor));
+    });
 
-adicionarParcelasExtras(
-    'Seguro fiança extra',
-    dados.seguroFiancaExtrasTotal,
-    dados.seguroFiancaParcelasExtras
-);
+    itens.push(formatarItem('Manutenção', dados.manutencao));
+    itens.push(formatarItem('Multa rescisória', dados.multa));
+    itens.push(formatarItem('Chaveiro', dados.chaveiro));
 
-    // A parcela normal entra nos dias finais e no aluguel inteiro; extras são cobrados uma única vez.
+    // As parcelas extras de seguros continuam discriminadas individualmente.
+    const adicionarParcelasExtras = (descricao, valorTotal, quantidade) => {
+        const total = Number(valorTotal) || 0;
+        const qtd = Math.max(0, Math.floor(Number(quantidade) || 0));
+        if (total <= 0.005 || qtd === 0) return;
+        const valorParcela = total / qtd;
+        for (let i = 1; i <= qtd; i++) {
+            itens.push(formatarItem(descricao, valorParcela));
+        }
+    };
+
+    adicionarParcelasExtras('Seguro incêndio', dados.seguroIncendioExtrasTotal, dados.seguroIncendioParcelasExtras);
+    adicionarParcelasExtras('Seguro fiança', dados.seguroFiancaExtrasTotal, dados.seguroFiancaParcelasExtras);
+
+    const linhas = itens.filter(Boolean);
+    const lista = linhas.length ? linhas.join('\n') : 'Não há débitos calculados no momento.';
     const dataEntrega = dados.dataFinal ? formatarData(dados.dataFinal) : 'não informada';
-    const periodo = dados.dataInicial && dados.dataFinal
-    ? `${formatarData(dados.dataInicial)} até ${formatarData(dados.dataFinal)}`
-    : 'não informado';
-    const periodoAviso = dados.dataInicioAviso && dados.dataFimAviso
-    ? `${formatarData(dados.dataInicioAviso)} até ${formatarData(dados.dataFimAviso)}`
-    : '';
-    const lista = linhasDebitos.length ? linhasDebitos.join('\n') : '- Não há débitos calculados no momento.';
-    const identificacao = cpf ? ` ${nome} CPF: ${cpf}.` : ` ${nome}.`;
-    const enderecoTexto = endereco ? ` localizado em ${endereco}.` : '.';
-    const avisoTexto = periodoAviso ? `\nPeríodo considerado para aviso prévio: ${periodoAviso}.` : '';
-    const texto = `${assunto}\n\nOlá, tudo bem?\n\nEstamos enviando este e-mail para informar que o imóvel foi desocupado. As chaves do imóvel foram entregues na imobiliária no dia ${dataEntrega}, encerrando-se assim o contrato de locação.\n\nEstamos tentando contato com o Sr.(a)${identificacao}\n\nNeste e-mail estão as informações de melhorias e débitos em aberto do imóvel locado pelo mesmo,${enderecoTexto}\n\nABILIO AREIA SOLUÇÕES IMOBILIARIAS LTDA, pessoa jurídica inscrita no CNPJ nº 13.219.509/0001-71, com sede em R. Aristídes Lôbo Sobrinho, 63 - Chácara Braz Miraglia, Jaú - SP, 17207-300, vem através da presente DECLARAR os valores em aberto referente ao imóvel acima citado:\n\n${lista}\n\nTotalizando o valor de ${formatar(dados.total)}.${periodoAviso ? `\n${avisoTexto.trim()}` : ''}\n\nObs.: Os valores estão sujeitos a aprovação da seguradora. Caso não haja a cobertura total por parte da mesma, ficarão débitos pendentes a serem acertados na imobiliária.\n\nEm caso de dúvidas, por favor, contatar sua gestora de contrato.\n\nAtenciosamente,`;
+    const identificacao = cpf ? 'Sr(a). ' + nome + ', CPF ' + cpf : 'Sr(a). ' + nome;
+
+    const texto = [
+        assunto,
+        '',
+        'Prezado(a) Sr(a). ' + nome + ',',
+        '',
+        'Informamos que o contrato de locação do imóvel situado na ' + endereco + ', CEP ' + cep + ', foi encerrado, conforme data do Termo de Entrega de Chaves em ' + dataEntrega + '.',
+        '',
+        'A ABILIO AREIA SOLUÇÕES IMOBILIÁRIAS LTDA, inscrita no CNPJ nº 13.219.509/0001-71, com sede na Rua Aristídes Lôbo Sobrinho, 63 — Chácara Braz Miraglia, Jaú/SP, CEP 17207-300, vem por meio deste declarar os valores em aberto referentes ao imóvel acima identificado, locado pelo ' + identificacao + ':',
+        '',
+        lista,
+        '',
+        'Totalizando o valor de ' + formatar(dados.total) + '.',
+        '',
+        'Obs.: Os valores estão sujeitos a aprovação da seguradora. Caso não haja a cobertura total por parte da mesma, ficarão débitos pendentes a serem acertados na imobiliária.',
+        '',
+        'Em caso de dúvidas, por favor, contatar sua gestora de contrato.',
+        '',
+        'Atenciosamente,'
+    ].join('\n');
+
     ultimoEmailAutomatico = texto;
     if (!emailEditando) document.getElementById('modeloEmail').value = texto;
 }
+
 // v29: modo compacto da calculadora
 const STORAGE_TOPIC_STATE = 'calculadoraRescisaoTopicosAbertosV29';
 const TOPIC_IDS = ['topicoDiasFinais','topicoAviso','topicoMulta','topicoAluguelInteiro','topicoManutencao','topicoChaveiro','topicoSeguros'];
@@ -1878,7 +1897,7 @@ function limpar() {
         else if (CAMPOS_MONETARIOS.has(id)) definirValorMonetario(id, 0);
         else el.value = '0';
     }
-    ['nomeInquilino','cpfInquilino','enderecoImovel'].forEach(id => {
+    ['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','motivoDesocupacao'].forEach(id => {
         const el=document.getElementById(id);
         if(el) el.value='';
     }
@@ -1927,7 +1946,21 @@ function imprimirCalculo() {
     const nomePrint = document.getElementById('nomeInquilino').value.trim() || 'Inquilino não informado';
     const enderecoPrint = document.getElementById('enderecoImovel').value.trim() || 'Imóvel não informado';
     document.getElementById('printOnlyHeader').textContent = `RESCISÃO DE LOCAÇÃO — ${nomePrint} — ${enderecoPrint}`;
-    document.body.classList.add('modo-impressao');
+        const formatarDataDesocupacao = (valor) => {
+        if (!valor) return 'Não informada';
+        const partes = valor.split('-');
+        return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : valor;
+    };
+
+    document.getElementById('printDataAvisoDesocupacao').textContent =
+        formatarDataDesocupacao(document.getElementById('dataAvisoDesocupacao')?.value);
+
+    document.getElementById('printDataAvisoProprietario').textContent =
+        formatarDataDesocupacao(document.getElementById('dataAvisoProprietario')?.value);
+
+    document.getElementById('printMotivoDesocupacao').textContent =
+        document.getElementById('motivoDesocupacao')?.value.trim() || 'Não informado';
+document.body.classList.add('modo-impressao');
     // O diálogo nativo de impressão precisa ser chamado diretamente pelo clique.
     window.print();
     setTimeout(() => document.body.classList.remove('modo-impressao'), 500);
@@ -1996,7 +2029,7 @@ document.getElementById('btnEditarEmail').addEventListener('click', () => {
     if (emailEditando) area.focus();
 }
 );
-['nomeInquilino','cpfInquilino','enderecoImovel','assuntoEmail'].forEach(id => document.getElementById(id).addEventListener('input', () => {
+['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','assuntoEmail'].forEach(id => document.getElementById(id).addEventListener('input', () => {
     calcular();
     marcarConferenciaComoPendente();
 }
