@@ -11,6 +11,13 @@ $csrf = csrfToken();
 // com os valores padrão zerados.
 $historicoInicialId = max(0, (int)($_GET['historico_id'] ?? 0));
 $historicoInicial = null;
+$empresasDisponiveis = [];
+try {
+  $empresasDisponiveis = db()->query('SELECT id, razao_social, cnpj, endereco FROM empresas WHERE ativo = 1 ORDER BY razao_social ASC')->fetchAll();
+} catch (Throwable $e) {
+  // A tela continua acessível antes da aplicação da migração do cadastro de empresas.
+  error_log('Calculadora empresas: ' . $e->getMessage());
+}
 if ($historicoInicialId > 0) {
   try {
     $stmtHistoricoInicial = db()->prepare('SELECT h.id, h.usuario_id, h.nome, h.endereco, h.total, h.total_adm, h.total_repasse, h.criado_em, h.atualizado_em, h.modo_nome, h.status, h.dados_json, u.nome AS usuario_nome, u.login AS usuario_login FROM historico_rescisoes h LEFT JOIN usuarios u ON u.id = h.usuario_id WHERE h.id = ? LIMIT 1');
@@ -158,6 +165,17 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
           </div>
         </div>
         <div class="moveout-info-grid">
+          <div class="field">
+            <label for="empresaId">Empresa responsável pelo contrato</label>
+            <select id="empresaId" required>
+              <option value="">Selecione a empresa</option>
+              <?php foreach ($empresasDisponiveis as $empresa): ?>
+                <option value="<?= (int)$empresa['id'] ?>"><?= htmlspecialchars($empresa['razao_social'], ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars($empresa['cnpj'], ENT_QUOTES, 'UTF-8') ?></option>
+              <?php endforeach; ?>
+            </select>
+            <span class="hint">A razão social, o CNPJ e o endereço da sede serão usados no e-mail.</span>
+            <input id="empresaSnapshot" type="hidden" value="">
+          </div>
           <div class="field">
             <label for="dataAvisoDesocupacao">Data do aviso de desocupação</label>
             <input id="dataAvisoDesocupacao" type="date" />
@@ -722,7 +740,8 @@ window.USUARIO_LOGADO = <?= json_encode([
       'perfil' => $usuario['perfil']
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     window.CSRF_TOKEN = <?= json_encode($csrf) ?>;
+    window.EMPRESAS_DISPONIVEIS = <?= json_encode($empresasDisponiveis, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     window.HISTORICO_INICIAL = <?= json_encode($historicoInicial, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     window.HISTORICO_INICIAL_ID = <?= (int)$historicoInicialId ?>;
 </script>
-<script src="assets/js/pages/calculadora.js?v=email-template-20261104"></script>
+<script src="assets/js/pages/calculadora.js?v=empresa-registry-20261104"></script>
