@@ -282,7 +282,7 @@ function obterDadosFormulario() {
         if (!el) continue;
         dados.campos[id] = el.type === 'checkbox' ? el.checked : el.value;
     }
-    ['nomeInquilino','cpfInquilino','enderecoImovel','assuntoEmail'].forEach(id => {
+    ['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','assuntoEmail'].forEach(id => {
         const el = document.getElementById(id);
         if (el) dados.campos[id] = el.value;
     }
@@ -1486,17 +1486,13 @@ function calcular() {
 function atualizarModeloEmail(dados) {
     const nome = document.getElementById('nomeInquilino')?.value.trim() || 'não informado';
     const cpf = document.getElementById('cpfInquilino')?.value.trim() || '';
-    const enderecoInformado = document.getElementById('enderecoImovel')?.value.trim() || 'não informado';
+    const endereco = document.getElementById('enderecoImovel')?.value.trim() || 'não informado';
+    const cep = document.getElementById('cepImovel')?.value.trim() || 'não informado';
     const assunto = document.getElementById('assuntoEmail')?.value.trim()
         || 'Declaração de valores em aberto - encerramento da locação';
 
-    // O formulário mantém endereço e CEP no mesmo campo. Se houver CEP,
-    // ele é separado para preencher o modelo sem exigir mudança na tela.
-    const cepMatch = enderecoInformado.match(/\b\d{5}-?\d{3}\b/);
-    const cep = cepMatch ? cepMatch[0] : 'não informado';
-    const endereco = cepMatch
-        ? enderecoInformado.replace(/\s*(?:CEP\s*)?\d{5}-?\d{3}\s*/i, ' ').replace(/[\s,;-]+$/g, '').trim()
-        : enderecoInformado;
+    const formatarItem = (descricao, valor) =>
+        Number(valor) > 0.005 ? '• ' + descricao + ' = ' + formatar(Number(valor)) : '';
 
     const formatarItem = (descricao, valor) =>
         Number(valor) > 0.005 ? '• ' + descricao + ' = ' + formatar(Number(valor)) : '';
@@ -1530,7 +1526,7 @@ function atualizarModeloEmail(dados) {
         if (total <= 0.005 || qtd === 0) return;
         const valorParcela = total / qtd;
         for (let i = 1; i <= qtd; i++) {
-            itens.push(formatarItem(descricao + ' - parcela extra ' + i + ' de ' + qtd, valorParcela));
+            itens.push(formatarItem(descricao, valorParcela));
         }
     };
 
@@ -1547,7 +1543,7 @@ function atualizarModeloEmail(dados) {
         '',
         'Prezado(a) Sr(a). ' + nome + ',',
         '',
-        'Informamos que o contrato de locação do imóvel situado na ' + endereco + ', CEP ' + cep + ', foi encerrado, conforme data do Termo de Entrega de Chaves em ' + dataEntrega + '.',
+        'Informamos que o contrato de locação do imóvel situado na ' + endereco + ', CEP ' + cep + ', foi encerrado, conforme data do Termo de Entrega de Chaves em ' + dataEntrega + '.
         '',
         'A ABILIO AREIA SOLUÇÕES IMOBILIÁRIAS LTDA, inscrita no CNPJ nº 13.219.509/0001-71, com sede na Rua Aristídes Lôbo Sobrinho, 63 — Chácara Braz Miraglia, Jaú/SP, CEP 17207-300, vem por meio deste declarar os valores em aberto referentes ao imóvel acima identificado, locado pelo ' + identificacao + ':',
         '',
@@ -1904,7 +1900,7 @@ function limpar() {
         else if (CAMPOS_MONETARIOS.has(id)) definirValorMonetario(id, 0);
         else el.value = '0';
     }
-    ['nomeInquilino','cpfInquilino','enderecoImovel'].forEach(id => {
+    ['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel'].forEach(id => {
         const el=document.getElementById(id);
         if(el) el.value='';
     }
