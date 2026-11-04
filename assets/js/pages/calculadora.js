@@ -1585,7 +1585,11 @@ function atualizarModeloEmail(dados) {
     }
     // Compatibilidade com rescisões antigas, criadas antes do cadastro de empresas.
     const razaoSocial = empresa?.razao_social || (!empresaId ? 'ABILIO AREIA SOLUÇÕES IMOBILIÁRIAS LTDA' : 'EMPRESA NÃO IDENTIFICADA');
-    const cnpj = empresa?.cnpj || (!empresaId ? '13.219.509/0001-71' : 'CNPJ não cadastrado');
+    const cnpjInformado = String(empresa?.cnpj || (!empresaId ? '13.219.509/0001-71' : 'CNPJ não cadastrado'));
+    const cnpjNumeros = cnpjInformado.replace(/\D/g, '');
+    const cnpj = cnpjNumeros.length === 14
+        ? `${cnpjNumeros.slice(0,2)}.${cnpjNumeros.slice(2,5)}.${cnpjNumeros.slice(5,8)}/${cnpjNumeros.slice(8,12)}-${cnpjNumeros.slice(12,14)}`
+        : cnpjInformado;
     const enderecoSede = empresa?.endereco || (!empresaId ? 'Rua Aristídes Lôbo Sobrinho, 63 — Chácara Braz Miraglia, Jaú/SP, CEP 17207-300' : 'Endereço não cadastrado');
     const texto = `${assunto}\n\nPrezado Sr(a). ${nome}\n\nInformamos que o contrato de locação do imóvel situado na ${enderecoCompleto}, foi encerrado, conforme data do Termo de Entrega de Chaves em ${dataEntrega}.\n\nA ${razaoSocial}, inscrita no CNPJ nº ${cnpj}, com sede em ${enderecoSede}, vem por meio deste declarar os valores em aberto referentes ao imóvel acima identificado, locado pelo Sr(a). ${nome}, CPF ${cpf}:\n\n${lista}\n\nTotalizando o valor de ${formatar(dados.total)}.\n\nObs.: Os valores estão sujeitos a aprovação da seguradora. Caso não haja a cobertura total por parte da mesma, ficarão débitos pendentes a serem acertados na imobiliária.\n\nEm caso de dúvidas, por favor, contatar sua gestora de contrato.\n\nAtenciosamente,`;
     ultimoEmailAutomatico = texto;
