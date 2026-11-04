@@ -1806,6 +1806,7 @@ function limpar() {
         if (!el) continue;
         if (el.type === 'date') el.value = '';
         else if (el.type === 'checkbox') el.checked = false;
+        else if (id === 'numeroContrato') el.value = '';
         else if (CAMPOS_MONETARIOS.has(id)) definirValorMonetario(id, 0);
         else el.value = '0';
     }
