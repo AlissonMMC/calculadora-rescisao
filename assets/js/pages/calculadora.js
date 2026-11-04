@@ -282,7 +282,7 @@ function obterDadosFormulario() {
         if (!el) continue;
         dados.campos[id] = el.type === 'checkbox' ? el.checked : el.value;
     }
-    ['nomeInquilino','cpfInquilino','enderecoImovel','assuntoEmail'].forEach(id => {
+    ['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','assuntoEmail'].forEach(id => {
         const el = document.getElementById(id);
         if (el) dados.campos[id] = el.value;
     }
@@ -910,7 +910,7 @@ async function abrirHistoricoPorId(id, itemPreCarregado = null) {
         }
         // Campos textuais são tratados explicitamente para garantir que não
         // dependam de uma estrutura antiga do JSON.
-        ['nomeInquilino','cpfInquilino','enderecoImovel','assuntoEmail'].forEach(idCampo => {
+        ['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','assuntoEmail'].forEach(idCampo => {
             const el = document.getElementById(idCampo);
             if (el && Object.prototype.hasOwnProperty.call(camposSalvos,idCampo)) el.value = camposSalvos[idCampo] ?? '';
         }
@@ -1314,15 +1314,15 @@ function calcular() {
         ? 0
         : seguroIncendioExtrasTotal + seguroFiancaExtrasTotal;
 
-    // A primeira parcela de cada seguro entra uma única vez no aluguel inteiro.
-    // As parcelas extras são somadas à parte e discriminadas individualmente no e-mail.
-    const seguroIncendioDias = false;
-    const seguroFiancaDias = false;
-    const seguroIncendioDiasValor = 0;
-    const seguroFiancaDiasValor = 0;
-    const seguroIncendioAluguelValor = !semSeguros && temAluguelInteiro ? seguroIncendioTotal : 0;
-    const seguroFiancaAluguelValor = !semSeguros && temAluguelInteiro ? seguroFiancaTotal : 0;
-    const segurosDiasFinais = 0;
+    // A primeira parcela é cobrada integralmente nos dias finais válidos
+    // e novamente no aluguel inteiro, quando esse item estiver habilitado.
+    const seguroIncendioDias = !semSeguros && !invalido && dias > 0;
+    const seguroFiancaDias = !semSeguros && !invalido && dias > 0;
+    const seguroIncendioDiasValor = seguroIncendioDias ? seguroIncendioParcela : 0;
+    const seguroFiancaDiasValor = seguroFiancaDias ? seguroFiancaParcela : 0;
+    const seguroIncendioAluguelValor = !semSeguros && temAluguelInteiro ? seguroIncendioParcela : 0;
+    const seguroFiancaAluguelValor = !semSeguros && temAluguelInteiro ? seguroFiancaParcela : 0;
+    const segurosDiasFinais = seguroIncendioDiasValor + seguroFiancaDiasValor;
     const segurosAluguelInteiro = seguroIncendioAluguelValor + seguroFiancaAluguelValor;
     // A ADM incide somente sobre o aluguel; os seguros não entram no repasse ao proprietário.
     const encargosAluguelInteiro = iptu + condominio + agua + luz + internet;
@@ -1383,7 +1383,7 @@ function calcular() {
     document.getElementById('formulaAdmAluguel').textContent =
     `${formatar(aluguel)} × ${percentual(percentualAdm)}% = ${formatar(admAluguel)}`;
     document.getElementById('formulaRepasseAluguel').textContent =
-    `${formatar(aluguelInteiro)} − ${formatar(admAluguel)} = ${formatar(repasseAluguel)}`;
+    `${formatar(baseRepasseAluguel)} (sem seguros) − ${formatar(admAluguel)} = ${formatar(repasseAluguel)}`;
     const manutencao = numero('manutencao');
     // Chaveiro é cobrado integralmente do inquilino e não participa de ADM/repasse.
     // Os seguros são contabilizados apenas nos destinos selecionados:
@@ -1402,12 +1402,35 @@ function calcular() {
     document.getElementById('resumoRepasseAluguel').textContent = formatar(repasseAluguel);
     document.getElementById('resumoManutencao').textContent = formatar(manutencao);
     document.getElementById('resumoChaveiro').textContent = formatar(chaveiro);
-    document.getElementById('resumoIncendio').textContent = formatar(seguroIncendioTotal);
-    document.getElementById('resumoFianca').textContent = formatar(seguroFiancaTotal);
+    const definirResumoSeguro = (id, valor) => {
+        const elemento = document.getElementById(id);
+        if (!elemento) return;
+        elemento.textContent = formatar(valor);
+        const linha = elemento.closest('.sub-total');
+        if (linha) linha.style.display = valor > 0.005 ? '' : 'none';
+    };
+    definirResumoSeguro('resumoIncendio', seguroIncendioDiasValor + seguroIncendioAluguelValor);
+    definirResumoSeguro('resumoExtrasIncendio', semSeguros ? 0 : seguroIncendioExtrasTotal);
+    definirResumoSeguro('resumoFianca', seguroFiancaDiasValor + seguroFiancaAluguelValor);
+    definirResumoSeguro('resumoExtrasFianca', semSeguros ? 0 : seguroFiancaExtrasTotal);
     document.getElementById('resumoParcelasIncendio').textContent = `${1 + seguroIncendioExtras} ${(1 + seguroIncendioExtras) === 1 ? 'parcela' : 'parcelas'}`;
     document.getElementById('resumoParcelasFianca').textContent = `${1 + seguroFiancaExtras} ${(1 + seguroFiancaExtras) === 1 ? 'parcela' : 'parcelas'}`;
-    document.getElementById('resumoCobrancaIncendio').textContent = `Cobrança automática: aluguel inteiro + parcelas extras · ${formatar(seguroIncendioTotal)}`;
-    document.getElementById('resumoCobrancaFianca').textContent = `Cobrança automática: aluguel inteiro + parcelas extras · ${formatar(seguroFiancaTotal)}`;
+    const resumoCobrancaSeguro = (diasValor, aluguelValor, extrasQtd, extrasValor) => {
+        const destinos = [];
+        if (diasValor > 0.005) destinos.push('dias finais');
+        if (aluguelValor > 0.005) destinos.push('aluguel inteiro');
+        if (extrasQtd > 0 && extrasValor > 0.005) destinos.push(`${extrasQtd} adicional(is)`);
+        const totalSeguro = diasValor + aluguelValor + extrasValor;
+        return destinos.length
+            ? `Cobrança: ${destinos.join(' + ')} · ${formatar(totalSeguro)}`
+            : `Sem cobrança · ${formatar(0)}`;
+    };
+    document.getElementById('resumoCobrancaIncendio').textContent = resumoCobrancaSeguro(
+        seguroIncendioDiasValor, seguroIncendioAluguelValor, seguroIncendioExtras, semSeguros ? 0 : seguroIncendioExtrasTotal
+    );
+    document.getElementById('resumoCobrancaFianca').textContent = resumoCobrancaSeguro(
+        seguroFiancaDiasValor, seguroFiancaAluguelValor, seguroFiancaExtras, semSeguros ? 0 : seguroFiancaExtrasTotal
+    );
     document.getElementById('totalGeral').textContent = formatar(total);
     atualizarConferenciaInterna(admDiasFinais, admAviso, admMulta, admAluguel, repasseDiasFinais, repasseAviso, repasseMulta, repasseAluguel);
     atualizarChecklist( {
@@ -1478,6 +1501,8 @@ function atualizarModeloEmail(dados) {
     const nome = document.getElementById('nomeInquilino').value.trim() || 'Sr.(a)';
     const cpf = document.getElementById('cpfInquilino').value.trim();
     const endereco = document.getElementById('enderecoImovel').value.trim();
+    const cep = document.getElementById('cepImovel').value.trim();
+    const enderecoCompleto = [endereco, cep ? `CEP: ${cep}` : ''].filter(Boolean).join(' - ');
     const assunto = document.getElementById('assuntoEmail').value.trim() || 'Declaração de valores em aberto - encerramento da locação';
     const addLinha = (lista, descricao, valor) => {
         if (valor > 0.005) lista.push(`- ${descricao}: ${formatar(valor)}`);
@@ -1489,28 +1514,19 @@ function atualizarModeloEmail(dados) {
     if (dados.aluguelInteiro > 0.005) addLinha(linhasDebitos, 'Aluguel inteiro + encargos', dados.aluguelInteiro);
     if (dados.manutencao > 0.005) addLinha(linhasDebitos, 'Melhorias / manutenção', dados.manutencao);
     if (dados.chaveiro > 0.005) addLinha(linhasDebitos, 'Chaveiro', dados.chaveiro);
-    // Cada parcela extra aparece em uma linha, pelo valor individual da parcela.
-    const adicionarParcelasExtras = (descricao, valorTotal, quantidade) => {
+    // Cada cobrança adicional é listada separadamente, usando apenas o nome do seguro.
+    const adicionarCobrancasAdicionais = (descricao, valorTotal, quantidade) => {
         const total = Number(valorTotal) || 0;
         const qtd = Math.max(0, Math.floor(Number(quantidade) || 0));
         if (total <= 0.005 || qtd === 0) return;
         const valorParcela = total / qtd;
-        for (let i = 1; i <= qtd; i++) {
-            addLinha(linhasDebitos, `${descricao} - parcela ${i} de ${qtd}`, valorParcela);
+        for (let i = 0; i < qtd; i++) {
+            addLinha(linhasDebitos, descricao, valorParcela);
         }
     };
 
-    adicionarParcelasExtras(
-        'Seguro incêndio extra',
-        dados.seguroIncendioExtrasTotal,
-        dados.seguroIncendioParcelasExtras
-    );
-
-    adicionarParcelasExtras(
-        'Seguro fiança extra',
-        dados.seguroFiancaExtrasTotal,
-        dados.seguroFiancaParcelasExtras
-    );
+    adicionarCobrancasAdicionais('Seguro incêndio', dados.seguroIncendioExtrasTotal, dados.seguroIncendioParcelasExtras);
+    adicionarCobrancasAdicionais('Seguro fiança', dados.seguroFiancaExtrasTotal, dados.seguroFiancaParcelasExtras);
     const dataEntrega = dados.dataFinal ? formatarData(dados.dataFinal) : 'não informada';
     const periodo = dados.dataInicial && dados.dataFinal
     ? `${formatarData(dados.dataInicial)} até ${formatarData(dados.dataFinal)}`
@@ -1520,7 +1536,7 @@ function atualizarModeloEmail(dados) {
     : '';
     const lista = linhasDebitos.length ? linhasDebitos.join('\n') : '- Não há débitos calculados no momento.';
     const identificacao = cpf ? ` ${nome} CPF: ${cpf}.` : ` ${nome}.`;
-    const enderecoTexto = endereco ? ` localizado em ${endereco}.` : '.';
+    const enderecoTexto = enderecoCompleto ? ` localizado em ${enderecoCompleto}.` : '.';
     const avisoTexto = periodoAviso ? `\nPeríodo considerado para aviso prévio: ${periodoAviso}.` : '';
     const texto = `${assunto}\n\nOlá, tudo bem?\n\nEstamos enviando este e-mail para informar que o imóvel foi desocupado. As chaves do imóvel foram entregues na imobiliária no dia ${dataEntrega}, encerrando-se assim o contrato de locação.\n\nEstamos tentando contato com o Sr.(a)${identificacao}\n\nNeste e-mail estão as informações de melhorias e débitos em aberto do imóvel locado pelo mesmo,${enderecoTexto}\n\nABILIO AREIA SOLUÇÕES IMOBILIARIAS LTDA, pessoa jurídica inscrita no CNPJ nº 13.219.509/0001-71, com sede em R. Aristídes Lôbo Sobrinho, 63 - Chácara Braz Miraglia, Jaú - SP, 17207-300, vem através da presente DECLARAR os valores em aberto referente ao imóvel acima citado:\n\n${lista}\n\nTotalizando o valor de ${formatar(dados.total)}.${periodoAviso ? `\n${avisoTexto.trim()}` : ''}\n\nObs.: Os valores estão sujeitos a aprovação da seguradora. Caso não haja a cobertura total por parte da mesma, ficarão débitos pendentes a serem acertados na imobiliária.\n\nEm caso de dúvidas, por favor, contatar sua gestora de contrato.\n\nAtenciosamente,`;
     ultimoEmailAutomatico = texto;
@@ -1655,6 +1671,14 @@ function topicMoney(id) {
     return document.getElementById(id)?.textContent || 'R$ 0,00';
 }
 function updateTopicSummaries() {
+    const lerValorResumo = id => {
+        const texto = topicMoney(id);
+        return Number(String(texto || '').replace(/[^0-9,-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+    };
+    const totalSeguros = lerValorResumo('resumoIncendio')
+        + lerValorResumo('resumoExtrasIncendio')
+        + lerValorResumo('resumoFianca')
+        + lerValorResumo('resumoExtrasFianca');
     const values = {
         topicoDiasFinais: (() => {
             const d=document.getElementById('diasCalculados')?.textContent;
@@ -1692,9 +1716,7 @@ function updateTopicSummaries() {
         )(),
         topicoSeguros: (() => {
             if(document.getElementById('semSeguros')?.checked) return 'Não aplicável';
-            const a=Number((topicMoney('resumoIncendio')||'').replace(/[^0-9,-]/g,'').replace('.','').replace(',','.'))||0;
-            const b=Number((topicMoney('resumoFianca')||'').replace(/[^0-9,-]/g,'').replace('.','').replace(',','.'))||0;
-            return formatar(a+b);
+            return formatar(totalSeguros);
         }
         )()
     }
@@ -1703,16 +1725,8 @@ function updateTopicSummaries() {
         if(el)el.textContent=text;
     }
     );
-    const inc=topicMoney('resumoIncendio'), fia=topicMoney('resumoFianca');
     const sc=document.getElementById('resumoSegurosCompacto');
-    if(sc) {
-        if(document.getElementById('semSeguros')?.checked) sc.textContent='R$ 0,00';
-        else {
-            const n1=Number((inc||'').replace(/[^0-9,-]/g,'').replace('.','').replace(',','.'))||0;
-            const n2=Number((fia||'').replace(/[^0-9,-]/g,'').replace('.','').replace(',','.'))||0;
-            sc.textContent=formatar(n1+n2);
-        }
-    }
+    if(sc) sc.textContent = formatar(totalSeguros);
 }
 function initFinanceDetails() {
     const btn=document.getElementById('btnFinanceDetails');
@@ -1798,7 +1812,7 @@ function limpar() {
         else if (CAMPOS_MONETARIOS.has(id)) definirValorMonetario(id, 0);
         else el.value = '0';
     }
-    ['nomeInquilino','cpfInquilino','enderecoImovel'].forEach(id => {
+    ['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel'].forEach(id => {
         const el=document.getElementById(id);
         if(el) el.value='';
     }
@@ -1841,7 +1855,9 @@ function imprimirCalculo() {
     const agora = new Date();
     document.getElementById('printDate').textContent = agora.toLocaleString('pt-BR');
     const nomePrint = document.getElementById('nomeInquilino').value.trim() || 'Inquilino não informado';
-    const enderecoPrint = document.getElementById('enderecoImovel').value.trim() || 'Imóvel não informado';
+    const enderecoInformado = document.getElementById('enderecoImovel').value.trim();
+    const cepInformado = document.getElementById('cepImovel').value.trim();
+    const enderecoPrint = [enderecoInformado, cepInformado ? `CEP: ${cepInformado}` : ''].filter(Boolean).join(' - ') || 'Imóvel não informado';
     document.getElementById('printOnlyHeader').textContent = `RESCISÃO DE LOCAÇÃO — ${nomePrint} — ${enderecoPrint}`;
     const formatarDataInformada = valor => {
         if (!valor) return 'Não informada';
@@ -1920,7 +1936,12 @@ document.getElementById('btnEditarEmail').addEventListener('click', () => {
     if (emailEditando) area.focus();
 }
 );
-['nomeInquilino','cpfInquilino','enderecoImovel','assuntoEmail'].forEach(id => document.getElementById(id).addEventListener('input', () => {
+['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','assuntoEmail'].forEach(id => document.getElementById(id).addEventListener('input', () => {
+    if (id === 'cepImovel') {
+        const campoCep = document.getElementById('cepImovel');
+        const numeros = campoCep.value.replace(/\D/g, '').slice(0, 8);
+        campoCep.value = numeros.length > 5 ? `${numeros.slice(0, 5)}-${numeros.slice(5)}` : numeros;
+    }
     calcular();
     marcarConferenciaComoPendente();
 }
