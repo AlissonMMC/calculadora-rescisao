@@ -18,6 +18,8 @@ try {
 } catch(Throwable $e){ $erro='Não foi possível carregar o relatório.'; }
 $dados = json_decode($row['dados_json'] ?? '', true); if (!is_array($dados)) $dados=[]; $campos = $dados['campos'] ?? []; if (!is_array($campos)) $campos=[];
 $nome = trim((string)($row['nome'] ?? '')); $endereco=trim((string)($row['endereco'] ?? '')); $modo=trim((string)($row['modo_nome'] ?? '')) ?: 'Critério não informado';
+$empresaSnapshot = [];
+if (!empty($campos['empresaSnapshot'])) { $empresaSnapshot = json_decode((string)$campos['empresaSnapshot'], true) ?: []; }
 $labels=[
  'cpfInquilino'=>'CPF','numeroContrato'=>'Contrato','dataInicial'=>'Data inicial','dataFinal'=>'Entrega das chaves','aluguel'=>'Aluguel mensal','iptu'=>'IPTU','condominio'=>'Condomínio','agua'=>'Água','luz'=>'Luz','internet'=>'Internet','percentualAdm'=>'ADM do aluguel (%)','dataInicioAviso'=>'Início do aviso','dataFimAviso'=>'Fim do aviso','mesesFaltantes'=>'Meses faltantes','dataInicioContrato'=>'Início do contrato','percentualProp'=>'ADM sobre multa (%)','valorAluguelInteiro'=>'Aluguel inteiro + encargos','manutencao'=>'Manutenção','chaveiro'=>'Chaveiro','seguroIncendio'=>'Seguro incêndio','seguroFianca'=>'Seguro fiança','assuntoEmail'=>'Assunto do e-mail'
 ];
@@ -45,7 +47,14 @@ $statusClass=match($status){'Conferido'=>'ok','Pronto para cobrança'=>'ready','
 <div class="data-group"><div class="group-title"><?= htmlspecialchars($group,ENT_QUOTES,'UTF-8') ?></div><div class="data-grid">
 <?php foreach($shown as $key=>$v): if(in_array($key,['semAviso','semMulta','semEncargos','semManutencao','semChaveiro','semAluguelInteiro','semSeguros'],true)) continue; $label=$labels[$key]??$key; if($key==='valorAluguelInteiro' && !empty($campos['semAluguelInteiro'])) continue; if(in_array($key,['iptu','condominio','agua','luz','internet'],true)&&!empty($campos['semEncargos'])) continue; if(in_array($key,['manutencao'],true)&&!empty($campos['semManutencao'])) continue; if(in_array($key,['chaveiro'],true)&&!empty($campos['semChaveiro'])) continue; if(in_array($key,['seguroIncendio','seguroFianca'],true)&&!empty($campos['semSeguros'])) continue; ?>
 <div class="data-item"><div class="data-label"><?= htmlspecialchars($label,ENT_QUOTES,'UTF-8') ?></div><div class="data-value"><?= htmlspecialchars($fmt($key,$v),ENT_QUOTES,'UTF-8') ?></div></div>
-<?php endforeach; ?></div></div><?php endforeach; ?></section>
+<?php endforeach; ?></div></div><?php endforeach; ?>
+<?php if (!empty($empresaSnapshot['razao_social'])): ?>
+<div class="data-group"><div class="group-title">Empresa responsável</div><div class="data-grid">
+<div class="data-item"><div class="data-label">Razão social</div><div class="data-value"><?= htmlspecialchars((string)$empresaSnapshot['razao_social'],ENT_QUOTES,'UTF-8') ?></div></div>
+<div class="data-item"><div class="data-label">CNPJ</div><div class="data-value"><?= htmlspecialchars((string)($empresaSnapshot['cnpj'] ?? ''),ENT_QUOTES,'UTF-8') ?></div></div>
+<div class="data-item"><div class="data-label">Endereço da sede</div><div class="data-value"><?= htmlspecialchars((string)($empresaSnapshot['endereco'] ?? ''),ENT_QUOTES,'UTF-8') ?></div></div>
+</div></div>
+<?php endif; ?></section>
 </main>
 <aside>
 <section class="card"><h2>Resumo financeiro</h2><p class="sub">Totais gravados no histórico.</p><div class="side-stat"><span>Total cobrado</span><strong>R$ <?= number_format((float)$row['total'],2,',','.') ?></strong></div><div class="side-stat"><span>Total de ADM</span><strong>R$ <?= number_format((float)($row['total_adm']??0),2,',','.') ?></strong></div><div class="side-stat"><span>Total a repassar</span><strong>R$ <?= number_format((float)($row['total_repasse']??0),2,',','.') ?></strong></div><div class="side-stat"><span>Última atualização</span><strong><?= htmlspecialchars(date('d/m/Y H:i',strtotime($row['atualizado_em'])),ENT_QUOTES,'UTF-8') ?></strong></div><?php if(!empty($row['conferido_em'])): ?><div class="side-stat"><span>Conferido por</span><strong><?= htmlspecialchars($row['conferido_nome']??'—',ENT_QUOTES,'UTF-8') ?></strong></div><?php endif; ?><?php if(!empty($row['cobrado_em'])): ?><div class="side-stat"><span>Cobrado por</span><strong><?= htmlspecialchars($row['cobrado_nome']??'—',ENT_QUOTES,'UTF-8') ?></strong></div><?php endif; ?><div class="print-note">Na impressão, controles internos e ações de edição ficam ocultos.</div></section>
