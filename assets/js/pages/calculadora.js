@@ -1,5 +1,5 @@
 const campos = [
-'dataAvisoDesocupacao', 'dataAvisoProprietario', 'numeroContrato', 'motivoDesocupacao', 'dataInicial', 'dataFinal', 'dataInicioContrato', 'dataInicioAviso', 'dataFimAviso', 'aluguel', 'iptu', 'condominio', 'agua', 'luz', 'internet',
+'empresaId', 'empresaSnapshot', 'dataAvisoDesocupacao', 'dataAvisoProprietario', 'numeroContrato', 'motivoDesocupacao', 'dataInicial', 'dataFinal', 'dataInicioContrato', 'dataInicioAviso', 'dataFimAviso', 'aluguel', 'iptu', 'condominio', 'agua', 'luz', 'internet',
 'mesesFaltantes', 'percentualProp', 'percentualAdm', 'valorAluguelInteiro', 'semAluguelInteiro',
 'manutencao', 'chaveiro', 'seguroIncendio', 'seguroIncendioExtras',
 'seguroFianca', 'seguroFiancaExtras',
@@ -272,6 +272,37 @@ function atualizarModoUI() {
     document.getElementById('currentModeText').textContent = nomeModo();
     document.getElementById('resumoModo').textContent = nomeModo();
 }
+function prepararOpcaoEmpresaHistorica(camposSalvos) {
+    const select = document.getElementById('empresaId');
+    const snapshotEl = document.getElementById('empresaSnapshot');
+    if (!select || !camposSalvos || typeof camposSalvos !== 'object') return;
+    const id = String(camposSalvos.empresaId || '').trim();
+    const snapshotRaw = camposSalvos.empresaSnapshot || '';
+    if (!id) return;
+    let snapshot = null;
+    try { snapshot = typeof snapshotRaw === 'string' ? JSON.parse(snapshotRaw) : snapshotRaw; } catch (_) {}
+    const existe = Array.from(select.options).some(option => option.value === id);
+    if (!existe && snapshot && snapshot.razao_social) {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = `${snapshot.razao_social} (cadastro inativo)`;
+        option.dataset.empresa = JSON.stringify(snapshot);
+        select.add(option);
+    }
+    if (snapshotEl && snapshotRaw) snapshotEl.value = typeof snapshotRaw === 'string' ? snapshotRaw : JSON.stringify(snapshotRaw);
+}
+function sincronizarSnapshotEmpresaSelecionada() {
+    const select = document.getElementById('empresaId');
+    const snapshotEl = document.getElementById('empresaSnapshot');
+    if (!select || !snapshotEl || !select.value) return;
+    const empresa = (Array.isArray(window.EMPRESAS_DISPONIVEIS) ? window.EMPRESAS_DISPONIVEIS : [])
+        .find(item => String(item.id) === String(select.value));
+    if (empresa) snapshotEl.value = JSON.stringify(empresa);
+    else {
+        const option = select.options[select.selectedIndex];
+        if (option?.dataset.empresa) snapshotEl.value = option.dataset.empresa;
+    }
+}
 function obterDadosFormulario() {
     const dados = {
         modo: modoSelecionado, campos: {
@@ -384,6 +415,7 @@ async function carregarRascunhoServidor() {
         const usar = confirm(`Existe um rascunho salvo no servidor para ${nome}.\n\nDeseja continuar de onde parou?`);
         if (!usar) return false;
         const dados = j.draft.dados;
+        prepararOpcaoEmpresaHistorica(dados.campos);
         Object.entries(dados.campos).forEach(([id,value])=> {
             const el=document.getElementById(id);
             if(!el) return;
@@ -443,6 +475,7 @@ function restaurarDadosAutomaticamente() {
         const salvo = JSON.parse(localStorage.getItem(STORAGE_FORM) || 'null');
         if (!salvo || !salvo.campos) return false;
         restaurandoDados = true;
+        prepararOpcaoEmpresaHistorica(salvo.campos);
         Object.entries(salvo.campos).forEach(([id, value]) => {
             const el = document.getElementById(id);
             if (!el) return;
@@ -890,6 +923,7 @@ async function abrirHistoricoPorId(id, itemPreCarregado = null) {
         historicoIdAtual = Number(item.id) || numeroId;
         const modoSalvo = String(dados.modo ?? item.modo ?? item.modoNome ?? item.modo_nome ?? '');
         modoSelecionado = modoSalvo.toLowerCase().includes('dias') ? 'dias' : (modoSalvo ? 'mes' : '');
+        prepararOpcaoEmpresaHistorica(camposSalvos);
         Object.entries(camposSalvos).forEach(([campoId, value]) => {
             const el = document.getElementById(campoId);
             if (!el) return;
@@ -1031,6 +1065,7 @@ function atualizarConferenciaFinal( {
     ? (topicosRevisados.multa || mesesFaltantesPreenchidos) && multaDadosValidos
     : topicosRevisados.multa && multaDadosValidos);
     const checks = [
+    [!!document.getElementById('empresaId')?.value, 'Empresa responsável'],
     [diasFinaisConferidos, 'Dias finais'],
     [modoSelecionado !== 'dias' || !!(dataInicioContratoValue() && contratoValido && !contratoInvalido), 'Início do contrato / entrega das chaves'],
     [!!nome, 'Nome do inquilino'],
@@ -1535,7 +1570,19 @@ function atualizarModeloEmail(dados) {
     const lista = linhas.length ? linhas.join('\n') : '•              Não há débitos calculados no momento.';
     const dataEntrega = dados.dataFinal ? formatarData(dados.dataFinal) : '____';
     const enderecoCompleto = `${endereco} CEP ${cep}`;
-    const texto = `${assunto}\n\nPrezado Sr(a). ${nome}\n\nInformamos que o contrato de locação do imóvel situado na ${enderecoCompleto}, foi encerrado, conforme data do Termo de Entrega de Chaves em ${dataEntrega}.\n\nA ABILIO AREIA SOLUÇÕES IMOBILIÁRIAS LTDA, inscrita no CNPJ nº 13.219.509/0001-71, com sede na Rua Aristídes Lôbo Sobrinho, 63 — Chácara Braz Miraglia, Jaú/SP, CEP 17207-300, vem por meio deste declarar os valores em aberto referentes ao imóvel acima identificado, locado pelo Sr(a). ${nome}, CPF ${cpf}:\n\n${lista}\n\nTotalizando o valor de ${formatar(dados.total)}.\n\nObs.: Os valores estão sujeitos a aprovação da seguradora. Caso não haja a cobertura total por parte da mesma, ficarão débitos pendentes a serem acertados na imobiliária.\n\nEm caso de dúvidas, por favor, contatar sua gestora de contrato.\n\nAtenciosamente,`;
+    let empresa = null;
+    const snapshotRaw = document.getElementById('empresaSnapshot')?.value || '';
+    try { empresa = snapshotRaw ? JSON.parse(snapshotRaw) : null; } catch (_) { empresa = null; }
+    const empresaId = document.getElementById('empresaId')?.value || '';
+    if (!empresa && empresaId) {
+        const option = document.getElementById('empresaId')?.selectedOptions?.[0];
+        try { empresa = option?.dataset.empresa ? JSON.parse(option.dataset.empresa) : null; } catch (_) {}
+    }
+    // Compatibilidade com rescisões antigas, criadas antes do cadastro de empresas.
+    const razaoSocial = empresa?.razao_social || (!empresaId ? 'ABILIO AREIA SOLUÇÕES IMOBILIÁRIAS LTDA' : 'EMPRESA NÃO IDENTIFICADA');
+    const cnpj = empresa?.cnpj || (!empresaId ? '13.219.509/0001-71' : 'CNPJ não cadastrado');
+    const enderecoSede = empresa?.endereco || (!empresaId ? 'Rua Aristídes Lôbo Sobrinho, 63 — Chácara Braz Miraglia, Jaú/SP, CEP 17207-300' : 'Endereço não cadastrado');
+    const texto = `${assunto}\n\nPrezado Sr(a). ${nome}\n\nInformamos que o contrato de locação do imóvel situado na ${enderecoCompleto}, foi encerrado, conforme data do Termo de Entrega de Chaves em ${dataEntrega}.\n\nA ${razaoSocial}, inscrita no CNPJ nº ${cnpj}, com sede em ${enderecoSede}, vem por meio deste declarar os valores em aberto referentes ao imóvel acima identificado, locado pelo Sr(a). ${nome}, CPF ${cpf}:\n\n${lista}\n\nTotalizando o valor de ${formatar(dados.total)}.\n\nObs.: Os valores estão sujeitos a aprovação da seguradora. Caso não haja a cobertura total por parte da mesma, ficarão débitos pendentes a serem acertados na imobiliária.\n\nEm caso de dúvidas, por favor, contatar sua gestora de contrato.\n\nAtenciosamente,`;
     ultimoEmailAutomatico = texto;
     if (!emailEditando) document.getElementById('modeloEmail').value = texto;
 }
@@ -1806,7 +1853,7 @@ function limpar() {
         if (!el) continue;
         if (el.type === 'date') el.value = '';
         else if (el.type === 'checkbox') el.checked = false;
-        else if (id === 'numeroContrato') el.value = '';
+        else if (id === 'numeroContrato' || id === 'empresaId' || id === 'empresaSnapshot') el.value = '';
         else if (CAMPOS_MONETARIOS.has(id)) definirValorMonetario(id, 0);
         else el.value = '0';
     }
@@ -1848,6 +1895,12 @@ document.getElementById('btnMenuHistorico')?.addEventListener('click', () => {
 );
 document.getElementById('btnVoltarCalculadoraHistorico')?.addEventListener('click', fecharHistoricoDireto);
 document.getElementById('btnAtualizarHistorico')?.addEventListener('click', atualizarHistoricoManual);
+document.getElementById('empresaId')?.addEventListener('change', () => {
+    sincronizarSnapshotEmpresaSelecionada();
+    marcarConferenciaComoPendente();
+    calcular();
+    salvarDadosAutomaticamente();
+});
 function imprimirCalculo() {
     calcular();
     const agora = new Date();
@@ -2088,6 +2141,7 @@ opcionais.forEach(([campo, check]) => {
 );
 atualizarCamposSemDebito();
 atualizarTopicosSemDebito();
+sincronizarSnapshotEmpresaSelecionada();
 calcular();
 definirBloqueio(revisaoBloqueada);
 const historicoIdInicial = historicoIdInicialPrevia;
