@@ -919,7 +919,7 @@ async function abrirHistoricoPorId(id, itemPreCarregado = null) {
         }
         // Campos textuais são tratados explicitamente para garantir que não
         // dependam de uma estrutura antiga do JSON.
-        ['nomeInquilino','cpfInquilino','enderecoImovel','assuntoEmail'].forEach(idCampo => {
+        ['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','assuntoEmail'].forEach(idCampo => {
             const el = document.getElementById(idCampo);
             if (el && Object.prototype.hasOwnProperty.call(camposSalvos,idCampo)) el.value = camposSalvos[idCampo] ?? '';
         }
@@ -2018,7 +2018,7 @@ document.getElementById('btnEditarEmail').addEventListener('click', () => {
     if (emailEditando) area.focus();
 }
 );
-['nomeInquilino','cpfInquilino','enderecoImovel','assuntoEmail'].forEach(id => document.getElementById(id).addEventListener('input', () => {
+['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','assuntoEmail'].forEach(id => document.getElementById(id).addEventListener('input', () => {
     calcular();
     marcarConferenciaComoPendente();
 }
