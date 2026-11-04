@@ -3243,3 +3243,108 @@ html[data-theme="dark"] .workflow-progress.complete{
     border-color:#214c2f;
     color:#86efac
 }
+
+/* Dados da desocupação */
+.moveout-info-card {
+    margin: 0 0 14px;
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: var(--white);
+}
+.moveout-info-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 13px;
+}
+.moveout-info-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--orange-soft);
+    color: var(--orange-dark);
+    font-weight: 900;
+}
+.moveout-info-heading h2 {
+    margin: 0 0 3px;
+    color: var(--text);
+    font-size: .88rem;
+}
+.moveout-info-heading p {
+    margin: 0;
+    color: var(--muted);
+    font-size: .66rem;
+    line-height: 1.4;
+}
+.moveout-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+.moveout-info-grid .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    margin: 0;
+}
+.moveout-info-grid .field label {
+    font-size: .66rem;
+    line-height: 1.35;
+}
+.moveout-info-grid .field input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+}
+.moveout-reason-field {
+    grid-column: auto;
+}
+.moveout-print-summary {
+    margin: 10px 0 14px;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 9pt;
+}
+.moveout-print-summary > strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 10pt;
+}
+.moveout-print-summary > div {
+    margin-top: 3px;
+}
+.moveout-print-summary span {
+    font-weight: 600;
+}
+@media(max-width:900px) {
+    .moveout-info-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .moveout-reason-field {
+        grid-column: 1 / -1;
+    }
+}
+@media(max-width:600px) {
+    .moveout-info-grid {
+        grid-template-columns: 1fr;
+    }
+    .moveout-reason-field {
+        grid-column: auto;
+    }
+}
+@media print {
+    .moveout-info-card {
+        display: none !important;
+    }
+    .moveout-print-summary {
+        display: block !important;
+        break-inside: avoid;
+    }
+}

@@ -1,5 +1,5 @@
 const campos = [
-'dataInicial', 'dataFinal', 'dataInicioContrato', 'dataInicioAviso', 'dataFimAviso', 'aluguel', 'iptu', 'condominio', 'agua', 'luz', 'internet',
+'dataAvisoDesocupacao', 'dataAvisoProprietario', 'motivoDesocupacao', 'dataInicial', 'dataFinal', 'dataInicioContrato', 'dataInicioAviso', 'dataFimAviso', 'aluguel', 'iptu', 'condominio', 'agua', 'luz', 'internet',
 'mesesFaltantes', 'percentualProp', 'percentualAdm', 'valorAluguelInteiro', 'semAluguelInteiro',
 'manutencao', 'chaveiro', 'seguroIncendio', 'seguroIncendioExtras',
 'seguroFianca', 'seguroFiancaExtras',
@@ -1540,7 +1540,7 @@ function atualizarModeloEmail(dados) {
         '',
         'Prezado(a) Sr(a). ' + nome + ',',
         '',
-        'Informamos que o contrato de locação do imóvel situado na ' + endereco + ', CEP ' + cep + ', foi encerrado, conforme data do Termo de Entrega de Chaves em ' + dataEntrega + '.
+        'Informamos que o contrato de locação do imóvel situado na ' + endereco + ', CEP ' + cep + ', foi encerrado, conforme data do Termo de Entrega de Chaves em ' + dataEntrega + '.',
         '',
         'A ABILIO AREIA SOLUÇÕES IMOBILIÁRIAS LTDA, inscrita no CNPJ nº 13.219.509/0001-71, com sede na Rua Aristídes Lôbo Sobrinho, 63 — Chácara Braz Miraglia, Jaú/SP, CEP 17207-300, vem por meio deste declarar os valores em aberto referentes ao imóvel acima identificado, locado pelo ' + identificacao + ':',
         '',
@@ -1897,7 +1897,7 @@ function limpar() {
         else if (CAMPOS_MONETARIOS.has(id)) definirValorMonetario(id, 0);
         else el.value = '0';
     }
-    ['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel'].forEach(id => {
+    ['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','motivoDesocupacao'].forEach(id => {
         const el=document.getElementById(id);
         if(el) el.value='';
     }
@@ -1946,7 +1946,21 @@ function imprimirCalculo() {
     const nomePrint = document.getElementById('nomeInquilino').value.trim() || 'Inquilino não informado';
     const enderecoPrint = document.getElementById('enderecoImovel').value.trim() || 'Imóvel não informado';
     document.getElementById('printOnlyHeader').textContent = `RESCISÃO DE LOCAÇÃO — ${nomePrint} — ${enderecoPrint}`;
-    document.body.classList.add('modo-impressao');
+        const formatarDataDesocupacao = (valor) => {
+        if (!valor) return 'Não informada';
+        const partes = valor.split('-');
+        return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : valor;
+    };
+
+    document.getElementById('printDataAvisoDesocupacao').textContent =
+        formatarDataDesocupacao(document.getElementById('dataAvisoDesocupacao')?.value);
+
+    document.getElementById('printDataAvisoProprietario').textContent =
+        formatarDataDesocupacao(document.getElementById('dataAvisoProprietario')?.value);
+
+    document.getElementById('printMotivoDesocupacao').textContent =
+        document.getElementById('motivoDesocupacao')?.value.trim() || 'Não informado';
+document.body.classList.add('modo-impressao');
     // O diálogo nativo de impressão precisa ser chamado diretamente pelo clique.
     window.print();
     setTimeout(() => document.body.classList.remove('modo-impressao'), 500);
