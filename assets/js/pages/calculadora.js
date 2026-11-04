@@ -1494,9 +1494,6 @@ function atualizarModeloEmail(dados) {
     const formatarItem = (descricao, valor) =>
         Number(valor) > 0.005 ? '• ' + descricao + ' = ' + formatar(Number(valor)) : '';
 
-    const formatarItem = (descricao, valor) =>
-        Number(valor) > 0.005 ? '• ' + descricao + ' = ' + formatar(Number(valor)) : '';
-
     // Todos os valores são apresentados em uma única lista, sem títulos de seção.
     // Nos dias finais, somente aluguel/IPTU recebem a identificação de proporcionalidade.
     const itens = (dados.detalhamentoFinais || []).map(item => {
