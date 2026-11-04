@@ -664,7 +664,11 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
                 </div>
                 <div class="field">
                   <label for="enderecoImovel">Endereço do imóvel <span class="hint">(opcional)</span></label>
-                  <input id="enderecoImovel" type="text" placeholder="Ex.: Rua, número, bairro - cidade - SP - CEP" autocomplete="off" />
+                  <input id="enderecoImovel" type="text" placeholder="Ex.: Rua, número, bairro - cidade - SP" autocomplete="off" />
+                </div>
+                <div class="field">
+                  <label for="cepImovel">CEP do imóvel <span class="hint">(opcional)</span></label>
+                  <input id="cepImovel" type="text" inputmode="numeric" maxlength="9" placeholder="Ex.: 17207-300" autocomplete="postal-code" />
                 </div>
                 <div class="field">
                   <label for="assuntoEmail">Assunto do e-mail</label>
