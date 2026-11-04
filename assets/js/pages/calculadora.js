@@ -820,7 +820,7 @@ function decodificarDadosHistorico(item) {
         }
         if (valor && typeof valor === 'object') {
             if (valor.campos && typeof valor.campos === 'object') return valor;
-            const idsCampos = [...campos, 'nomeInquilino','cpfInquilino','enderecoImovel','assuntoEmail'];
+            const idsCampos = [...campos, 'nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','assuntoEmail'];
             const possiveis = {
             }
             idsCampos.forEach(campoId => {
