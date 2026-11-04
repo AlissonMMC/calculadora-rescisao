@@ -496,8 +496,8 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
             <div class="grid insurance-grid">
               <div class="field full insurance-options-head">
                 <label class="check-inline"><input id="semSeguros" type="checkbox" /> Não há seguros neste contrato</label>
-                <span class="hint">Informe o valor de uma parcela. Ela é cobrada sempre nos dias finais e no aluguel inteiro. Use “Parcelas extras” quando houver mais parcelas além da primeira.</span>
-                <div class="explain-box" id="explicaSeguros">Os seguros não têm ADM nem repasse ao proprietário. Cada valor informado é tratado como uma parcela. Use “Parcelas extras” para informar quantas parcelas adicionais serão cobradas. A cobrança dos seguros é automática nos dias finais e no aluguel inteiro.</div>
+                <span class="hint">A primeira cobrança ocorre nos dias finais e também no aluguel inteiro, quando aplicável. As quantidades adicionais são cobradas uma única vez.</span>
+                <div class="explain-box" id="explicaSeguros">Os seguros não têm ADM nem repasse ao proprietário. O valor informado é cobrado integralmente nos dias finais válidos e novamente no aluguel inteiro, se houver. As parcelas adicionais são somadas uma única vez.</div>
               </div>
 
               <div class="field optional-debt-field insurance-card-field">
@@ -555,8 +555,10 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
               <div class="sub-total"><span>Repasse da multa ao proprietário</span><strong id="resumoRepasseMulta">R$ 0,00</strong></div>
               <div class="sub-total"><span>ADM do aluguel</span><strong id="resumoAdmAluguel">R$ 0,00</strong></div>
               <div class="sub-total"><span>Repasse do aluguel ao proprietário</span><strong id="resumoRepasseAluguel">R$ 0,00</strong></div>
-              <div class="sub-total"><span>Seguro incêndio (não repassado)</span><strong id="resumoIncendio">R$ 0,00</strong></div>
-              <div class="sub-total"><span>Seguro fiança (não repassado)</span><strong id="resumoFianca">R$ 0,00</strong></div>
+              <div class="sub-total"><span>Seguro incêndio</span><strong id="resumoIncendio">R$ 0,00</strong></div>
+              <div class="sub-total"><span>Seguro incêndio</span><strong id="resumoExtrasIncendio">R$ 0,00</strong></div>
+              <div class="sub-total"><span>Seguro fiança</span><strong id="resumoFianca">R$ 0,00</strong></div>
+              <div class="sub-total"><span>Seguro fiança</span><strong id="resumoExtrasFianca">R$ 0,00</strong></div>
 
               <div class="summary-note">
               <strong>Critério da multa:</strong> <span id="resumoModo">—</span><br />
@@ -678,7 +680,11 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
                 </div>
                 <div class="field">
                   <label for="enderecoImovel">Endereço do imóvel <span class="hint">(opcional)</span></label>
-                  <input id="enderecoImovel" type="text" placeholder="Ex.: Rua, número, bairro - cidade - SP - CEP" autocomplete="off" />
+                  <input id="enderecoImovel" type="text" placeholder="Ex.: Rua, número e bairro" autocomplete="street-address" />
+                </div>
+                <div class="field">
+                  <label for="cepImovel">CEP do imóvel <span class="hint">(opcional)</span></label>
+                  <input id="cepImovel" type="text" inputmode="numeric" maxlength="9" placeholder="17207-300" autocomplete="postal-code" />
                 </div>
                 <div class="field">
                   <label for="assuntoEmail">Assunto do e-mail</label>
@@ -715,4 +721,4 @@ window.USUARIO_LOGADO = <?= json_encode([
     window.HISTORICO_INICIAL = <?= json_encode($historicoInicial, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     window.HISTORICO_INICIAL_ID = <?= (int)$historicoInicialId ?>;
 </script>
-<script src="assets/js/pages/calculadora.js?v=money-mask-20261002"></script>
+<script src="assets/js/pages/calculadora.js?v=insurance-cep-20261104"></script>
