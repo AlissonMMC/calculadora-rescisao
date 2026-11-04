@@ -1501,58 +1501,44 @@ function atualizarModeloEmail(dados) {
     const formatarItem = (descricao, valor) =>
         Number(valor) > 0.005 ? '• ' + descricao + ' = ' + formatar(Number(valor)) : '';
 
-    const montarSecao = (titulo, itens) => {
-        const linhas = itens.filter(Boolean);
-        return linhas.length ? titulo + '\n' + linhas.join('\n') : '';
-    };
-
-    // Dias finais: os encargos mensais são proporcionais; seguros são parcelas inteiras.
-    const itensDiasFinais = (dados.detalhamentoFinais || []).map(item => {
+    // Todos os valores são apresentados em uma única lista, sem títulos de seção.
+    // Nos dias finais, somente aluguel/IPTU recebem a identificação de proporcionalidade.
+    const itens = (dados.detalhamentoFinais || []).map(item => {
         const nomeItem = String(item.nome || '').trim();
-        const seguro = /seguro/i.test(nomeItem);
-        const descricao = seguro ? nomeItem + ' - parcela inteira' : nomeItem + ' proporcional';
+        const descricao = /seguro/i.test(nomeItem)
+            ? nomeItem
+            : nomeItem + ' - dias finais';
         return formatarItem(descricao, item.valor);
     });
 
-    // Aluguel inteiro: cada encargo e cada seguro permanecem discriminados.
-    const itensAluguelInteiro = (dados.detalhamentoAluguelInteiro || []).map(item => {
-        const nomeItem = String(item.nome || '').trim();
-        const descricao = /seguro/i.test(nomeItem) ? nomeItem + ' - parcela inteira' : nomeItem;
-        return formatarItem(descricao, item.valor);
+    (dados.detalhamentoAluguelInteiro || []).forEach(item => {
+        itens.push(formatarItem(String(item.nome || '').trim(), item.valor));
     });
 
-    const itensAviso = (dados.detalhamentoAviso || []).map(item =>
-        formatarItem(item.nome + ' - aviso prévio', item.valor)
-    );
+    (dados.detalhamentoAviso || []).forEach(item => {
+        itens.push(formatarItem(String(item.nome || '').trim() + ' - aviso prévio', item.valor));
+    });
 
-    const outrosEncargos = [
-        formatarItem('Multa rescisória', dados.multa),
-        formatarItem('Manutenção final', dados.manutencao),
-        formatarItem('Chaveiro', dados.chaveiro)
-    ];
+    itens.push(formatarItem('Manutenção', dados.manutencao));
+    itens.push(formatarItem('Multa rescisória', dados.multa));
+    itens.push(formatarItem('Chaveiro', dados.chaveiro));
 
-    // As parcelas extras de seguros são débitos adicionais e aparecem uma a uma.
+    // As parcelas extras de seguros continuam discriminadas individualmente.
     const adicionarParcelasExtras = (descricao, valorTotal, quantidade) => {
         const total = Number(valorTotal) || 0;
         const qtd = Math.max(0, Math.floor(Number(quantidade) || 0));
         if (total <= 0.005 || qtd === 0) return;
         const valorParcela = total / qtd;
         for (let i = 1; i <= qtd; i++) {
-            outrosEncargos.push(formatarItem(descricao + ' - parcela extra ' + i + ' de ' + qtd, valorParcela));
+            itens.push(formatarItem(descricao + ' - parcela extra ' + i + ' de ' + qtd, valorParcela));
         }
     };
 
     adicionarParcelasExtras('Seguro incêndio', dados.seguroIncendioExtrasTotal, dados.seguroIncendioParcelasExtras);
     adicionarParcelasExtras('Seguro fiança', dados.seguroFiancaExtrasTotal, dados.seguroFiancaParcelasExtras);
 
-    const secoes = [
-        montarSecao('DIAS FINAIS:', itensDiasFinais),
-        montarSecao('ALUGUEL INTEIRO:', itensAluguelInteiro),
-        montarSecao('AVISO PRÉVIO:', itensAviso),
-        montarSecao('OUTROS ENCARGOS:', outrosEncargos)
-    ].filter(Boolean);
-
-    const lista = secoes.length ? secoes.join('\n\n') : 'Não há débitos calculados no momento.';
+    const linhas = itens.filter(Boolean);
+    const lista = linhas.length ? linhas.join('\n') : 'Não há débitos calculados no momento.';
     const dataEntrega = dados.dataFinal ? formatarData(dados.dataFinal) : 'não informada';
     const identificacao = cpf ? 'Sr(a). ' + nome + ', CPF ' + cpf : 'Sr(a). ' + nome;
 
