@@ -291,10 +291,12 @@ function prepararOpcaoEmpresaHistorica(camposSalvos) {
     }
     if (snapshotEl && snapshotRaw) snapshotEl.value = typeof snapshotRaw === 'string' ? snapshotRaw : JSON.stringify(snapshotRaw);
 }
-function sincronizarSnapshotEmpresaSelecionada() {
+function sincronizarSnapshotEmpresaSelecionada(forcar = false) {
     const select = document.getElementById('empresaId');
     const snapshotEl = document.getElementById('empresaSnapshot');
     if (!select || !snapshotEl || !select.value) return;
+    // Ao reabrir uma rescisão, preserva os dados cadastrais usados originalmente.
+    if (snapshotEl.value && !forcar) return;
     const empresa = (Array.isArray(window.EMPRESAS_DISPONIVEIS) ? window.EMPRESAS_DISPONIVEIS : [])
         .find(item => String(item.id) === String(select.value));
     if (empresa) snapshotEl.value = JSON.stringify(empresa);
@@ -1896,7 +1898,7 @@ document.getElementById('btnMenuHistorico')?.addEventListener('click', () => {
 document.getElementById('btnVoltarCalculadoraHistorico')?.addEventListener('click', fecharHistoricoDireto);
 document.getElementById('btnAtualizarHistorico')?.addEventListener('click', atualizarHistoricoManual);
 document.getElementById('empresaId')?.addEventListener('change', () => {
-    sincronizarSnapshotEmpresaSelecionada();
+    sincronizarSnapshotEmpresaSelecionada(true);
     marcarConferenciaComoPendente();
     calcular();
     salvarDadosAutomaticamente();
