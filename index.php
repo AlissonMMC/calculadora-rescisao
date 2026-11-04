@@ -166,6 +166,10 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
             <label for="dataAvisoProprietario">Data em que o proprietário foi avisado</label>
             <input id="dataAvisoProprietario" type="date" />
           </div>
+          <div class="field">
+            <label for="numeroContrato">Número do contrato</label>
+            <input id="numeroContrato" type="text" maxlength="40" placeholder="Ex.: 000" autocomplete="off" />
+          </div>
           <div class="field moveout-reason-field">
             <label for="motivoDesocupacao">Motivo da desocupação</label>
             <input id="motivoDesocupacao" type="text" maxlength="500" placeholder="Ex.: mudança, encerramento do contrato, compra de imóvel..." />
@@ -687,8 +691,8 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
                   <input id="cepImovel" type="text" inputmode="numeric" maxlength="9" placeholder="17207-300" autocomplete="postal-code" />
                 </div>
                 <div class="field">
-                  <label for="assuntoEmail">Assunto do e-mail</label>
-                  <input id="assuntoEmail" type="text" value="Declaração de valores em aberto - encerramento da locação" />
+                  <label for="assuntoEmail">Título do e-mail</label>
+                  <input id="assuntoEmail" type="text" value="RESCISÃO DE CONTRATO - 000" readonly />
                 </div>
               </div>
               <textarea id="modeloEmail" class="email-preview" readonly aria-label="Modelo de e-mail para o inquilino"></textarea>
