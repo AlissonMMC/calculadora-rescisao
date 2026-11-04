@@ -1,5 +1,5 @@
 const campos = [
-'dataAvisoDesocupacao', 'dataAvisoProprietario', 'motivoDesocupacao', 'dataInicial', 'dataFinal', 'dataInicioContrato', 'dataInicioAviso', 'dataFimAviso', 'aluguel', 'iptu', 'condominio', 'agua', 'luz', 'internet',
+'dataAvisoDesocupacao', 'dataAvisoProprietario', 'numeroContrato', 'motivoDesocupacao', 'dataInicial', 'dataFinal', 'dataInicioContrato', 'dataInicioAviso', 'dataFimAviso', 'aluguel', 'iptu', 'condominio', 'agua', 'luz', 'internet',
 'mesesFaltantes', 'percentualProp', 'percentualAdm', 'valorAluguelInteiro', 'semAluguelInteiro',
 'manutencao', 'chaveiro', 'seguroIncendio', 'seguroIncendioExtras',
 'seguroFianca', 'seguroFiancaExtras',
@@ -1499,47 +1499,43 @@ function calcular() {
     );
 }
 function atualizarModeloEmail(dados) {
-    const nome = document.getElementById('nomeInquilino').value.trim() || 'Sr.(a)';
-    const cpf = document.getElementById('cpfInquilino').value.trim();
-    const endereco = document.getElementById('enderecoImovel').value.trim();
-    const cep = document.getElementById('cepImovel').value.trim();
-    const enderecoCompleto = [endereco, cep ? `CEP: ${cep}` : ''].filter(Boolean).join(' - ');
-    const assunto = document.getElementById('assuntoEmail').value.trim() || 'Declaração de valores em aberto - encerramento da locação';
-    const addLinha = (lista, descricao, valor) => {
-        if (valor > 0.005) lista.push(`- ${descricao}: ${formatar(valor)}`);
-    }
-    const linhasDebitos = [];
-    dados.detalhamentoFinais.forEach(item => addLinha(linhasDebitos, `${item.nome} - período final`, item.valor));
-    dados.detalhamentoAviso.forEach(item => addLinha(linhasDebitos, `${item.nome} - aviso prévio`, item.valor));
-    if (dados.multa > 0.005) addLinha(linhasDebitos, 'Multa rescisória', dados.multa);
-    if (dados.aluguelInteiro > 0.005) addLinha(linhasDebitos, 'Aluguel inteiro + encargos', dados.aluguelInteiro);
-    if (dados.manutencao > 0.005) addLinha(linhasDebitos, 'Melhorias / manutenção', dados.manutencao);
-    if (dados.chaveiro > 0.005) addLinha(linhasDebitos, 'Chaveiro', dados.chaveiro);
-    // Cada cobrança adicional é listada separadamente, usando apenas o nome do seguro.
+    const nome = document.getElementById('nomeInquilino').value.trim() || 'não informado';
+    const cpf = document.getElementById('cpfInquilino').value.trim() || 'não informado';
+    const endereco = document.getElementById('enderecoImovel').value.trim() || 'não informado';
+    const cep = document.getElementById('cepImovel').value.trim() || '__';
+    const numeroContrato = document.getElementById('numeroContrato')?.value.trim() || '000';
+    const assunto = `RESCISÃO DE CONTRATO - ${numeroContrato}`;
+    const assuntoEl = document.getElementById('assuntoEmail');
+    if (assuntoEl) assuntoEl.value = assunto;
+    const linhas = [];
+    const addLinha = (descricao, valor) => {
+        const quantia = Number(valor) || 0;
+        if (quantia > 0.005) linhas.push(`•              ${descricao} = ${formatar(quantia)}`);
+    };
+    (dados.detalhamentoFinais || []).forEach(item => {
+        const descricao = item.nome === 'Aluguel' ? 'ALUGUEL DIAS FINAIS' : item.nome.toLocaleUpperCase('pt-BR');
+        addLinha(descricao, item.valor);
+    });
+    (dados.detalhamentoAluguelInteiro || []).forEach(item => {
+        const descricao = item.nome === 'Aluguel' ? 'ALUGUEL INTEGRAL' : item.nome.toLocaleUpperCase('pt-BR');
+        addLinha(descricao, item.valor);
+    });
+    (dados.detalhamentoAviso || []).forEach(item => addLinha(item.nome === 'Aluguel' ? 'ALUGUEL - AVISO PRÉVIO' : item.nome.toLocaleUpperCase('pt-BR'), item.valor));
+    addLinha('MULTA RESCISÓRIA', dados.multa);
+    addLinha('MANUTENÇÃO FINAL', dados.manutencao);
+    addLinha('CHAVEIRO', dados.chaveiro);
     const adicionarCobrancasAdicionais = (descricao, valorTotal, quantidade) => {
         const total = Number(valorTotal) || 0;
         const qtd = Math.max(0, Math.floor(Number(quantidade) || 0));
         if (total <= 0.005 || qtd === 0) return;
-        const valorParcela = total / qtd;
-        for (let i = 0; i < qtd; i++) {
-            addLinha(linhasDebitos, descricao, valorParcela);
-        }
+        for (let i = 0; i < qtd; i++) addLinha(descricao, total / qtd);
     };
-
-    adicionarCobrancasAdicionais('Seguro incêndio', dados.seguroIncendioExtrasTotal, dados.seguroIncendioParcelasExtras);
-    adicionarCobrancasAdicionais('Seguro fiança', dados.seguroFiancaExtrasTotal, dados.seguroFiancaParcelasExtras);
-    const dataEntrega = dados.dataFinal ? formatarData(dados.dataFinal) : 'não informada';
-    const periodo = dados.dataInicial && dados.dataFinal
-    ? `${formatarData(dados.dataInicial)} até ${formatarData(dados.dataFinal)}`
-    : 'não informado';
-    const periodoAviso = dados.dataInicioAviso && dados.dataFimAviso
-    ? `${formatarData(dados.dataInicioAviso)} até ${formatarData(dados.dataFimAviso)}`
-    : '';
-    const lista = linhasDebitos.length ? linhasDebitos.join('\n') : '- Não há débitos calculados no momento.';
-    const identificacao = cpf ? ` ${nome} CPF: ${cpf}.` : ` ${nome}.`;
-    const enderecoTexto = enderecoCompleto ? ` localizado em ${enderecoCompleto}.` : '.';
-    const avisoTexto = periodoAviso ? `\nPeríodo considerado para aviso prévio: ${periodoAviso}.` : '';
-    const texto = `${assunto}\n\nOlá, tudo bem?\n\nEstamos enviando este e-mail para informar que o imóvel foi desocupado. As chaves do imóvel foram entregues na imobiliária no dia ${dataEntrega}, encerrando-se assim o contrato de locação.\n\nEstamos tentando contato com o Sr.(a)${identificacao}\n\nNeste e-mail estão as informações de melhorias e débitos em aberto do imóvel locado pelo mesmo,${enderecoTexto}\n\nABILIO AREIA SOLUÇÕES IMOBILIARIAS LTDA, pessoa jurídica inscrita no CNPJ nº 13.219.509/0001-71, com sede em R. Aristídes Lôbo Sobrinho, 63 - Chácara Braz Miraglia, Jaú - SP, 17207-300, vem através da presente DECLARAR os valores em aberto referente ao imóvel acima citado:\n\n${lista}\n\nTotalizando o valor de ${formatar(dados.total)}.${periodoAviso ? `\n${avisoTexto.trim()}` : ''}\n\nObs.: Os valores estão sujeitos a aprovação da seguradora. Caso não haja a cobertura total por parte da mesma, ficarão débitos pendentes a serem acertados na imobiliária.\n\nEm caso de dúvidas, por favor, contatar sua gestora de contrato.\n\nAtenciosamente,`;
+    adicionarCobrancasAdicionais('SEGURO INCÊNDIO', dados.seguroIncendioExtrasTotal, dados.seguroIncendioParcelasExtras);
+    adicionarCobrancasAdicionais('SEGURO FIANÇA', dados.seguroFiancaExtrasTotal, dados.seguroFiancaParcelasExtras);
+    const lista = linhas.length ? linhas.join('\n') : '•              Não há débitos calculados no momento.';
+    const dataEntrega = dados.dataFinal ? formatarData(dados.dataFinal) : '____';
+    const enderecoCompleto = `${endereco} CEP ${cep}`;
+    const texto = `${assunto}\n\nPrezado Sr(a). ${nome}\n\nInformamos que o contrato de locação do imóvel situado na ${enderecoCompleto}, foi encerrado, conforme data do Termo de Entrega de Chaves em ${dataEntrega}.\n\nA ABILIO AREIA SOLUÇÕES IMOBILIÁRIAS LTDA, inscrita no CNPJ nº 13.219.509/0001-71, com sede na Rua Aristídes Lôbo Sobrinho, 63 — Chácara Braz Miraglia, Jaú/SP, CEP 17207-300, vem por meio deste declarar os valores em aberto referentes ao imóvel acima identificado, locado pelo Sr(a). ${nome}, CPF ${cpf}:\n\n${lista}\n\nTotalizando o valor de ${formatar(dados.total)}.\n\nObs.: Os valores estão sujeitos a aprovação da seguradora. Caso não haja a cobertura total por parte da mesma, ficarão débitos pendentes a serem acertados na imobiliária.\n\nEm caso de dúvidas, por favor, contatar sua gestora de contrato.\n\nAtenciosamente,`;
     ultimoEmailAutomatico = texto;
     if (!emailEditando) document.getElementById('modeloEmail').value = texto;
 }
@@ -1813,7 +1809,7 @@ function limpar() {
         else if (CAMPOS_MONETARIOS.has(id)) definirValorMonetario(id, 0);
         else el.value = '0';
     }
-    ['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel'].forEach(id => {
+    ['nomeInquilino','cpfInquilino','enderecoImovel','cepImovel','assuntoEmail'].forEach(id => {
         const el=document.getElementById(id);
         if(el) el.value='';
     }
