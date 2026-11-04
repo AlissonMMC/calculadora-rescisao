@@ -1154,6 +1154,7 @@ function duplicarHistorico(index) {
     if (!item?.dados?.campos) return;
     document.getElementById('calculatorScreen')?.classList.remove('history-direct-mode');
     restaurandoDados = true;
+    prepararOpcaoEmpresaHistorica(item.dados.campos);
     Object.entries(item.dados.campos).forEach(([id,value]) => {
         const el=document.getElementById(id);
         if(!el) return;
