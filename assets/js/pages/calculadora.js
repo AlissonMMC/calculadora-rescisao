@@ -281,13 +281,15 @@ function prepararOpcaoEmpresaHistorica(camposSalvos) {
     if (!id) return;
     let snapshot = null;
     try { snapshot = typeof snapshotRaw === 'string' ? JSON.parse(snapshotRaw) : snapshotRaw; } catch (_) {}
-    const existe = Array.from(select.options).some(option => option.value === id);
-    if (!existe && snapshot && snapshot.razao_social) {
-        const option = document.createElement('option');
+    let option = Array.from(select.options).find(item => item.value === id);
+    if (!option && snapshot && snapshot.razao_social) {
+        option = document.createElement('option');
         option.value = id;
-        option.textContent = `${snapshot.razao_social} (cadastro inativo)`;
-        option.dataset.empresa = JSON.stringify(snapshot);
         select.add(option);
+    }
+    if (option && snapshot && snapshot.razao_social) {
+        option.textContent = `${snapshot.razao_social} — CNPJ ${snapshot.cnpj || ''} (dados salvos na rescisão)`;
+        option.dataset.empresa = JSON.stringify(snapshot);
     }
     if (snapshotEl && snapshotRaw) snapshotEl.value = typeof snapshotRaw === 'string' ? snapshotRaw : JSON.stringify(snapshotRaw);
 }
