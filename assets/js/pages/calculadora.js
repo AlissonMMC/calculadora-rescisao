@@ -1484,62 +1484,102 @@ function calcular() {
     );
 }
 function atualizarModeloEmail(dados) {
-    const nome = document.getElementById('nomeInquilino').value.trim() || 'Sr.(a)';
-    const cpf = document.getElementById('cpfInquilino').value.trim();
-    const endereco = document.getElementById('enderecoImovel').value.trim();
-    const assunto = document.getElementById('assuntoEmail').value.trim() || 'Declaração de valores em aberto - encerramento da locação';
-    const addLinha = (lista, descricao, valor) => {
-        if (valor > 0.005) lista.push(`- ${descricao}: ${formatar(valor)}`);
-    }
-    const linhasDebitos = [];
-    dados.detalhamentoFinais.forEach(item => addLinha(linhasDebitos, `${item.nome} - período final`, item.valor));
-    dados.detalhamentoAviso.forEach(item => addLinha(linhasDebitos, `${item.nome} - aviso prévio`, item.valor));
-    if (dados.multa > 0.005) addLinha(linhasDebitos, 'Multa rescisória', dados.multa);
-    if (dados.aluguelInteiro > 0.005) addLinha(linhasDebitos, 'Aluguel inteiro + encargos', dados.aluguelInteiro);
-    if (dados.manutencao > 0.005) addLinha(linhasDebitos, 'Melhorias / manutenção', dados.manutencao);
-    if (dados.chaveiro > 0.005) addLinha(linhasDebitos, 'Chaveiro', dados.chaveiro);
-    
-const adicionarParcelasExtras = (descricao, valorTotal, quantidade) => {
-    const total = Number(valorTotal) || 0;
-    const qtd = Math.max(0, Math.floor(Number(quantidade) || 0));
+    const nome = document.getElementById('nomeInquilino')?.value.trim() || 'não informado';
+    const cpf = document.getElementById('cpfInquilino')?.value.trim() || '';
+    const enderecoInformado = document.getElementById('enderecoImovel')?.value.trim() || 'não informado';
+    const assunto = document.getElementById('assuntoEmail')?.value.trim()
+        || 'Declaração de valores em aberto - encerramento da locação';
 
-    if (total <= 0.005 || qtd === 0) return;
+    // O formulário mantém endereço e CEP no mesmo campo. Se houver CEP,
+    // ele é separado para preencher o modelo sem exigir mudança na tela.
+    const cepMatch = enderecoInformado.match(/\b\d{5}-?\d{3}\b/);
+    const cep = cepMatch ? cepMatch[0] : 'não informado';
+    const endereco = cepMatch
+        ? enderecoInformado.replace(/\s*(?:CEP\s*)?\d{5}-?\d{3}\s*/i, ' ').replace(/[\s,;-]+$/g, '').trim()
+        : enderecoInformado;
 
-    const valorParcela = total / qtd;
+    const formatarItem = (descricao, valor) =>
+        Number(valor) > 0.005 ? '• ' + descricao + ' = ' + formatar(Number(valor)) : '';
 
-    for (let i = 1; i <= qtd; i++) {
-        addLinha(linhasDebitos, `${descricao} - parcela ${i} de ${qtd}`, valorParcela);
-    }
-};
+    const montarSecao = (titulo, itens) => {
+        const linhas = itens.filter(Boolean);
+        return linhas.length ? titulo + '\n' + linhas.join('\n') : '';
+    };
 
-adicionarParcelasExtras(
-    'Seguro incêndio extra',
-    dados.seguroIncendioExtrasTotal,
-    dados.seguroIncendioParcelasExtras
-);
+    // Dias finais: os encargos mensais são proporcionais; seguros são parcelas inteiras.
+    const itensDiasFinais = (dados.detalhamentoFinais || []).map(item => {
+        const nomeItem = String(item.nome || '').trim();
+        const seguro = /seguro/i.test(nomeItem);
+        const descricao = seguro ? nomeItem + ' - parcela inteira' : nomeItem + ' proporcional';
+        return formatarItem(descricao, item.valor);
+    });
 
-adicionarParcelasExtras(
-    'Seguro fiança extra',
-    dados.seguroFiancaExtrasTotal,
-    dados.seguroFiancaParcelasExtras
-);
+    // Aluguel inteiro: cada encargo e cada seguro permanecem discriminados.
+    const itensAluguelInteiro = (dados.detalhamentoAluguelInteiro || []).map(item => {
+        const nomeItem = String(item.nome || '').trim();
+        const descricao = /seguro/i.test(nomeItem) ? nomeItem + ' - parcela inteira' : nomeItem;
+        return formatarItem(descricao, item.valor);
+    });
 
-    // A parcela normal entra nos dias finais e no aluguel inteiro; extras são cobrados uma única vez.
+    const itensAviso = (dados.detalhamentoAviso || []).map(item =>
+        formatarItem(item.nome + ' - aviso prévio', item.valor)
+    );
+
+    const outrosEncargos = [
+        formatarItem('Multa rescisória', dados.multa),
+        formatarItem('Manutenção final', dados.manutencao),
+        formatarItem('Chaveiro', dados.chaveiro)
+    ];
+
+    // As parcelas extras de seguros são débitos adicionais e aparecem uma a uma.
+    const adicionarParcelasExtras = (descricao, valorTotal, quantidade) => {
+        const total = Number(valorTotal) || 0;
+        const qtd = Math.max(0, Math.floor(Number(quantidade) || 0));
+        if (total <= 0.005 || qtd === 0) return;
+        const valorParcela = total / qtd;
+        for (let i = 1; i <= qtd; i++) {
+            outrosEncargos.push(formatarItem(descricao + ' - parcela extra ' + i + ' de ' + qtd, valorParcela));
+        }
+    };
+
+    adicionarParcelasExtras('Seguro incêndio', dados.seguroIncendioExtrasTotal, dados.seguroIncendioParcelasExtras);
+    adicionarParcelasExtras('Seguro fiança', dados.seguroFiancaExtrasTotal, dados.seguroFiancaParcelasExtras);
+
+    const secoes = [
+        montarSecao('DIAS FINAIS:', itensDiasFinais),
+        montarSecao('ALUGUEL INTEIRO:', itensAluguelInteiro),
+        montarSecao('AVISO PRÉVIO:', itensAviso),
+        montarSecao('OUTROS ENCARGOS:', outrosEncargos)
+    ].filter(Boolean);
+
+    const lista = secoes.length ? secoes.join('\n\n') : 'Não há débitos calculados no momento.';
     const dataEntrega = dados.dataFinal ? formatarData(dados.dataFinal) : 'não informada';
-    const periodo = dados.dataInicial && dados.dataFinal
-    ? `${formatarData(dados.dataInicial)} até ${formatarData(dados.dataFinal)}`
-    : 'não informado';
-    const periodoAviso = dados.dataInicioAviso && dados.dataFimAviso
-    ? `${formatarData(dados.dataInicioAviso)} até ${formatarData(dados.dataFimAviso)}`
-    : '';
-    const lista = linhasDebitos.length ? linhasDebitos.join('\n') : '- Não há débitos calculados no momento.';
-    const identificacao = cpf ? ` ${nome} CPF: ${cpf}.` : ` ${nome}.`;
-    const enderecoTexto = endereco ? ` localizado em ${endereco}.` : '.';
-    const avisoTexto = periodoAviso ? `\nPeríodo considerado para aviso prévio: ${periodoAviso}.` : '';
-    const texto = `${assunto}\n\nOlá, tudo bem?\n\nEstamos enviando este e-mail para informar que o imóvel foi desocupado. As chaves do imóvel foram entregues na imobiliária no dia ${dataEntrega}, encerrando-se assim o contrato de locação.\n\nEstamos tentando contato com o Sr.(a)${identificacao}\n\nNeste e-mail estão as informações de melhorias e débitos em aberto do imóvel locado pelo mesmo,${enderecoTexto}\n\nABILIO AREIA SOLUÇÕES IMOBILIARIAS LTDA, pessoa jurídica inscrita no CNPJ nº 13.219.509/0001-71, com sede em R. Aristídes Lôbo Sobrinho, 63 - Chácara Braz Miraglia, Jaú - SP, 17207-300, vem através da presente DECLARAR os valores em aberto referente ao imóvel acima citado:\n\n${lista}\n\nTotalizando o valor de ${formatar(dados.total)}.${periodoAviso ? `\n${avisoTexto.trim()}` : ''}\n\nObs.: Os valores estão sujeitos a aprovação da seguradora. Caso não haja a cobertura total por parte da mesma, ficarão débitos pendentes a serem acertados na imobiliária.\n\nEm caso de dúvidas, por favor, contatar sua gestora de contrato.\n\nAtenciosamente,`;
+    const identificacao = cpf ? 'Sr(a). ' + nome + ', CPF ' + cpf : 'Sr(a). ' + nome;
+
+    const texto = [
+        assunto,
+        '',
+        'Prezado(a) Sr(a). ' + nome + ',',
+        '',
+        'Informamos que o contrato de locação do imóvel situado na ' + endereco + ', CEP ' + cep + ', foi encerrado, conforme data do Termo de Entrega de Chaves em ' + dataEntrega + '.',
+        '',
+        'A ABILIO AREIA SOLUÇÕES IMOBILIÁRIAS LTDA, inscrita no CNPJ nº 13.219.509/0001-71, com sede na Rua Aristídes Lôbo Sobrinho, 63 — Chácara Braz Miraglia, Jaú/SP, CEP 17207-300, vem por meio deste declarar os valores em aberto referentes ao imóvel acima identificado, locado pelo ' + identificacao + ':',
+        '',
+        lista,
+        '',
+        'Totalizando o valor de ' + formatar(dados.total) + '.',
+        '',
+        'Obs.: Os valores estão sujeitos a aprovação da seguradora. Caso não haja a cobertura total por parte da mesma, ficarão débitos pendentes a serem acertados na imobiliária.',
+        '',
+        'Em caso de dúvidas, por favor, contatar sua gestora de contrato.',
+        '',
+        'Atenciosamente,'
+    ].join('\n');
+
     ultimoEmailAutomatico = texto;
     if (!emailEditando) document.getElementById('modeloEmail').value = texto;
 }
+
 // v29: modo compacto da calculadora
 const STORAGE_TOPIC_STATE = 'calculadoraRescisaoTopicosAbertosV29';
 const TOPIC_IDS = ['topicoDiasFinais','topicoAviso','topicoMulta','topicoAluguelInteiro','topicoManutencao','topicoChaveiro','topicoSeguros'];
