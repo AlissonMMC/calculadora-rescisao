@@ -363,6 +363,9 @@ input[type="checkbox"] {
     align-items: end;
     gap: 10px;
 }
+.date-range-single {
+    grid-template-columns: minmax(0, 1fr);
+}
 .date-arrow {
     padding-bottom: 11px;
     color: var(--orange);
@@ -577,7 +580,8 @@ button:active {
 }
 .email-preview {
     width: 100%;
-    min-height: 340px;
+    height: 332px;
+    min-height: 332px;
     resize: vertical;
     border: 1px solid var(--border);
     border-radius: 12px;
