@@ -217,14 +217,12 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
               </div>
             </div>
 
-            <div class="date-range">
+            <div class="date-range date-range-single">
               <div class="field">
                 <label for="dataInicial">Data inicial</label>
                 <input id="dataInicial" type="date" />
                 <span class="field-error" id="erroDataInicial">Informe uma data válida.</span>
               </div>
-              <div class="date-arrow" aria-hidden="true">→</div>
-
             </div>
 
             <div class="days-result" aria-live="polite">
@@ -700,7 +698,7 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
               </div>
               <textarea id="modeloEmail" class="email-preview" readonly aria-label="Modelo de e-mail para o inquilino"></textarea>
               <div class="email-actions">
-                <button class="btn-primary" id="btnCopiarEmail" type="button" disabled>Copiar e-mail</button>
+                <button class="btn-primary" id="btnCopiarEmail" type="button">Copiar e-mail</button>
                 <button class="btn-light" id="btnEditarEmail" type="button">Editar texto</button>
                 <button class="btn-light" id="btnAtualizarEmail" type="button">Reverter para modelo</button>
               </div>
