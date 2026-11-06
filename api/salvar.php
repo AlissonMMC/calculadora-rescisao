@@ -15,8 +15,8 @@ $modoNome = limparTexto($entrada['modoNome'] ?? '', 50);
 $status = limparTexto($entrada['status'] ?? 'Rascunho', 30);
 if (!statusValido($status)) $status = 'Rascunho';
 $dados = is_array($entrada['dados'] ?? null) ? $entrada['dados'] : [];
+$empresaId = (int)($dados['empresaId'] ?? ($dados['campos']['empresaResponsavelId'] ?? 0));
 try {
-    $jsonDados = json_encode($dados, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
     $pdo = db();
     $pdo->beginTransaction();
 
@@ -27,6 +27,31 @@ try {
         if (!$existente) { $pdo->rollBack(); responder(['ok' => false, 'error' => 'Rescisão não encontrada.'], 404); }
         $permitido = ((int)$existente['usuario_id'] === (int)$usuario['id']) || $usuario['perfil'] === 'admin';
         if (!$permitido) { $pdo->rollBack(); responder(['ok' => false, 'error' => 'Você não pode alterar esta rescisão.'], 403); }
+
+        // A empresa ativa sempre vem do banco. Se estiver inativa, só permitimos
+        // manter o snapshot original deste mesmo histórico, sem substituí-lo.
+        $stmtEmpresa = $pdo->prepare('SELECT id, razao_social, cnpj, endereco FROM empresas WHERE id = ? AND ativo = 1 LIMIT 1');
+        $stmtEmpresa->execute([$empresaId]);
+        $empresaAtual = $stmtEmpresa->fetch();
+        if ($empresaAtual) {
+            $empresaSnapshot = [
+                'id' => (int)$empresaAtual['id'],
+                'razao_social' => (string)$empresaAtual['razao_social'],
+                'cnpj' => (string)$empresaAtual['cnpj'],
+                'endereco' => (string)$empresaAtual['endereco']
+            ];
+        } else {
+            $dadosAnteriores = json_decode((string)($existente['dados_json'] ?? ''), true);
+            $snapshotAnterior = is_array($dadosAnteriores) ? ($dadosAnteriores['empresaSnapshot'] ?? null) : null;
+            if (!is_array($snapshotAnterior) || (int)($snapshotAnterior['id'] ?? 0) !== $empresaId || $empresaId < 1) {
+                $pdo->rollBack();
+                responder(['ok' => false, 'error' => 'Selecione uma empresa ativa. A empresa deste histórico não pode ser substituída por uma empresa inativa.'], 422);
+            }
+            $empresaSnapshot = $snapshotAnterior;
+        }
+        $dados['empresaId'] = $empresaId;
+        $dados['empresaSnapshot'] = $empresaSnapshot;
+        $jsonDados = json_encode($dados, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
         $stmt = $pdo->prepare('UPDATE historico_rescisoes SET nome = ?, endereco = ?, total = ?, total_adm = ?, total_repasse = ?, modo_nome = ?, status = ?, atualizado_em = CURRENT_TIMESTAMP, ultimo_editor_id = ? WHERE id = ?');
         $stmt->execute([$nome, $endereco, $total, $totalAdm, $totalRepasse, $modoNome, $status, (int)$usuario['id'], $id]);
@@ -83,6 +108,21 @@ try {
         }
         registrarAuditoriaSistema('rescisoes', ((string)$existente['status'] !== $status) ? 'alteracao_status' : 'edicao', $id, $detalhesCentral, (int)$usuario['id']);
     } else {
+        $stmtEmpresa = $pdo->prepare('SELECT id, razao_social, cnpj, endereco FROM empresas WHERE id = ? AND ativo = 1 LIMIT 1');
+        $stmtEmpresa->execute([$empresaId]);
+        $empresaAtual = $stmtEmpresa->fetch();
+        if (!$empresaAtual || $empresaId < 1) {
+            $pdo->rollBack();
+            responder(['ok' => false, 'error' => 'Selecione uma empresa ativa antes de salvar a rescisão.'], 422);
+        }
+        $dados['empresaId'] = $empresaId;
+        $dados['empresaSnapshot'] = [
+            'id' => (int)$empresaAtual['id'],
+            'razao_social' => (string)$empresaAtual['razao_social'],
+            'cnpj' => (string)$empresaAtual['cnpj'],
+            'endereco' => (string)$empresaAtual['endereco']
+        ];
+        $jsonDados = json_encode($dados, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
         $stmt = $pdo->prepare('INSERT INTO historico_rescisoes (usuario_id, ultimo_editor_id, nome, endereco, total, total_adm, total_repasse, modo_nome, status, dados_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([(int)$usuario['id'], (int)$usuario['id'], $nome, $endereco, $total, $totalAdm, $totalRepasse, $modoNome, $status, $jsonDados]);
         $id = (int)$pdo->lastInsertId();
