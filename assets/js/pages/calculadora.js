@@ -959,12 +959,12 @@ async function abrirHistoricoPorId(id, itemPreCarregado = null) {
         }
         if (!item) throw (ultimoErro || new Error('Não foi possível carregar o registro para edição.'));
         const dados = decodificarDadosHistorico(item);
-        restaurarEmpresaSnapshot(dados);
         const camposSalvos = dados?.campos && typeof dados.campos === 'object' ? dados.campos : null;
         if (!camposSalvos || !Object.keys(camposSalvos).length) {
             throw new Error('Este registro não contém os dados necessários para edição.');
         }
         historicoIdAtual = Number(item.id) || numeroId;
+        restaurarEmpresaSnapshot(dados);
         const modoSalvo = String(dados.modo ?? item.modo ?? item.modoNome ?? item.modo_nome ?? '');
         modoSelecionado = modoSalvo.toLowerCase().includes('dias') ? 'dias' : (modoSalvo ? 'mes' : '');
         Object.entries(camposSalvos).forEach(([campoId, value]) => {
