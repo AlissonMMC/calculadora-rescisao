@@ -10,11 +10,22 @@ $status = limparTexto($entrada['status'] ?? '', 30);
 if ($id < 1 || !statusValido($status)) responder(['ok' => false, 'error' => 'Status inválido.'], 400);
 try {
     $pdo = db();
-    $stmt = $pdo->prepare('SELECT id, usuario_id, status FROM historico_rescisoes WHERE id = ? LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id, usuario_id, status, dados_json FROM historico_rescisoes WHERE id = ? LIMIT 1');
     $stmt->execute([$id]);
     $row = $stmt->fetch();
     if (!$row) responder(['ok' => false, 'error' => 'Rescisão não encontrada.'], 404);
     if ((int)$row['usuario_id'] !== (int)$usuario['id'] && $usuario['perfil'] !== 'admin') responder(['ok' => false, 'error' => 'Você não pode alterar o status desta rescisão.'], 403);
+
+    if (in_array($status, ['Conferido', 'Pronto para cobrança', 'Cobrado'], true)) {
+        $dadosSalvos = json_decode((string)($row['dados_json'] ?? ''), true);
+        $empresaSnapshot = is_array($dadosSalvos) ? ($dadosSalvos['empresaSnapshot'] ?? null) : null;
+        if (!is_array($empresaSnapshot) || (int)($empresaSnapshot['id'] ?? 0) < 1
+            || trim((string)($empresaSnapshot['razao_social'] ?? '')) === ''
+            || trim((string)($empresaSnapshot['cnpj'] ?? '')) === ''
+            || trim((string)($empresaSnapshot['endereco'] ?? '')) === '') {
+            responder(['ok' => false, 'error' => 'Selecione uma empresa responsável e salve a rescisão antes de finalizar a conferência.'], 422);
+        }
+    }
 
     $pdo->beginTransaction();
     $stmt = $pdo->prepare('UPDATE historico_rescisoes SET status = ?, atualizado_em = CURRENT_TIMESTAMP, ultimo_editor_id = ? WHERE id = ?');

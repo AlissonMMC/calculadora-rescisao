@@ -1,5 +1,5 @@
 const campos = [
-'dataAvisoDesocupacao', 'dataAvisoProprietario', 'numeroContrato', 'motivoDesocupacao', 'dataInicial', 'dataFinal', 'dataInicioContrato', 'dataInicioAviso', 'dataFimAviso', 'aluguel', 'iptu', 'condominio', 'agua', 'luz', 'internet',
+'dataAvisoDesocupacao', 'dataAvisoProprietario', 'numeroContrato', 'empresaResponsavelId', 'motivoDesocupacao', 'dataInicial', 'dataFinal', 'dataInicioContrato', 'dataInicioAviso', 'dataFimAviso', 'aluguel', 'iptu', 'condominio', 'agua', 'luz', 'internet',
 'mesesFaltantes', 'percentualProp', 'percentualAdm', 'valorAluguelInteiro', 'editarAluguelInteiro', 'semAluguelInteiro',
 'manutencao', 'chaveiro', 'seguroIncendio', 'seguroIncendioExtras',
 'seguroFianca', 'seguroFiancaExtras',
@@ -33,6 +33,8 @@ let statusRescisaoAtual = 'Rascunho';
 let timerRascunhoServidor = null;
 let carregandoRascunhoServidor = false;
 let ultimoEmailAutomatico = '';
+let empresasAtivas = [];
+let empresasCarregadasPromise = null;
 // Controle da conferência final: estes tópicos só podem aparecer como conferidos
 // depois que o usuário efetivamente os revisar/informar nesta sessão.
 const topicosRevisados = {
@@ -296,7 +298,68 @@ function obterDadosFormulario() {
         if (el) dados.campos[id] = el.value;
     }
     );
+    dados.empresaId = document.getElementById('empresaResponsavelId')?.value || '';
+    dados.empresaSnapshot = obterEmpresaSelecionadaSnapshot();
     return dados;
+}
+function obterEmpresaSelecionadaSnapshot() {
+    const select = document.getElementById('empresaResponsavelId');
+    const option = select?.selectedOptions?.[0];
+    if (!option || !option.value) return null;
+    return {id:Number(option.value),razao_social:option.dataset.razaoSocial||'',cnpj:option.dataset.cnpj||'',endereco:option.dataset.endereco||''};
+}
+async function carregarEmpresasAtivas() {
+    const select = document.getElementById('empresaResponsavelId');
+    if (!select) return;
+    try {
+        const resposta = await fetch('./api/empresas.php?_='+Date.now(), {cache:'no-store',credentials:'same-origin'});
+        if (resposta.status===401) {window.location.href='login.php';return;}
+        const json = await resposta.json();
+        if (!resposta.ok || !json.ok) throw new Error(json.error||'Falha ao carregar empresas.');
+        empresasAtivas = Array.isArray(json.empresas)?json.empresas:[];
+        select.innerHTML = '<option value="">Selecione uma empresa</option>';
+        empresasAtivas.forEach(empresa=>{
+            const option=document.createElement('option');
+            option.value=String(empresa.id);option.textContent=empresa.razao_social;
+            option.dataset.razaoSocial=empresa.razao_social||'';option.dataset.cnpj=empresa.cnpj||'';option.dataset.endereco=empresa.endereco||'';
+            select.appendChild(option);
+        });
+        const hint=document.getElementById('empresaResponsavelHint');
+        if(hint)hint.textContent=empresasAtivas.length?'Selecione a pessoa jurídica responsável pela rescisão e pelo e-mail.':'Nenhuma empresa ativa cadastrada. Solicite ao administrador que cadastre uma empresa.';
+    } catch(erro) {
+        select.innerHTML='<option value="">Não foi possível carregar empresas</option>';
+        const hint=document.getElementById('empresaResponsavelHint');if(hint)hint.textContent=erro.message;
+    }
+}
+function restaurarEmpresaSnapshot(dados) {
+    const select=document.getElementById('empresaResponsavelId');if(!select)return;
+    const snapshot=dados?.empresaSnapshot||dados?.empresa||null;
+    const id=String(dados?.empresaId||dados?.campos?.empresaResponsavelId||snapshot?.id||'');
+    if(!id){select.value='';return;}
+    let option=[...select.options].find(item=>item.value===id);
+    if(snapshot&&!option&&historicoIdAtual){
+        option=document.createElement('option');option.value=id;
+        option.textContent=(snapshot.razao_social||'Empresa do histórico')+' (dados salvos no histórico)';
+        option.dataset.snapshotOnly='1';
+        select.appendChild(option);
+    }
+    if(snapshot&&option){
+        // A seleção restaurada usa os dados congelados no histórico/rascunho,
+        // não os dados atuais do cadastro da empresa.
+        option.dataset.razaoSocial=snapshot.razao_social||'';
+        option.dataset.cnpj=snapshot.cnpj||'';
+        option.dataset.endereco=snapshot.endereco||'';
+    }
+    select.value=[...select.options].some(item=>item.value===id)?id:'';
+}
+function validarEmpresaResponsavel(mostrarAviso=true) {
+    const select=document.getElementById('empresaResponsavelId'),option=select?.selectedOptions?.[0];
+    const snapshotPermitido=option?.dataset.snapshotOnly==='1'&&!!historicoIdAtual;
+    if(!select?.value||!option||(option.dataset.snapshotOnly==='1'&&!snapshotPermitido)){
+        if(mostrarAviso)alert(empresasAtivas.length?'Selecione a empresa responsável antes de continuar.':'Não há empresas ativas cadastradas. Solicite ao administrador que cadastre uma empresa.');
+        select?.focus();return false;
+    }
+    return true;
 }
 function definirStatusUI(status) {
     status = status || 'Rascunho';
@@ -392,7 +455,9 @@ async function carregarRascunhoServidor() {
         const nome = j.draft.nome || 'Rascunho';
         const usar = confirm(`Existe um rascunho salvo no servidor para ${nome}.\n\nDeseja continuar de onde parou?`);
         if (!usar) return false;
+        await (empresasCarregadasPromise||Promise.resolve());
         const dados = j.draft.dados;
+        restaurarEmpresaSnapshot(dados);
         Object.entries(dados.campos).forEach(([id,value])=> {
             const el=document.getElementById(id);
             if(!el) return;
@@ -662,6 +727,7 @@ function renderizarHistorico() {
     ).join('');
 }
 async function salvarHistorico() {
+    if (!validarEmpresaResponsavel()) return;
     calcular();
     const nome = document.getElementById('nomeInquilino').value.trim();
     const endereco = document.getElementById('enderecoImovel').value.trim();
@@ -696,6 +762,10 @@ async function salvarHistorico() {
         historicoOnline = true;
         if (json.item) {
             historicoIdAtual = json.item.id || historicoIdAtual;
+            if (json.item.dados) {
+                restaurarEmpresaSnapshot(json.item.dados);
+                calcular();
+            }
             definirStatusUI(json.item.status || statusRescisaoAtual);
             historicoCache = historicoCache.filter(reg => String(reg.id) !== String(json.item.id));
             historicoCache.unshift(json.item);
@@ -837,6 +907,7 @@ function decodificarDadosHistorico(item) {
     return null;
 }
 async function abrirHistoricoPorId(id, itemPreCarregado = null) {
+    await (empresasCarregadasPromise||Promise.resolve());
     const numeroId = Number(id);
     if (!Number.isInteger(numeroId) || numeroId < 1) return;
     const calculatorScreen = document.getElementById('calculatorScreen');
@@ -897,6 +968,7 @@ async function abrirHistoricoPorId(id, itemPreCarregado = null) {
             throw new Error('Este registro não contém os dados necessários para edição.');
         }
         historicoIdAtual = Number(item.id) || numeroId;
+        restaurarEmpresaSnapshot(dados);
         const modoSalvo = String(dados.modo ?? item.modo ?? item.modoNome ?? item.modo_nome ?? '');
         modoSelecionado = modoSalvo.toLowerCase().includes('dias') ? 'dias' : (modoSalvo ? 'mes' : '');
         Object.entries(camposSalvos).forEach(([campoId, value]) => {
@@ -1547,7 +1619,9 @@ function atualizarModeloEmail(dados) {
     const lista = linhas.length ? linhas.join('\n') : '•              Não há débitos calculados no momento.';
     const dataEntrega = dados.dataFinal ? formatarData(dados.dataFinal) : '____';
     const enderecoCompleto = `${endereco} CEP ${cep}`;
-    const texto = `${assunto}\n\nPrezado Sr(a). ${nome}\n\nInformamos que o contrato de locação do imóvel situado na ${enderecoCompleto}, foi encerrado, conforme data do Termo de Entrega de Chaves em ${dataEntrega}.\n\nA ABILIO AREIA SOLUÇÕES IMOBILIÁRIAS LTDA, inscrita no CNPJ nº 13.219.509/0001-71, com sede na Rua Aristídes Lôbo Sobrinho, 63 — Chácara Braz Miraglia, Jaú/SP, CEP 17207-300, vem por meio deste declarar os valores em aberto referentes ao imóvel acima identificado, locado pelo Sr(a). ${nome}, CPF ${cpf}:\n\n${lista}\n\nTotalizando o valor de ${formatar(dados.total)}.\n\nObs.: Os valores estão sujeitos a aprovação da seguradora. Caso não haja a cobertura total por parte da mesma, ficarão débitos pendentes a serem acertados na imobiliária.\n\nEm caso de dúvidas, por favor, contatar sua gestora de contrato.\n\nAtenciosamente,`;
+    const empresa = obterEmpresaSelecionadaSnapshot();
+    if (!empresa) { const area=document.getElementById('modeloEmail'); if(area)area.value='Selecione a empresa responsável para gerar o modelo de e-mail.'; ultimoEmailAutomatico=''; return; }
+    const texto = `${assunto}\n\nPrezado Sr(a). ${nome}\n\nInformamos que o contrato de locação do imóvel situado na ${enderecoCompleto}, foi encerrado, conforme data do Termo de Entrega de Chaves em ${dataEntrega}.\n\nA ${empresa.razao_social}, inscrita no CNPJ nº ${empresa.cnpj}, com sede em ${empresa.endereco}, vem por meio deste declarar os valores em aberto referentes ao imóvel acima identificado, locado pelo Sr(a). ${nome}, CPF ${cpf}:\n\n${lista}\n\nTotalizando o valor de ${formatar(dados.total)}.\n\nObs.: Os valores estão sujeitos a aprovação da seguradora. Caso não haja a cobertura total por parte da mesma, ficarão débitos pendentes a serem acertados na imobiliária.\n\nEm caso de dúvidas, por favor, contatar sua gestora de contrato.\n\nAtenciosamente,`;
     ultimoEmailAutomatico = texto;
     if (!emailEditando) document.getElementById('modeloEmail').value = texto;
 }
@@ -1861,6 +1935,7 @@ document.getElementById('btnMenuHistorico')?.addEventListener('click', () => {
 document.getElementById('btnVoltarCalculadoraHistorico')?.addEventListener('click', fecharHistoricoDireto);
 document.getElementById('btnAtualizarHistorico')?.addEventListener('click', atualizarHistoricoManual);
 function imprimirCalculo() {
+    if (!validarEmpresaResponsavel()) return;
     calcular();
     const agora = new Date();
     document.getElementById('printDate').textContent = agora.toLocaleString('pt-BR');
@@ -1975,6 +2050,7 @@ document.getElementById('btnDesbloquearConferencia').addEventListener('click', (
 }
 );
 document.getElementById('btnCopiarEmail').addEventListener('click', async () => {
+    if (!validarEmpresaResponsavel()) return;
     const area=document.getElementById('modeloEmail');
     try {
         await navigator.clipboard.writeText(area.value);
@@ -2041,6 +2117,16 @@ inicializarMascarasMonetarias();
 const parametrosPagina = new URLSearchParams(window.location.search);
 const historicoIdInicialPrevia = parametrosPagina.get('historico_id');
 const novaRescisaoInicial = parametrosPagina.get('nova') === '1';
+let dadosLocaisEmpresaPendente = null;
+if (!historicoIdInicialPrevia && !novaRescisaoInicial) {
+    try { dadosLocaisEmpresaPendente = JSON.parse(localStorage.getItem(STORAGE_FORM) || 'null'); } catch (_) {}
+}
+empresasCarregadasPromise = carregarEmpresasAtivas().then(() => {
+    if (dadosLocaisEmpresaPendente) {
+        restaurarEmpresaSnapshot(dadosLocaisEmpresaPendente);
+        calcular();
+    }
+});
 // Nova rescisão aberta pelo menu é sempre uma sessão limpa.
 // Não restauramos localStorage nem rascunho do servidor, para que o usuário
 // veja primeiro a escolha do critério da multa.

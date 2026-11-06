@@ -28,6 +28,7 @@ $links = [
 if ($isAdmin) {
     $links[] = ['key'=>'prestadores','label'=>'Prestadores','href'=>$navBase.'orcamentos/prestadores.php','icon'=>'users'];
     $links[] = ['key'=>'monitoramento','label'=>'Monitoramento','href'=>$navBase.'orcamentos/monitoramento.php','icon'=>'pulse'];
+    $links[] = ['key'=>'empresas','label'=>'Empresas','href'=>$navBase.'empresas.php','icon'=>'users'];
     $links[] = ['key'=>'usuarios','label'=>'Usuários','href'=>$navBase.'usuarios.php','icon'=>'shield'];
 }
 
@@ -40,7 +41,7 @@ $linksOrcamentos = array_values(array_filter($links, static function (array $lin
 }));
 
 $linksAdmin = array_values(array_filter($links, static function (array $link): bool {
-    return in_array($link['key'], ['prestadores', 'monitoramento', 'usuarios'], true);
+    return in_array($link['key'], ['prestadores', 'monitoramento', 'empresas', 'usuarios'], true);
 }));
 
 function navIcon(string $name): string {
