@@ -19,6 +19,23 @@ CREATE TABLE IF NOT EXISTS usuarios (
     KEY idx_usuarios_ativo (ativo)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS empresas (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    razao_social VARCHAR(190) NOT NULL,
+    cnpj VARCHAR(18) NOT NULL,
+    endereco VARCHAR(500) NOT NULL,
+    ativo TINYINT(1) NOT NULL DEFAULT 1,
+    criado_por BIGINT UNSIGNED NULL,
+    atualizado_por BIGINT UNSIGNED NULL,
+    criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_empresas_cnpj (cnpj),
+    KEY idx_empresas_ativo (ativo),
+    CONSTRAINT fk_empresas_criado_por FOREIGN KEY (criado_por) REFERENCES usuarios(id) ON DELETE SET NULL,
+    CONSTRAINT fk_empresas_atualizado_por FOREIGN KEY (atualizado_por) REFERENCES usuarios(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- O primeiro administrador deve ser criado pelo procedimento de instalação.
 -- Não mantenha credenciais administrativas padrão em produção.
 
