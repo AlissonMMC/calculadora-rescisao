@@ -172,6 +172,13 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
             <input id="numeroContrato" type="text" maxlength="40" placeholder="Ex.: 000" autocomplete="off" />
           </div>
           <div class="field">
+            <label for="empresaResponsavelId">Empresa responsável <span aria-hidden="true">*</span></label>
+            <select id="empresaResponsavelId" required>
+              <option value="">Carregando empresas...</option>
+            </select>
+            <span class="hint" id="empresaResponsavelHint">Selecione a pessoa jurídica responsável pela rescisão e pelo e-mail.</span>
+          </div>
+          <div class="field">
             <label for="dataFinal">Data da entrega das chaves</label>
             <input id="dataFinal" type="date" />
             <span class="field-error" id="erroDataFinal">A entrega deve ser igual ou posterior à data inicial.</span>
