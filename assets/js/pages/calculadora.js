@@ -1063,8 +1063,6 @@ function atualizarConferenciaFinal( {
     const btn = document.getElementById('btnConfirmarConferencia');
     btn.disabled = !tudoOk;
     if (!tudoOk) conferenciaConfirmada = false;
-    const copy = document.getElementById('btnCopiarEmail');
-    if (copy) copy.disabled = !conferenciaConfirmada;
 }
 function dataInicioContratoValue() {
     return document.getElementById('dataInicioContrato')?.value || '';
@@ -1072,8 +1070,6 @@ function dataInicioContratoValue() {
 function marcarConferenciaComoPendente() {
     conferenciaConfirmada = false;
     if (historicoIdAtual && !['Cobrado','Cancelado'].includes(statusRescisaoAtual)) definirStatusUI('Em conferência');
-    const copy = document.getElementById('btnCopiarEmail');
-    if (copy) copy.disabled = true;
     const status = document.getElementById('conferenceFinalStatus');
     if (status && !status.classList.contains('ok')) status.textContent = 'Há itens que precisam ser revisados.';
 }
@@ -1492,7 +1488,7 @@ function calcular() {
     }
     ];
     const detalhamentoAluguelInteiro = editarAluguelInteiro
-    ? [{ nome:'Aluguel inteiro (valor ajustado manualmente)', valor:temAluguelInteiro ? aluguelInteiro : 0 }]
+    ? [{ nome:'Aluguel inteiro', valor:temAluguelInteiro ? aluguelInteiro : 0 }]
     : [
         ['Aluguel', aluguel], ['IPTU', iptu], ['Condomínio', condominio],
         ['Água', agua], ['Luz', luz], ['Internet', internet],
@@ -1969,19 +1965,16 @@ document.getElementById('btnConfirmarConferencia').addEventListener('click', () 
     if (historicoIdAtual) atualizarStatusServidor('Conferido');
     status.textContent='Conferência confirmada. O e-mail está liberado para cópia.';
     status.classList.add('ok');
-    document.getElementById('btnCopiarEmail').disabled=false;
 }
 );
 document.getElementById('btnDesbloquearConferencia').addEventListener('click', () => {
     conferenciaConfirmada=false;
     definirStatusUI('Em conferência');
     if (historicoIdAtual) atualizarStatusServidor('Em conferência');
-    document.getElementById('btnCopiarEmail').disabled=true;
     document.getElementById('conferenceFinalStatus').textContent='Revisão reaberta. Confira os dados novamente.';
 }
 );
 document.getElementById('btnCopiarEmail').addEventListener('click', async () => {
-    if (!conferenciaConfirmada) return;
     const area=document.getElementById('modeloEmail');
     try {
         await navigator.clipboard.writeText(area.value);
