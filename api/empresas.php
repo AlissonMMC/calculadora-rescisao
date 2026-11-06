@@ -1,6 +1,18 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/config.php';
+function cnpjValido(string $cnpj): bool {
+    if (strlen($cnpj) !== 14 || preg_match('/^(\\d)\\1{13}$/', $cnpj)) return false;
+    $calcularDigito = static function (string $base, array $pesos): int {
+        $soma = 0;
+        foreach ($pesos as $i => $peso) $soma += (int)$base[$i] * $peso;
+        $resto = $soma % 11;
+        return $resto < 2 ? 0 : 11 - $resto;
+    };
+    $primeiro = $calcularDigito(substr($cnpj, 0, 12), [5,4,3,2,9,8,7,6,5,4,3,2]);
+    $segundo = $calcularDigito(substr($cnpj, 0, 12) . $primeiro, [6,5,4,3,2,9,8,7,6,5,4,3,2]);
+    return $primeiro === (int)$cnpj[12] && $segundo === (int)$cnpj[13];
+}
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if ($metodo === 'GET') {
     exigirLoginApi();
@@ -24,8 +36,8 @@ try {
         $razao = limparTexto($entrada['razao_social'] ?? '', 190);
         $cnpj = preg_replace('/\D+/', '', (string)($entrada['cnpj'] ?? ''));
         $endereco = limparTexto($entrada['endereco'] ?? '', 500);
-        if ($razao === '' || $endereco === '' || strlen($cnpj) !== 14) {
-            responder(['ok' => false, 'error' => 'Informe razão social, CNPJ válido com 14 dígitos e endereço completo.'], 422);
+        if ($razao === '' || $endereco === '' || !cnpjValido($cnpj)) {
+            responder(['ok' => false, 'error' => 'Informe razão social, CNPJ válido e endereço completo.'], 422);
         }
         $cnpj = substr($cnpj,0,2).'.'.substr($cnpj,2,3).'.'.substr($cnpj,5,3).'/'.substr($cnpj,8,4).'-'.substr($cnpj,12,2);
         $stmt = $pdo->prepare('SELECT id FROM empresas WHERE cnpj = ? AND id <> ? LIMIT 1');
