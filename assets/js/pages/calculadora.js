@@ -1,6 +1,6 @@
 const campos = [
 'dataAvisoDesocupacao', 'dataAvisoProprietario', 'numeroContrato', 'motivoDesocupacao', 'dataInicial', 'dataFinal', 'dataInicioContrato', 'dataInicioAviso', 'dataFimAviso', 'aluguel', 'iptu', 'condominio', 'agua', 'luz', 'internet',
-'mesesFaltantes', 'percentualProp', 'percentualAdm', 'valorAluguelInteiro', 'semAluguelInteiro',
+'mesesFaltantes', 'percentualProp', 'percentualAdm', 'valorAluguelInteiro', 'editarAluguelInteiro', 'semAluguelInteiro',
 'manutencao', 'chaveiro', 'seguroIncendio', 'seguroIncendioExtras',
 'seguroFianca', 'seguroFiancaExtras',
 'semAviso', 'semMulta', 'semEncargos', 'semManutencao', 'semChaveiro', 'semSeguros'
@@ -81,7 +81,7 @@ function atualizarCamposSemDebito() {
     }
     ,
     {
-        check:'semAluguelInteiro', campos:['valorAluguelInteiro'], wrap:'optional-debt-field'
+        check:'semAluguelInteiro', campos:[], wrap:'optional-debt-field'
     }
     ,
     {
@@ -112,6 +112,15 @@ function atualizarCamposSemDebito() {
         );
     }
     );
+    const semAluguelInteiro = document.getElementById('semAluguelInteiro')?.checked ?? false;
+    const editarAluguelInteiro = document.getElementById('editarAluguelInteiro')?.checked ?? false;
+    const valorAluguelInteiro = document.getElementById('valorAluguelInteiro');
+    const editarAluguelToggle = document.getElementById('editarAluguelInteiro');
+    if (valorAluguelInteiro) valorAluguelInteiro.disabled = semAluguelInteiro || !editarAluguelInteiro;
+    if (editarAluguelToggle) editarAluguelToggle.disabled = semAluguelInteiro;
+    const aluguelInteiroWrap = valorAluguelInteiro?.closest('.optional-debt-field');
+    if (aluguelInteiroWrap) aluguelInteiroWrap.classList.toggle('is-na', semAluguelInteiro);
+    if (semAluguelInteiro && valorAluguelInteiro) definirValorMonetario('valorAluguelInteiro', 0);
 }
 ['semAviso','semMulta'].forEach(id => {
     const box = document.getElementById(id);
@@ -1327,9 +1336,20 @@ function calcular() {
     const segurosAluguelInteiro = seguroIncendioAluguelValor + seguroFiancaAluguelValor;
     // A ADM incide somente sobre o aluguel; os seguros não entram no repasse ao proprietário.
     const encargosAluguelInteiro = iptu + condominio + agua + luz + internet;
-    const aluguelInteiro = temAluguelInteiro
+    const aluguelInteiroCalculado = temAluguelInteiro
     ? aluguel + encargosAluguelInteiro + segurosAluguelInteiro
     : 0;
+    const editarAluguelInteiro = document.getElementById('editarAluguelInteiro')?.checked ?? false;
+    const campoAluguelInteiro = document.getElementById('valorAluguelInteiro');
+    let aluguelInteiro = aluguelInteiroCalculado;
+    if (!temAluguelInteiro) {
+        definirValorMonetario('valorAluguelInteiro', 0);
+    } else if (editarAluguelInteiro) {
+        aluguelInteiro = numero('valorAluguelInteiro');
+    } else {
+        definirValorMonetario('valorAluguelInteiro', aluguelInteiroCalculado);
+    }
+    if (campoAluguelInteiro) campoAluguelInteiro.disabled = !temAluguelInteiro || !editarAluguelInteiro;
     let totalProporcionais = 0;
     let aluguelDiasFinais = 0;
     const corpo = document.getElementById('proporcionaisBody');
@@ -1377,10 +1397,6 @@ function calcular() {
     const repasseAluguel = temAluguelInteiro
     ? Math.max(baseRepasseAluguel - admAluguel, 0)
     : 0;
-    document.getElementById('valorAluguelInteiro').disabled = !temAluguelInteiro;
-    document.getElementById('valorAluguelInteiro').value = temAluguelInteiro
-    ? aluguelInteiro.toFixed(2)
-    : '0';
     document.getElementById('formulaAdmAluguel').textContent =
     `${formatar(aluguel)} × ${percentual(percentualAdm)}% = ${formatar(admAluguel)}`;
     document.getElementById('formulaRepasseAluguel').textContent =
@@ -1476,14 +1492,15 @@ function calcular() {
         valor: aluguelAviso
     }
     ];
-    const detalhamentoAluguelInteiro = [
-    ['Aluguel', aluguel], ['IPTU', iptu], ['Condomínio', condominio],
-    ['Água', agua], ['Luz', luz], ['Internet', internet],
-    ['Seguro incêndio', seguroIncendioAluguelValor], ['Seguro fiança', seguroFiancaAluguelValor]
-    ].map(([nome, valor]) => ( {
+    const detalhamentoAluguelInteiro = editarAluguelInteiro
+    ? [{ nome:'Aluguel inteiro (valor ajustado manualmente)', valor:temAluguelInteiro ? aluguelInteiro : 0 }]
+    : [
+        ['Aluguel', aluguel], ['IPTU', iptu], ['Condomínio', condominio],
+        ['Água', agua], ['Luz', luz], ['Internet', internet],
+        ['Seguro incêndio', seguroIncendioAluguelValor], ['Seguro fiança', seguroFiancaAluguelValor]
+      ].map(([nome, valor]) => ({
         nome, valor: temAluguelInteiro ? valor : 0
-    }
-    ));
+      }));
     updateTopicSummaries();
     atualizarModeloEmail( {
         totalProporcionais, admDiasFinais, repasseDiasFinais, totalAviso, multa, aluguelInteiro, manutencao, chaveiro,
@@ -1864,6 +1881,7 @@ function imprimirCalculo() {
     };
     document.getElementById('printDataAvisoDesocupacao').textContent = formatarDataInformada(document.getElementById('dataAvisoDesocupacao').value);
     document.getElementById('printDataAvisoProprietario').textContent = formatarDataInformada(document.getElementById('dataAvisoProprietario').value);
+    document.getElementById('printDataEntregaChaves').textContent = formatarDataInformada(document.getElementById('dataFinal').value);
     document.getElementById('printMotivoDesocupacao').textContent = document.getElementById('motivoDesocupacao').value.trim() || 'Não informado';
     document.body.classList.add('modo-impressao');
     // O diálogo nativo de impressão precisa ser chamado diretamente pelo clique.
