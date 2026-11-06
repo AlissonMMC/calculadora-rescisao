@@ -17,7 +17,40 @@ $csrf = csrfToken();
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Empresas responsáveis — Folha de Cálculo</title>
 <style>
-body{background:#f5f6f8;color:#20242b;font-family:Arial,sans-serif}.companies-wrap{max-width:1250px;margin:34px auto;padding:0 22px}.companies-head{margin-bottom:22px}.companies-head h1{margin:0 0 8px;font-size:28px}.companies-head p{color:#69717d;margin:0}.companies-grid{display:grid;grid-template-columns:minmax(280px,360px) 1fr;gap:18px}.company-card{background:#fff;border:1px solid #e4e7ec;border-radius:14px;padding:22px;box-shadow:0 4px 18px #20242b08}.company-card h2{font-size:18px;margin:0 0 8px}.company-card .sub{color:#77808c;font-size:13px;margin:0 0 18px}.field{margin-bottom:14px}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.field input,.field textarea{width:100%;box-sizing:border-box;border:1px solid #d9dee6;border-radius:8px;padding:11px;font:inherit}.field textarea{min-height:85px;resize:vertical}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;border-radius:8px;padding:10px 14px;background:#eceff3;color:#252a32;font-weight:700;cursor:pointer}.btn-primary{background:#d97706;color:white}.btn-danger{background:#fff0ef;color:#b42318}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #edf0f3;vertical-align:top}th{color:#68717e;font-size:11px;text-transform:uppercase}.status{display:inline-block;border-radius:20px;padding:5px 9px;background:#e8f7ee;color:#18794e;font-weight:700}.status.off{background:#f1f2f4;color:#737b86}.notice{padding:12px;border-radius:8px;background:#fff4e5;color:#8a4b08;margin-bottom:16px}.muted{color:#77808c;font-size:12px}@media(max-width:850px){.companies-grid{grid-template-columns:1fr}.companies-wrap{margin:20px auto;padding:0 14px}}
+body{background:#f5f6f8;color:#20242b;font-family:Arial,sans-serif}
+.companies-wrap{max-width:1250px;margin:34px auto;padding:0 22px}
+.companies-head{margin-bottom:22px}.companies-head h1{margin:0 0 8px;font-size:28px}.companies-head p{color:#69717d;margin:0}
+.companies-grid{display:grid;grid-template-columns:minmax(280px,360px) 1fr;gap:18px}
+.company-card{background:#fff;border:1px solid #e4e7ec;border-radius:14px;padding:22px;box-shadow:0 4px 18px #20242b08}
+.company-card h2{font-size:18px;margin:0 0 8px}.company-card .sub{color:#77808c;font-size:13px;margin:0 0 18px}
+.field{margin-bottom:14px}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:#344054}
+.field input,.field textarea{width:100%;box-sizing:border-box;border:1px solid #d9dee6;border-radius:8px;padding:11px;font:inherit;background:#fff;color:#20242b}
+.field input:focus,.field textarea:focus{outline:2px solid #d97706;outline-offset:1px}
+.field textarea{min-height:85px;resize:vertical}.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:8px;padding:10px 14px;background:#eceff3;color:#252a32;font-weight:700;cursor:pointer}
+.btn-primary{background:#d97706;color:white}.btn-danger{background:#fff0ef;color:#b42318}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #edf0f3;vertical-align:top}
+th{color:#68717e;font-size:11px;text-transform:uppercase}
+.status{display:inline-block;border-radius:20px;padding:5px 9px;background:#e8f7ee;color:#18794e;font-weight:700}
+.status.off{background:#f1f2f4;color:#737b86}
+.notice{padding:12px;border-radius:8px;background:#fff4e5;color:#8a4b08;margin-bottom:16px}
+.muted{color:#77808c;font-size:12px}
+html[data-theme="dark"] body{background:#0d1117;color:#e7edf5}
+html[data-theme="dark"] .companies-head h1,html[data-theme="dark"] .company-card h2{color:#f1f5f9}
+html[data-theme="dark"] .companies-head p,html[data-theme="dark"] .company-card .sub,html[data-theme="dark"] .muted{color:#a6b1c2}
+html[data-theme="dark"] .company-card{background:#151b23;border-color:#2b3542;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+html[data-theme="dark"] .field label{color:#d6deea}
+html[data-theme="dark"] .field input,html[data-theme="dark"] .field textarea{background:#0f141b;color:#e7edf5;border-color:#354152}
+html[data-theme="dark"] .field input::placeholder,html[data-theme="dark"] .field textarea::placeholder{color:#778598}
+html[data-theme="dark"] th{color:#b8c4d4}
+html[data-theme="dark"] td{color:#d5deea;border-bottom-color:#2b3542}
+html[data-theme="dark"] .btn:not(.btn-primary):not(.btn-danger){background:#26313e;color:#e5edf7;border:1px solid #3a4656}
+html[data-theme="dark"] .btn-danger{background:#3a2023;color:#ffb4b4;border:1px solid #603238}
+html[data-theme="dark"] .status{background:#173b2b;color:#8ce0b2}
+html[data-theme="dark"] .status.off{background:#303743;color:#c0c8d3}
+html[data-theme="dark"] .notice{background:#3b2b17;color:#ffd59b;border:1px solid #6c4a1c}
+@media(max-width:850px){.companies-grid{grid-template-columns:1fr}.companies-wrap{margin:20px auto;padding:0 14px}}
 </style></head><body>
 <?php require __DIR__ . '/includes/nav_global.php'; ?>
 <main class="companies-wrap">
