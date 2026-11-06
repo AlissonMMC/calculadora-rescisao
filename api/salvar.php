@@ -30,24 +30,26 @@ try {
 
         // A empresa ativa sempre vem do banco. Se estiver inativa, só permitimos
         // manter o snapshot original deste mesmo histórico, sem substituí-lo.
-        $stmtEmpresa = $pdo->prepare('SELECT id, razao_social, cnpj, endereco FROM empresas WHERE id = ? AND ativo = 1 LIMIT 1');
-        $stmtEmpresa->execute([$empresaId]);
-        $empresaAtual = $stmtEmpresa->fetch();
-        if ($empresaAtual) {
+        $dadosAnteriores = json_decode((string)($existente['dados_json'] ?? ''), true);
+        $snapshotAnterior = is_array($dadosAnteriores) ? ($dadosAnteriores['empresaSnapshot'] ?? null) : null;
+        if (is_array($snapshotAnterior) && (int)($snapshotAnterior['id'] ?? 0) === $empresaId && $empresaId > 0) {
+            // Ao editar o mesmo histórico, preserva exatamente os dados usados
+            // originalmente, mesmo que o cadastro atual tenha sido alterado.
+            $empresaSnapshot = $snapshotAnterior;
+        } else {
+            $stmtEmpresa = $pdo->prepare('SELECT id, razao_social, cnpj, endereco FROM empresas WHERE id = ? AND ativo = 1 LIMIT 1');
+            $stmtEmpresa->execute([$empresaId]);
+            $empresaAtual = $stmtEmpresa->fetch();
+            if (!$empresaAtual || $empresaId < 1) {
+                $pdo->rollBack();
+                responder(['ok' => false, 'error' => 'Selecione uma empresa ativa para substituir a empresa deste histórico.'], 422);
+            }
             $empresaSnapshot = [
                 'id' => (int)$empresaAtual['id'],
                 'razao_social' => (string)$empresaAtual['razao_social'],
                 'cnpj' => (string)$empresaAtual['cnpj'],
                 'endereco' => (string)$empresaAtual['endereco']
             ];
-        } else {
-            $dadosAnteriores = json_decode((string)($existente['dados_json'] ?? ''), true);
-            $snapshotAnterior = is_array($dadosAnteriores) ? ($dadosAnteriores['empresaSnapshot'] ?? null) : null;
-            if (!is_array($snapshotAnterior) || (int)($snapshotAnterior['id'] ?? 0) !== $empresaId || $empresaId < 1) {
-                $pdo->rollBack();
-                responder(['ok' => false, 'error' => 'Selecione uma empresa ativa. A empresa deste histórico não pode ser substituída por uma empresa inativa.'], 422);
-            }
-            $empresaSnapshot = $snapshotAnterior;
         }
         $dados['empresaId'] = $empresaId;
         $dados['empresaSnapshot'] = $empresaSnapshot;
