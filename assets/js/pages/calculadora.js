@@ -2110,14 +2110,19 @@ document.querySelectorAll('input[type="number"]').forEach(input => {
 );
 inicializarMascarasMonetarias();
 
-empresasCarregadasPromise = carregarEmpresasAtivas().then(() => {
-    if (!historicoIdInicialPrevia && !novaRescisaoInicial) {
-        try { const salvo = JSON.parse(localStorage.getItem(STORAGE_FORM) || 'null'); if (salvo) restaurarEmpresaSnapshot(salvo); } catch (_) {}
-    }
-});
 const parametrosPagina = new URLSearchParams(window.location.search);
 const historicoIdInicialPrevia = parametrosPagina.get('historico_id');
 const novaRescisaoInicial = parametrosPagina.get('nova') === '1';
+let dadosLocaisEmpresaPendente = null;
+if (!historicoIdInicialPrevia && !novaRescisaoInicial) {
+    try { dadosLocaisEmpresaPendente = JSON.parse(localStorage.getItem(STORAGE_FORM) || 'null'); } catch (_) {}
+}
+empresasCarregadasPromise = carregarEmpresasAtivas().then(() => {
+    if (dadosLocaisEmpresaPendente) {
+        restaurarEmpresaSnapshot(dadosLocaisEmpresaPendente);
+        calcular();
+    }
+});
 // Nova rescisão aberta pelo menu é sempre uma sessão limpa.
 // Não restauramos localStorage nem rascunho do servidor, para que o usuário
 // veja primeiro a escolha do critério da multa.
