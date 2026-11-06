@@ -762,6 +762,10 @@ async function salvarHistorico() {
         historicoOnline = true;
         if (json.item) {
             historicoIdAtual = json.item.id || historicoIdAtual;
+            if (json.item.dados) {
+                restaurarEmpresaSnapshot(json.item.dados);
+                calcular();
+            }
             definirStatusUI(json.item.status || statusRescisaoAtual);
             historicoCache = historicoCache.filter(reg => String(reg.id) !== String(json.item.id));
             historicoCache.unshift(json.item);
