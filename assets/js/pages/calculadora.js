@@ -1091,7 +1091,6 @@ function definirBloqueio(bloquear) {
     if (!revisaoBloqueada) {
         atualizarCamposSemDebito();
         atualizarTopicosSemDebito();
-        document.getElementById('valorAluguelInteiro').disabled = document.getElementById('semAluguelInteiro')?.checked ?? true;
     }
 }
 function limparTopico(tipo) {
@@ -1099,7 +1098,7 @@ function limparTopico(tipo) {
         dias:['dataInicial','dataFinal','aluguel','iptu','condominio','agua','luz','internet','percentualAdm'],
         aviso:['dataInicioAviso','dataFimAviso','semAviso'],
         multa:['mesesFaltantes','dataInicioContrato','semMulta','percentualProp'],
-        aluguel:['semAluguelInteiro','valorAluguelInteiro'],
+        aluguel:['semAluguelInteiro','editarAluguelInteiro','valorAluguelInteiro'],
         manutencao:['manutencao','semManutencao'],
         chaveiro:['chaveiro','semChaveiro'],
         seguros:['seguroIncendio','seguroFianca','semSeguros']
