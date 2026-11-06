@@ -337,7 +337,7 @@ function restaurarEmpresaSnapshot(dados) {
     const id=String(dados?.empresaId||dados?.campos?.empresaResponsavelId||snapshot?.id||'');
     if(!id){select.value='';return;}
     let option=[...select.options].find(item=>item.value===id);
-    if(snapshot&&!option){
+    if(snapshot&&!option&&historicoIdAtual){
         option=document.createElement('option');option.value=id;
         option.textContent=(snapshot.razao_social||'Empresa do histórico')+' (dados salvos no histórico)';
         option.dataset.razaoSocial=snapshot.razao_social||'';option.dataset.cnpj=snapshot.cnpj||'';option.dataset.endereco=snapshot.endereco||'';option.dataset.snapshotOnly='1';
@@ -2039,6 +2039,7 @@ document.getElementById('btnDesbloquearConferencia').addEventListener('click', (
 }
 );
 document.getElementById('btnCopiarEmail').addEventListener('click', async () => {
+    if (!validarEmpresaResponsavel()) return;
     const area=document.getElementById('modeloEmail');
     try {
         await navigator.clipboard.writeText(area.value);
@@ -2102,7 +2103,11 @@ document.querySelectorAll('input[type="number"]').forEach(input => {
 );
 inicializarMascarasMonetarias();
 
-empresasCarregadasPromise = carregarEmpresasAtivas();
+empresasCarregadasPromise = carregarEmpresasAtivas().then(() => {
+    if (!historicoIdInicialPrevia && !novaRescisaoInicial) {
+        try { const salvo = JSON.parse(localStorage.getItem(STORAGE_FORM) || 'null'); if (salvo) restaurarEmpresaSnapshot(salvo); } catch (_) {}
+    }
+});
 const parametrosPagina = new URLSearchParams(window.location.search);
 const historicoIdInicialPrevia = parametrosPagina.get('historico_id');
 const novaRescisaoInicial = parametrosPagina.get('nova') === '1';
