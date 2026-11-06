@@ -137,6 +137,7 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
         <strong>Dados da desocupação</strong>
         <div><span>Data do aviso de desocupação:</span> <b id="printDataAvisoDesocupacao">Não informada</b></div>
         <div><span>Data em que o proprietário foi avisado:</span> <b id="printDataAvisoProprietario">Não informada</b></div>
+        <div><span>Data da entrega das chaves:</span> <b id="printDataEntregaChaves">Não informada</b></div>
         <div><span>Motivo da desocupação:</span> <b id="printMotivoDesocupacao">Não informado</b></div>
       </div>
       <div class="selected-mode" style="margin-bottom:12px;">
@@ -169,6 +170,11 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
           <div class="field">
             <label for="numeroContrato">Número do contrato</label>
             <input id="numeroContrato" type="text" maxlength="40" placeholder="Ex.: 000" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="dataFinal">Data da entrega das chaves</label>
+            <input id="dataFinal" type="date" />
+            <span class="field-error" id="erroDataFinal">A entrega deve ser igual ou posterior à data inicial.</span>
           </div>
           <div class="field moveout-reason-field">
             <label for="motivoDesocupacao">Motivo da desocupação</label>
@@ -218,11 +224,7 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
                 <span class="field-error" id="erroDataInicial">Informe uma data válida.</span>
               </div>
               <div class="date-arrow" aria-hidden="true">→</div>
-              <div class="field">
-                <label for="dataFinal">Entrega das chaves</label>
-                <input id="dataFinal" type="date" />
-                <span class="field-error" id="erroDataFinal">A entrega deve ser igual ou posterior à data inicial.</span>
-              </div>
+
             </div>
 
             <div class="days-result" aria-live="polite">
@@ -434,9 +436,10 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
             <div class="grid">
               <div class="field full optional-debt-field">
                 <label for="valorAluguelInteiro">Aluguel inteiro + encargos (R$)</label>
-                <input id="valorAluguelInteiro" type="text" inputmode="numeric" autocomplete="off" data-money="true" value="R$ 0,00" readonly disabled />
+                <input id="valorAluguelInteiro" type="text" inputmode="numeric" autocomplete="off" data-money="true" value="R$ 0,00" disabled />
+                <label class="check-inline"><input id="editarAluguelInteiro" type="checkbox" /> Editar valor manualmente</label>
                 <label class="check-inline"><input id="semAluguelInteiro" type="checkbox" /> Não há aluguel inteiro nesta rescisão</label>
-                <span class="hint">O valor é calculado automaticamente quando houver aluguel inteiro: aluguel + IPTU + condomínio + água + luz + internet + seguro incêndio + seguro fiança.</span>
+                <span class="hint">Por padrão, o sistema soma aluguel + encargos + seguros. Marque “Editar valor manualmente” para ajustar o total; desmarque para voltar à soma automática.</span>
               </div>
             </div>
 
