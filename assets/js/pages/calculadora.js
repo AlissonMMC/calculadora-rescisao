@@ -340,10 +340,17 @@ function restaurarEmpresaSnapshot(dados) {
     if(snapshot&&!option&&historicoIdAtual){
         option=document.createElement('option');option.value=id;
         option.textContent=(snapshot.razao_social||'Empresa do histórico')+' (dados salvos no histórico)';
-        option.dataset.razaoSocial=snapshot.razao_social||'';option.dataset.cnpj=snapshot.cnpj||'';option.dataset.endereco=snapshot.endereco||'';option.dataset.snapshotOnly='1';
+        option.dataset.snapshotOnly='1';
         select.appendChild(option);
     }
-    select.value=id;
+    if(snapshot&&option){
+        // A seleção restaurada usa os dados congelados no histórico/rascunho,
+        // não os dados atuais do cadastro da empresa.
+        option.dataset.razaoSocial=snapshot.razao_social||'';
+        option.dataset.cnpj=snapshot.cnpj||'';
+        option.dataset.endereco=snapshot.endereco||'';
+    }
+    select.value=[...select.options].some(item=>item.value===id)?id:'';
 }
 function validarEmpresaResponsavel(mostrarAviso=true) {
     const select=document.getElementById('empresaResponsavelId'),option=select?.selectedOptions?.[0];
