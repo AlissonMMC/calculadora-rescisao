@@ -144,6 +144,12 @@
   refreshButton();
 
   soundButton.addEventListener('click', async () => {
+    // Primeiro clique libera o áudio; só um clique posterior desliga a música.
+    if (somAtivo && !audioLiberado) {
+      await startMusic();
+      refreshButton();
+      return;
+    }
     somAtivo = !somAtivo;
     try { localStorage.setItem(STORAGE_KEY, String(somAtivo)); } catch (_) {}
     refreshButton();
