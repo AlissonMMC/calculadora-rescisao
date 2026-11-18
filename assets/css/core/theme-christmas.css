@@ -1,0 +1,213 @@
+/* Tema sazonal de Natal — camada exclusivamente visual.
+   Não altera cálculos, formulários, persistência ou regras de negócio. */
+:root{
+  --global-accent:#1f6b4f;
+  --global-accent-strong:#15543d;
+  --global-accent-soft:#eaf4ed;
+  --global-page-bg:#f3f7f3;
+  --global-surface:#fffefa;
+  --global-surface-2:#f7faf6;
+  --global-border:#dce8dd;
+  --global-text:#1d3026;
+  --global-muted:#718176;
+  --global-nav-hover:#f0f6f0;
+  --global-nav-active:#e8f3e9;
+  --global-sidebar-bg:#fffefa;
+  --global-shadow:0 10px 30px rgba(20,65,43,.07);
+  --global-shadow-strong:0 18px 48px rgba(20,65,43,.14);
+  --orange:#1f6b4f;
+  --orange-dark:#15543d;
+  --orange-soft:#eaf4ed;
+  --orange-line:#c7dfcc;
+  --orange2:#15543d;
+  --cream:#eaf4ed;
+  --cream2:#d9ebdc;
+  --black:#142d23;
+  --bg:#f3f7f3;
+  --card:#fffefa;
+  --text:#1d3026;
+  --muted:#718176;
+  --line:#dce8dd;
+  --border:#dce8dd;
+  --white:#fffefa;
+  --green:#24734e;
+  --red:#a83e42;
+  --shadow:0 16px 42px rgba(20,65,43,.08);
+}
+html{background:var(--global-page-bg)}
+body{
+  background-color:var(--global-page-bg)!important;
+  background-image:radial-gradient(circle at 94% 3%,rgba(190,151,68,.10),transparent 23%),radial-gradient(circle at 4% 96%,rgba(31,107,79,.055),transparent 28%)!important;
+  color:var(--global-text);
+}
+.global-sidebar{
+  background:linear-gradient(180deg,#fffefa 0%,#f4f8f1 100%);
+  border-right-color:#d8e5d8;
+}
+.global-brand-mark{
+  background:linear-gradient(145deg,#2c8060,#15543d);
+  box-shadow:0 7px 18px rgba(21,84,61,.22);
+  position:relative;
+}
+.global-brand-mark:after{
+  content:"✦";
+  position:absolute;
+  right:-4px;
+  top:-5px;
+  width:15px;
+  height:15px;
+  display:grid;
+  place-items:center;
+  border:1px solid #e4d4a7;
+  border-radius:50%;
+  background:#f5e9c9;
+  color:#94702d;
+  font-size:9px;
+}
+.global-sidebar-label{color:#8a9b8d}
+.global-nav-link.active{
+  color:#15543d;
+  background:linear-gradient(90deg,#e4f1e6,#f0f6ed);
+  border-color:#c7dfcc;
+  box-shadow:inset 3px 0 0 #b58b3c;
+}
+.global-nav-link:hover{color:#15543d}
+.global-topbar{
+  background:rgba(255,254,250,.95);
+  border-bottom-color:#dce8dd;
+  box-shadow:0 5px 20px rgba(20,65,43,.05);
+}
+.global-topbar:before{
+  content:"";
+  position:absolute;
+  left:0;right:0;top:0;height:3px;
+  background:linear-gradient(90deg,#1f6b4f 0 36%,#b58b3c 36% 39%,#a83e42 39% 42%,#1f6b4f 42% 100%);
+}
+.global-topbar-context{color:#15543d}
+.global-topbar-avatar,.global-avatar{
+  background:linear-gradient(145deg,#2c8060,#142d23);
+}
+.global-theme:hover,.global-logout:hover{border-color:#c7dfcc;background:#edf5ed}
+.global-profile-dropdown{border-color:#dce8dd}
+.global-profile-item:hover{background:#edf5ed}
+.global-sidebar-bottom{border-top-color:#dce8dd}
+.global-topbar-user{border-color:#dce8dd}
+.global-topbar-user:hover{border-color:#c7dfcc;background:#f7faf6}
+.container h1,.wrap h1,.container h2,.container h3,.wrap h2,.wrap h3{color:#1d3026}
+.container .card,.wrap .card,.container .panel,.wrap .panel,
+.container .mode-card,.wrap .mode-card,.container .stat-card,.wrap .stat-card,
+.container .profile-card,.wrap .profile-card,.container .profile-account,.wrap .profile-account{
+  border-color:#dce8dd;
+  box-shadow:0 12px 32px rgba(20,65,43,.055);
+}
+.container input:not([type=checkbox]):not([type=radio]),
+.container select,.container textarea,.wrap input:not([type=checkbox]):not([type=radio]),
+.wrap select,.wrap textarea{border-color:#d5e2d6}
+.container input:focus,.container select:focus,.container textarea:focus,
+.wrap input:focus,.wrap select:focus,.wrap textarea:focus{
+  border-color:#1f6b4f!important;
+  box-shadow:0 0 0 3px rgba(31,107,79,.13)!important;
+}
+.container .btn,.wrap .btn,.container button.btn,.wrap button.btn,
+.container .btn-primary,.wrap .btn-primary,.container button[type=submit],.wrap button[type=submit]{
+  background:linear-gradient(135deg,#287858,#15543d);
+  border-color:#15543d;
+}
+.container .btn:hover,.wrap .btn:hover,.container .btn-primary:hover,.wrap .btn-primary:hover{
+  background:linear-gradient(135deg,#1f6b4f,#10432f);
+}
+.container .eyebrow,.wrap .eyebrow,.container .section-kicker,.wrap .section-kicker{
+  color:#8b6a2c;
+}
+.container .header,.wrap .header,.container .home-hero,.wrap .home-hero{
+  background:radial-gradient(circle at 88% 12%,rgba(181,139,60,.26),transparent 25%),linear-gradient(125deg,#102f24 0%,#174a37 62%,#203d2e 100%);
+  border:1px solid rgba(181,139,60,.3);
+  box-shadow:0 18px 44px rgba(16,47,36,.17);
+}
+.container .header:after,.wrap .header:after,.container .home-hero:after,.wrap .home-hero:after{
+  background:#b58b3c;
+  opacity:.28;
+}
+.container .header h1,.wrap .header h1,.container .home-hero h1,.wrap .home-hero h1{color:#fff}
+.container .header h1 span,.wrap .header h1 span,.container .home-hero h1 span,.wrap .home-hero h1 span{color:#e7c982}
+.container .eyebrow-dot,.wrap .eyebrow-dot{background:#d6b56b;box-shadow:0 0 0 5px rgba(214,181,107,.15)}
+.container .mode-icon,.wrap .mode-icon{background:#173f30;color:#e7c982}
+.container .mode-option:hover,.wrap .mode-option:hover{border-color:#b58b3c}
+.container .mode-option.selected,.wrap .mode-option.selected{border-color:#1f6b4f}
+.container .mode-formula,.wrap .mode-formula{background:#edf5ed;border-color:#d4e5d5}
+table thead th{background:#edf5ed;color:#28553c}
+tbody tr:hover{background:#f4f8f2}
+.badge,.status-badge{border-radius:999px}
+a{ text-decoration-color:rgba(31,107,79,.35) }
+.global-sidebar,.global-topbar,.global-nav-link,.global-brand-mark{transition:background .2s,border-color .2s,color .2s,box-shadow .2s}
+.global-sidebar:after{
+  content:"";
+  position:absolute;
+  left:14px;right:14px;top:65px;height:1px;
+  background:linear-gradient(90deg,transparent,#d8c58e,transparent);
+  pointer-events:none;
+}
+/* Login e tela inicial, que não usam a navegação autenticada. */
+.login-shell{border-color:#dce8dd;box-shadow:0 24px 70px rgba(20,65,43,.13)}
+.login-brand{
+  background:radial-gradient(circle at 85% 12%,rgba(181,139,60,.3),transparent 28%),linear-gradient(145deg,#102f24,#1c5a40);
+}
+.login-brand:after{background:#b58b3c;opacity:.24}
+.brand-mark{background:linear-gradient(145deg,#2c8060,#15543d);box-shadow:0 8px 22px rgba(21,84,61,.25)}
+.login-brand .eyebrow{background:rgba(214,181,107,.16);color:#ead59d}
+.login-form .btn,.login-form button[type=submit]{background:linear-gradient(135deg,#287858,#15543d)}
+.login-form .btn:hover,.login-form button[type=submit]:hover{background:#10432f}
+.login-shell input:focus{border-color:#1f6b4f;box-shadow:0 0 0 3px rgba(31,107,79,.13)}
+/* Telas legadas de administração e orçamento. */
+.page-title h1,.top h1,.hero h1{color:#1d3026}
+.hero .eyebrow,.page-title .eyebrow{color:#8b6a2c}
+.file-picker{border-color:#c7dfcc}
+.file-picker:hover{border-color:#1f6b4f;background:#edf5ed}
+.btn,.button,.btn-primary{--button-accent:#1f6b4f}
+button.btn,.btn-primary{background:#1f6b4f}
+html[data-theme="dark"]{
+  --global-accent:#67b58a;
+  --global-accent-strong:#8bd0a5;
+  --global-accent-soft:#183426;
+  --global-page-bg:#101a15;
+  --global-surface:#17231c;
+  --global-surface-2:#1b2a21;
+  --global-border:#2b4334;
+  --global-text:#e7f0e8;
+  --global-muted:#a2b4a5;
+  --global-nav-hover:#203329;
+  --global-nav-active:#1b3828;
+  --global-sidebar-bg:#152119;
+  --orange:#67b58a;--orange-dark:#8bd0a5;--orange-soft:#183426;--orange-line:#315b41;
+  --orange2:#8bd0a5;--cream:#183426;--cream2:#203e2d;--black:#102018;
+  --bg:#101a15;--card:#17231c;--text:#e7f0e8;--muted:#a2b4a5;--line:#2b4334;--border:#2b4334;--white:#17231c;
+  --global-shadow:0 10px 30px rgba(0,0,0,.22);
+  color-scheme:dark;
+}
+html[data-theme="dark"] body{background-image:radial-gradient(circle at 94% 3%,rgba(181,139,60,.09),transparent 23%),radial-gradient(circle at 4% 96%,rgba(54,133,91,.07),transparent 28%)!important;color:var(--global-text)}
+html[data-theme="dark"] .global-sidebar{background:linear-gradient(180deg,#152119,#111c16);border-color:#2b4334}
+html[data-theme="dark"] .global-topbar{background:rgba(21,33,25,.95);border-color:#2b4334}
+html[data-theme="dark"] .global-nav-link.active{background:#1b3828;border-color:#315b41;color:#a5d8b3;box-shadow:inset 3px 0 #b58b3c}
+html[data-theme="dark"] .global-brand-copy span,html[data-theme="dark"] .global-sidebar-label{color:#9bb09e}
+html[data-theme="dark"] .global-topbar-context,html[data-theme="dark"] .container h1,html[data-theme="dark"] .wrap h1,
+html[data-theme="dark"] .container h2,html[data-theme="dark"] .container h3,html[data-theme="dark"] .wrap h2,html[data-theme="dark"] .wrap h3{color:#e7f0e8}
+html[data-theme="dark"] .container .card,html[data-theme="dark"] .wrap .card,html[data-theme="dark"] .container .panel,html[data-theme="dark"] .wrap .panel{background:#17231c;border-color:#2b4334}
+html[data-theme="dark"] .container .header,html[data-theme="dark"] .wrap .header,html[data-theme="dark"] .container .home-hero,html[data-theme="dark"] .wrap .home-hero{background:linear-gradient(125deg,#0b2118,#153d2b 62%,#1c3528)}
+html[data-theme="dark"] table thead th{background:#203b2a;color:#c9e4ce}
+html[data-theme="dark"] tbody tr:hover{background:#1c2c21}
+html[data-theme="dark"] .login-brand{background:linear-gradient(145deg,#0b2118,#174a34)}
+html[data-theme="dark"] .login-shell{background:#17231c;border-color:#2b4334}
+html[data-theme="dark"] .login-form-wrap{background:#17231c}
+@media(prefers-reduced-motion:no-preference){
+  .global-brand-mark:after{animation:holiday-glint 4s ease-in-out infinite}
+  @keyframes holiday-glint{0%,100%{opacity:.72;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
+}
+@media(max-width:760px){
+  .global-topbar:after{content:"Boas festas";display:block;position:absolute;left:16px;bottom:-23px;padding:3px 8px;border-radius:0 0 7px 7px;background:#eaf4ed;color:#15543d;font-size:9px;font-weight:850;letter-spacing:.06em;text-transform:uppercase}
+}
+@media print{
+  body{background:#fff!important;color:#111!important;background-image:none!important}
+  .global-sidebar,.global-topbar,.global-mobilebar,.global-sidebar-backdrop{display:none!important}
+  .global-brand-mark:after,.global-sidebar:after{display:none!important}
+  *{-webkit-print-color-adjust:economy!important;print-color-adjust:economy!important}
+}
