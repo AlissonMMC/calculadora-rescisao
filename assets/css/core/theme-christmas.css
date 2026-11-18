@@ -159,3 +159,102 @@ body::after {
 @media print {
   .christmas-sound-toggle, .christmas-sleigh-pass { display: none !important; }
 }
+
+
+/* Pisca-piscas: um único card decorado em cada página. */
+.christmas-decorated-card {
+  position: relative;
+}
+.christmas-card-lights {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.christmas-card-lights::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 2px;
+  right: 2px;
+  height: 8px;
+  border-top: 1.5px solid rgba(70, 70, 70, .55);
+  border-radius: 50% 50% 0 0;
+}
+.christmas-card-lights span {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 7px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 45% 45% 55% 55%;
+  background: var(--bulb-color);
+  box-shadow: 0 0 3px var(--bulb-color), 0 0 8px color-mix(in srgb, var(--bulb-color) 70%, transparent);
+  animation: christmas-bulb-blink 1.15s ease-in-out var(--bulb-delay) infinite alternate;
+}
+@keyframes christmas-bulb-blink {
+  0%, 18% { opacity: .28; filter: brightness(.65); box-shadow: 0 0 1px var(--bulb-color); }
+  55%, 100% { opacity: 1; filter: brightness(1.25); box-shadow: 0 0 5px var(--bulb-color), 0 0 12px var(--bulb-color); }
+}
+
+/* Árvores laterais exclusivas da tela da folha de rescisão. */
+#calculatorScreen { position: relative; }
+.christmas-sheet-trees {
+  position: absolute;
+  z-index: 0;
+  top: 158px;
+  left: -46px;
+  right: -46px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.christmas-tree {
+  display: block;
+  width: 42px;
+  height: 76px;
+  opacity: .88;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.12));
+}
+.christmas-tree svg { display: block; width: 100%; height: 100%; }
+.christmas-tree-right { transform: scaleX(-1); }
+
+/* Botão de música com contraste garantido no tema escuro. */
+html[data-theme="dark"] .christmas-sound-toggle {
+  background: #171717;
+  color: #f5f5f5;
+  border-color: #454545;
+  box-shadow: 0 4px 16px rgba(0,0,0,.42);
+}
+html[data-theme="dark"] .christmas-sound-toggle:hover {
+  background: #262626;
+  border-color: #666;
+}
+html[data-theme="dark"] .christmas-sound-toggle.is-muted {
+  color: #bdbdbd;
+  background: #111;
+  border-color: #383838;
+}
+
+@media (max-width: 1250px) {
+  .christmas-sheet-trees { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .christmas-card-lights span { animation: none; opacity: .85; }
+}
+@media print {
+  .christmas-card-lights,
+  .christmas-sheet-trees,
+  .christmas-decorated-card::before,
+  .christmas-decorated-card::after {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
