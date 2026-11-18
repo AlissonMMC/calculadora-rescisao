@@ -250,7 +250,7 @@
 
   // Reaplica a decoração quando a calculadora alterna entre seleção de modo e folha de cálculo.
   document.addEventListener('click', event => {
-    if (event.target.closest('[data-mode], #btnAlterarModo')) {
+    if (event.target.closest('[data-mode], #btnContinuar, #btnAlterarModo')) {
       window.requestAnimationFrame(addChristmasCardLights);
     }
   });
