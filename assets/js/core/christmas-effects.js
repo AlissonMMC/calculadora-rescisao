@@ -204,7 +204,7 @@
   const sleigh = document.createElement('div');
   sleigh.className = 'christmas-sleigh-pass';
   sleigh.setAttribute('aria-hidden', 'true');
-  sleigh.innerHTML = '<svg viewBox="0 0 360 118" xmlns="http://www.w3.org/2000/svg"><g fill="currentColor"><path d="M28 64h120l-13-22h-29l-10-17h-31l12 17H57z"/><path d="M34 69c24 15 83 17 121 0l-8 12c-35 18-93 15-119-2z"/><path d="M45 84c34 17 88 17 120 0" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M154 39l22 25-7 6-22-25z"/><path d="M183 30c12-12 26-9 34 1l-7 7c-7-6-13-6-20 1z"/><path d="M221 31c13-10 28-5 32 7l-9 5c-4-7-12-8-18-2z"/><path d="M265 40c12-9 25-3 27 9l-10 3c-2-7-8-9-14-4z"/><path d="M184 56l-7-13 10-5 8 13zM220 55l-4-14 11-3 5 14zM264 62l-1-13 11-1 2 13z"/><path d="M180 30l-9-12 15 3 5-10 4 15z"/><circle cx="205" cy="23" r="3"/><circle cx="243" cy="27" r="3"/><circle cx="282" cy="39" r="3"/></g><path d="M181 31q-7-17-19-12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
+  sleigh.innerHTML = '<img src="assets/images/papai-noel-treno-renas.jpg" alt="Papai Noel em seu trenó com as renas">';
   document.body.appendChild(sleigh);
 
   const launchSleigh = () => {
