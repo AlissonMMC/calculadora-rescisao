@@ -243,8 +243,8 @@
   };
 
   const addChristmasSheetTree = () => {
-    const layout = document.querySelector('#calculatorScreen > .layout');
-    if (!layout || !/index\.php$/.test(window.location.pathname.toLowerCase())) return;
+    const insuranceCard = document.querySelector('#topicoSeguros');
+    if (!insuranceCard || !/index\.php$/.test(window.location.pathname.toLowerCase())) return;
 
     const tree = document.createElement('div');
     tree.className = 'christmas-sheet-tree';
@@ -256,8 +256,8 @@
     image.loading = 'lazy';
     tree.appendChild(image);
 
-    // A árvore fica fora das colunas e dos cards, no rodapé da calculadora.
-    layout.insertAdjacentElement('afterend', tree);
+    // Encaixa a imagem como coluna ao lado do card de seguros, sem criar outro card.
+    insuranceCard.insertAdjacentElement('afterend', tree);
   };
 
   addChristmasCardLights();
