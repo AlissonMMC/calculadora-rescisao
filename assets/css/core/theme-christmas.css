@@ -84,6 +84,7 @@ body{
   background:linear-gradient(90deg,#1f6b4f 0 36%,#b58b3c 36% 39%,#a83e42 39% 42%,#1f6b4f 42% 100%);
 }
 .global-topbar-context{color:#15543d}
+.global-topbar-left:after{content:"✦ Edição especial de Natal";display:inline-flex;align-items:center;margin-left:10px;padding:5px 9px;border:1px solid #e4d6b2;border-radius:999px;background:#fbf6e8;color:#87672e;font-size:.58rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
 .global-topbar-avatar,.global-avatar{
   background:linear-gradient(145deg,#2c8060,#142d23);
 }
@@ -154,6 +155,7 @@ a{ text-decoration-color:rgba(31,107,79,.35) }
   background:radial-gradient(circle at 85% 12%,rgba(181,139,60,.3),transparent 28%),linear-gradient(145deg,#102f24,#1c5a40);
 }
 .login-brand:after{background:#b58b3c;opacity:.24}
+.login-brand:before{content:"FELIZ NATAL";position:absolute;right:28px;bottom:24px;z-index:1;color:rgba(238,220,169,.72);font-size:.62rem;font-weight:900;letter-spacing:.22em}
 .brand-mark{background:linear-gradient(145deg,#2c8060,#15543d);box-shadow:0 8px 22px rgba(21,84,61,.25)}
 .login-brand .eyebrow{background:rgba(214,181,107,.16);color:#ead59d}
 .login-form .btn,.login-form button[type=submit]{background:linear-gradient(135deg,#287858,#15543d)}
@@ -204,6 +206,7 @@ html[data-theme="dark"] .login-form-wrap{background:#17231c}
   @keyframes holiday-glint{0%,100%{opacity:.72;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
 }
 @media(max-width:760px){
+  .global-topbar-left:after{display:none}
   .global-topbar:after{content:"Boas festas";display:block;position:absolute;left:16px;bottom:-23px;padding:3px 8px;border-radius:0 0 7px 7px;background:#eaf4ed;color:#15543d;font-size:9px;font-weight:850;letter-spacing:.06em;text-transform:uppercase}
 }
 @media print{
