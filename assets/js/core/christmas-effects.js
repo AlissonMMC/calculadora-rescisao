@@ -191,7 +191,7 @@
 
   document.addEventListener('click', event => {
     const button = event.target.closest('button, input[type="submit"]');
-    if (!button || button === soundButton || !somAtivo) return;
+    if (!button || button === soundButton) return;
     const id = button.id || '';
     const label = (button.innerText || button.value || '').trim().toLocaleLowerCase('pt-BR');
     const isSave = id === 'btnSalvarHistorico' || /salvar no histórico|salvar rescisão/.test(label);
