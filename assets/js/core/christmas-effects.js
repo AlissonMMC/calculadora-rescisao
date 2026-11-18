@@ -205,7 +205,7 @@
   sleigh.className = 'christmas-sleigh-pass';
   sleigh.setAttribute('aria-hidden', 'true');
   const scriptUrl = document.currentScript?.src || window.location.href;
-  const sleighImageUrl = new URL('../../images/papai-noel-treno-renas.jpg', scriptUrl).href;
+  const sleighImageUrl = new URL('../../assets/images/papai-noel-treno-renas.jpg', scriptUrl).href;
   sleigh.innerHTML = `<img src="${sleighImageUrl}" alt="Papai Noel em seu trenó com as renas">`;
   document.body.appendChild(sleigh);
 
