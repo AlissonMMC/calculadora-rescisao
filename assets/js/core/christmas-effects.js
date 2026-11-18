@@ -246,6 +246,9 @@
     const insuranceCard = document.querySelector('#topicoSeguros');
     if (!insuranceCard || !/index\.php$/.test(window.location.pathname.toLowerCase())) return;
 
+    const layout = document.createElement('div');
+    layout.className = 'christmas-insurance-tree-layout';
+
     const tree = document.createElement('div');
     tree.className = 'christmas-sheet-tree';
     tree.setAttribute('aria-hidden', 'true');
@@ -256,8 +259,10 @@
     image.loading = 'lazy';
     tree.appendChild(image);
 
-    // Encaixa a imagem como coluna ao lado do card de seguros, sem criar outro card.
-    insuranceCard.insertAdjacentElement('afterend', tree);
+    // Agrupa somente a área dos seguros e a imagem, lado a lado, fora de qualquer card.
+    insuranceCard.parentNode.insertBefore(layout, insuranceCard);
+    layout.appendChild(insuranceCard);
+    layout.appendChild(tree);
   };
 
   addChristmasCardLights();
