@@ -101,3 +101,61 @@ body::after {
     display: none !important;
   }
 }
+
+
+/* Efeitos sonoros e passagem do trenó — sem alterar a paleta original. */
+.christmas-sound-toggle {
+  position: fixed;
+  right: 22px;
+  bottom: 20px;
+  z-index: 1400;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid rgba(150,150,150,.35);
+  border-radius: 999px;
+  background: var(--surface, #fff);
+  color: inherit;
+  box-shadow: 0 3px 14px rgba(0,0,0,.12);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: .88;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.christmas-sound-toggle:hover { opacity: 1; transform: translateY(-2px); }
+.christmas-sound-toggle > span:first-child { font-size: 17px; line-height: 1; }
+.christmas-sound-toggle.is-muted { opacity: .58; }
+.christmas-sleigh-pass {
+  position: fixed;
+  z-index: 1190;
+  top: 13%;
+  left: 0;
+  width: min(360px, 52vw);
+  color: rgba(45, 48, 54, .20);
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 5px 8px rgba(0,0,0,.12));
+  transform: translate3d(-115%, 0, 0);
+}
+.christmas-sleigh-pass svg { display: block; width: 100%; height: auto; }
+.christmas-sleigh-pass.is-flying { animation: christmas-sleigh-flight 7.5s ease-in-out both; }
+@keyframes christmas-sleigh-flight {
+  0% { opacity: 0; transform: translate3d(-115%, 0, 0) rotate(-2deg); }
+  12% { opacity: .62; }
+  78% { opacity: .52; }
+  100% { opacity: 0; transform: translate3d(110vw, 7vh, 0) rotate(2deg); }
+}
+@media (max-width: 600px) {
+  .christmas-sound-toggle { right: 12px; bottom: 12px; }
+  .christmas-sleigh-pass { top: 17%; width: 230px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .christmas-sleigh-pass { display: none !important; }
+  .christmas-sound-toggle { transition: none; }
+}
+@media print {
+  .christmas-sound-toggle, .christmas-sleigh-pass { display: none !important; }
+}
