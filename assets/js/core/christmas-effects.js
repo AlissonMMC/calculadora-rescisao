@@ -206,11 +206,11 @@
     const path = window.location.pathname.toLowerCase();
     let target = null;
 
-    if (/dashboard\\.php$/.test(path)) {
+    if (/dashboard\.php$/.test(path)) {
       target = document.querySelector('.stats .stat-card') || document.querySelector('.workflow-grid .panel');
-    } else if (/historico\\.php$/.test(path) && !/historico_orcamentos/.test(path)) {
+    } else if (/historico\.php$/.test(path) && !/historico_orcamentos/.test(path)) {
       target = document.querySelector('.filter-card') || document.querySelector('.history-card');
-    } else if (/index\\.php$/.test(path) && document.querySelector('#calculatorScreen')) {
+    } else if (/index\.php$/.test(path) && document.querySelector('#calculatorScreen')) {
       target = document.querySelector('#calculatorScreen .result-box') || document.querySelector('#modeScreen .mode-card');
     } else {
       const selectors = [
@@ -244,7 +244,7 @@
 
   const addChristmasSheetTrees = () => {
     const screen = document.querySelector('#calculatorScreen');
-    if (!screen || !/index\\.php$/.test(window.location.pathname.toLowerCase())) return;
+    if (!screen || !/index\.php$/.test(window.location.pathname.toLowerCase())) return;
     const trees = document.createElement('div');
     trees.className = 'christmas-sheet-trees';
     trees.setAttribute('aria-hidden', 'true');
