@@ -204,6 +204,43 @@ body::after {
   55%, 100% { opacity: 1; filter: brightness(1.25); box-shadow: 0 0 5px var(--bulb-color), 0 0 12px var(--bulb-color); }
 }
 
+
+/* Gorrinhos discretos em alguns indicadores da tela inicial. */
+.christmas-kpi-hat .stat-top {
+  position: relative;
+}
+.christmas-kpi-hat .stat-top::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  right: 22px;
+  width: 25px;
+  height: 19px;
+  background: #c62828;
+  clip-path: polygon(0 100%, 18% 48%, 48% 12%, 69% 0, 78% 55%, 100% 100%);
+  transform: rotate(9deg);
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.18));
+  pointer-events: none;
+}
+.christmas-kpi-hat .stat-top::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 8px;
+  right: 17px;
+  width: 29px;
+  height: 5px;
+  border-radius: 5px;
+  background: #fff;
+  transform: rotate(9deg);
+  box-shadow: 9px -13px 0 -1px #fff;
+  pointer-events: none;
+}
+@media print {
+  .christmas-kpi-hat .stat-top::before,
+  .christmas-kpi-hat .stat-top::after { display: none !important; }
+}
+
 /* Botão de música com contraste garantido no tema escuro. */
 html[data-theme="dark"] .christmas-sound-toggle {
   background: #171717;
