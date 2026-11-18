@@ -108,12 +108,13 @@ body{
   border-color:#1f6b4f!important;
   box-shadow:0 0 0 3px rgba(31,107,79,.13)!important;
 }
-.container .btn,.wrap .btn,.container button.btn,.wrap button.btn,
-.container .btn-primary,.wrap .btn-primary,.container button[type=submit],.wrap button[type=submit]{
+.container .btn:not(.gray):not(.secondary):not(.danger):not(.btn-danger):not(.btn-delete):not(.btn-history-delete):not(.btn-light),
+.wrap .btn:not(.gray):not(.secondary):not(.danger):not(.btn-danger):not(.btn-delete):not(.btn-history-delete):not(.btn-light),
+.container .btn-primary,.wrap .btn-primary{
   background:linear-gradient(135deg,#287858,#15543d);
   border-color:#15543d;
 }
-.container .btn:hover,.wrap .btn:hover,.container .btn-primary:hover,.wrap .btn-primary:hover{
+.container .btn-primary:hover,.wrap .btn-primary:hover{
   background:linear-gradient(135deg,#1f6b4f,#10432f);
 }
 .container .eyebrow,.wrap .eyebrow,.container .section-kicker,.wrap .section-kicker{
