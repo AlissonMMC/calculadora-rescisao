@@ -243,21 +243,18 @@
   };
 
   const addChristmasSheetTree = () => {
-    const screen = document.querySelector('#calculatorScreen');
     const emailSection = document.querySelector('#emailCollapse');
-    if (!screen || !emailSection || !/index\.php$/.test(window.location.pathname.toLowerCase())) return;
+    if (!emailSection || !/index\.php$/.test(window.location.pathname.toLowerCase())) return;
 
     const tree = document.createElement('div');
     tree.className = 'christmas-sheet-tree';
     tree.setAttribute('aria-hidden', 'true');
-    tree.innerHTML = '<svg viewBox="0 0 180 270" xmlns="http://www.w3.org/2000/svg" role="presentation">' +
-      '<path d="M90 7 79 29l-17 1 10 17-24 27 27-1-38 43 38-1-48 54h126l-48-54 38 1-38-43 27 1-24-27 10-17-17-1z" fill="#176b3d" stroke="#105330" stroke-width="3" stroke-linejoin="round"/>' +
-      '<path d="M77 169h26v49H77z" rx="3" fill="#80502f"/>' +
-      '<path d="M90 3 97 19l18 2-13 12 4 18-16-9-16 9 4-18-13-12 18-2z" fill="#e5bd55" stroke="#c7962d" stroke-width="2" stroke-linejoin="round"/>' +
-      '<path d="M57 91q33 24 66 0M42 137q48 35 96 0M28 181q62 39 124 0" fill="none" stroke="#d7b45b" stroke-width="5" stroke-linecap="round"/>' +
-      '<g stroke="#f7e7b0" stroke-width="1.5"><circle cx="63" cy="72" r="5" fill="#d94b4b"/><circle cx="111" cy="79" r="5" fill="#e8c34f"/><circle cx="78" cy="111" r="5" fill="#4f91d2"/><circle cx="126" cy="127" r="5" fill="#d94b4b"/><circle cx="54" cy="151" r="5" fill="#e8c34f"/><circle cx="101" cy="163" r="5" fill="#4f91d2"/><circle cx="75" cy="190" r="5" fill="#d94b4b"/><circle cx="119" cy="184" r="5" fill="#e8c34f"/></g>' +
-      '<path d="M90 229v15" stroke="#80502f" stroke-width="5" stroke-linecap="round"/>' +
-      '</svg>';
+
+    const image = document.createElement('img');
+    image.src = 'images/arvore-natalina.png';
+    image.alt = '';
+    image.loading = 'lazy';
+    tree.appendChild(image);
 
     emailSection.insertAdjacentElement('afterend', tree);
   };
