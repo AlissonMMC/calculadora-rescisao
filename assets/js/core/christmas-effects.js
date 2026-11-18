@@ -146,7 +146,6 @@
   santaLaugh.preload = 'auto';
   santaLaugh.volume = 0.9;
   const playSantaLaugh = () => {
-    if (!somAtivo) return;
     try {
       santaLaugh.pause();
       santaLaugh.currentTime = 0;
@@ -200,6 +199,62 @@
     const isPhotos = id === 'generateButton' || /gerar documentos|gerar fotos/.test(label);
     if (isSave || isBudget || isPhotos) playSantaLaugh();
   }, true);
+
+
+  // Decoração natalina: uma única peça por página, sem interferir nos controles.
+  const addChristmasCardLights = () => {
+    const path = window.location.pathname.toLowerCase();
+    let target = null;
+
+    if (/dashboard\\.php$/.test(path)) {
+      target = document.querySelector('.stats .stat-card') || document.querySelector('.workflow-grid .panel');
+    } else if (/historico\\.php$/.test(path) && !/historico_orcamentos/.test(path)) {
+      target = document.querySelector('.filter-card') || document.querySelector('.history-card');
+    } else if (/index\\.php$/.test(path) && document.querySelector('#calculatorScreen')) {
+      target = document.querySelector('#calculatorScreen .result-box') || document.querySelector('#modeScreen .mode-card');
+    } else {
+      const selectors = [
+        'main .stat-card', 'main .filter-card', 'main .history-card',
+        'main .panel', 'main .card', 'main section[class*="card"]',
+        '.stat-card', '.filter-card', '.history-card', '.panel', '.card'
+      ];
+      for (const selector of selectors) {
+        target = Array.from(document.querySelectorAll(selector)).find(element =>
+          !element.closest('.global-sidebar, .global-topbar, .global-mobilebar') &&
+          element.getClientRects().length > 0
+        );
+        if (target) break;
+      }
+    }
+
+    if (!target || target.querySelector(':scope > .christmas-card-lights')) return;
+    target.classList.add('christmas-decorated-card');
+    const lights = document.createElement('div');
+    lights.className = 'christmas-card-lights';
+    lights.setAttribute('aria-hidden', 'true');
+    const colors = ['#e34b4b', '#e6bd4b', '#4ca66a', '#4d8fd6', '#e34b4b', '#e6bd4b', '#4ca66a', '#4d8fd6', '#e34b4b'];
+    colors.forEach((color, index) => {
+      const bulb = document.createElement('span');
+      bulb.style.setProperty('--bulb-color', color);
+      bulb.style.setProperty('--bulb-delay', (index * 0.16) + 's');
+      lights.appendChild(bulb);
+    });
+    target.appendChild(lights);
+  };
+
+  const addChristmasSheetTrees = () => {
+    const screen = document.querySelector('#calculatorScreen');
+    if (!screen || !/index\\.php$/.test(window.location.pathname.toLowerCase())) return;
+    const trees = document.createElement('div');
+    trees.className = 'christmas-sheet-trees';
+    trees.setAttribute('aria-hidden', 'true');
+    const tree = '<svg viewBox="0 0 64 112" xmlns="http://www.w3.org/2000/svg"><path d="M32 3 23 19h6L17 36h9L12 56h40L38 36h9L35 19h6z" fill="#247447"/><path d="M27 56h10v12H27z" fill="#8a5a35"/><path d="M32 0 34 5l5 1-4 3 1 5-4-3-4 3 1-5-4-3 5-1z" fill="#d8b44a"/><circle cx="23" cy="34" r="2.7" fill="#d94c4c"/><circle cx="39" cy="43" r="2.7" fill="#e0bd55"/><circle cx="28" cy="51" r="2.5" fill="#d94c4c"/><circle cx="42" cy="57" r="2.4" fill="#e0bd55"/></svg>';
+    trees.innerHTML = '<span class="christmas-tree christmas-tree-left">' + tree + '</span><span class="christmas-tree christmas-tree-right">' + tree + '</span>';
+    screen.appendChild(trees);
+  };
+
+  addChristmasCardLights();
+  addChristmasSheetTrees();
 
   const sleigh = document.createElement('div');
   sleigh.className = 'christmas-sleigh-pass';
