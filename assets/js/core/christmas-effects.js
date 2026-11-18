@@ -1,121 +1,163 @@
-/* Efeitos natalinos opcionais — preserva a identidade visual e não interfere nos fluxos do sistema. */
+/* Efeitos natalinos — melodias sintetizadas e animação decorativa. */
 (() => {
   'use strict';
-
   if (window.__efeitosNatalinosInicializados) return;
   window.__efeitosNatalinosInicializados = true;
 
   const STORAGE_KEY = 'folhaNatalSomAtivo';
-  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false;
   let audioContext = null;
-  let somAtivo = localStorage.getItem(STORAGE_KEY) !== 'false';
+  let masterGain = null;
+  let somAtivo = true;
   let audioLiberado = false;
-  let bellsTimer = null;
+  let musicTimer = null;
+  let melodyIndex = 0;
+  try { somAtivo = localStorage.getItem(STORAGE_KEY) !== 'false'; } catch (_) {}
 
-  const ensureAudio = () => {
+  const getAudio = () => {
     if (!audioContext) {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return null;
       audioContext = new AudioCtx();
+      masterGain = audioContext.createGain();
+      masterGain.gain.value = 0.22;
+      masterGain.connect(audioContext.destination);
     }
-    if (audioContext.state === 'suspended') audioContext.resume().catch(() => {});
-    audioLiberado = true;
     return audioContext;
   };
 
-  const tone = (frequency, start, duration, volume, type = 'sine', endFrequency = frequency) => {
-    const ctx = ensureAudio();
+  const bell = (frequency, start, duration, volume = 0.22) => {
+    const ctx = getAudio();
+    if (!ctx || !masterGain) return;
+    // Timbre de sininho: fundamental e dois harmônicos metálicos.
+    [[1, 1], [2.76, .23], [5.4, .07]].forEach(([ratio, level]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(frequency * ratio, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(Math.max(.0002, volume * level), start + .012);
+      gain.gain.exponentialRampToValueAtTime(.0001, start + duration * (ratio === 1 ? 1 : .72));
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.start(start);
+      osc.stop(start + duration + .025);
+    });
+  };
+
+  const songs = [
+    {
+      name: 'Jingle Bells',
+      bpm: 0.29,
+      notes: [
+        [659,1],[659,1],[659,2],[659,1],[659,1],[659,2],
+        [659,1],[784,1],[523,1.5],[587,0.5],[659,4],
+        [698,1],[698,1],[698,1.5],[698,.5],[698,1],[659,1],[659,1],[659,1],
+        [587,1],[587,1],[659,1],[587,2],[784,2]
+      ]
+    },
+    {
+      name: 'We Wish You a Merry Christmas',
+      bpm: 0.31,
+      notes: [
+        [392,1],[523,1],[523,1],[587,1],[523,1],[494,1],[440,2],
+        [440,1],[440,1],[587,1],[587,1],[659,1],[587,1],[523,2],
+        [494,1],[494,1],[494,1],[659,1],[659,1],[698,1],[659,1],[587,2],
+        [523,1],[392,1],[392,1],[440,1],[587,1],[494,1],[523,2]
+      ]
+    }
+  ];
+
+  const playSong = () => {
+    const ctx = getAudio();
+    if (!ctx || !somAtivo || !audioLiberado || ctx.state !== 'running') return;
+    const song = songs[melodyIndex % songs.length];
+    melodyIndex++;
+    let cursor = ctx.currentTime + .12;
+    song.notes.forEach(([hz, beats]) => {
+      const duration = song.bpm * beats;
+      if (hz > 0) bell(hz, cursor, Math.min(duration * .92, 1.15), .16);
+      cursor += duration;
+    });
+    const delay = Math.max(9000, (cursor - ctx.currentTime) * 1000 + 1800);
+    musicTimer = window.setTimeout(playSong, delay);
+  };
+
+  const stopMusic = () => {
+    if (musicTimer) window.clearTimeout(musicTimer);
+    musicTimer = null;
+  };
+
+  const startMusic = async () => {
+    const ctx = getAudio();
     if (!ctx || !somAtivo) return;
+    try {
+      if (ctx.state !== 'running') await ctx.resume();
+      audioLiberado = ctx.state === 'running';
+      stopMusic();
+      if (audioLiberado) playSong();
+    } catch (_) { audioLiberado = false; }
+  };
+
+  const tone = (frequency, start, duration, volume, type = 'sine', endFrequency = frequency) => {
+    const ctx = getAudio();
+    if (!ctx || !somAtivo || !masterGain) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = type;
     osc.frequency.setValueAtTime(frequency, start);
     if (endFrequency !== frequency) osc.frequency.exponentialRampToValueAtTime(Math.max(35, endFrequency), start + duration);
-    gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), start + Math.min(0.025, duration / 4));
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    gain.gain.setValueAtTime(.0001, start);
+    gain.gain.exponentialRampToValueAtTime(Math.max(.0002, volume), start + Math.min(.025, duration / 4));
+    gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(masterGain);
     osc.start(start);
-    osc.stop(start + duration + 0.03);
-  };
-
-  const playBells = () => {
-    const ctx = ensureAudio();
-    if (!ctx || !somAtivo) return;
-    const now = ctx.currentTime;
-    // Pequena sequência de sinos, macia e em volume baixo.
-    [[1318.5, 0, .9], [1568, .22, .85], [1975.5, .48, 1.05], [1568, 1.05, .8]].forEach(([hz, offset, duration]) => {
-      tone(hz, now + offset, duration, 0.018, 'sine');
-      tone(hz * 2.01, now + offset, duration * .72, 0.005, 'sine');
-    });
+    osc.stop(start + duration + .03);
   };
 
   const playSantaLaugh = () => {
-    const ctx = ensureAudio();
-    if (!ctx || !somAtivo) return;
+    const ctx = getAudio();
+    if (!ctx || !somAtivo || !audioLiberado || ctx.state !== 'running') return;
     const now = ctx.currentTime + .03;
-    // Síntese vocal estilizada: três "ho" graves com queda de tom e harmônicos.
-    [[112, .0, .34], [105, .43, .38], [94, .91, .58]].forEach(([base, offset, duration], index) => {
+    [[112,0,.34],[105,.43,.38],[94,.91,.58]].forEach(([base, offset, duration], index) => {
       const start = now + offset;
-      tone(base * 1.0, start, duration, .075, 'triangle', base * .72);
+      tone(base, start, duration, .075, 'triangle', base * .72);
       tone(base * 2.02, start + .015, duration * .82, .025, 'sawtooth', base * 1.42);
       tone(base * 3.01, start + .02, duration * .68, .009, 'sine', base * 2.1);
-      // Um pequeno sopro dá corpo ao "ho" sem usar arquivo de voz.
       tone(48 + index * 3, start, duration * .75, .012, 'triangle', 38);
     });
-  };
-
-  const stopBells = () => {
-    if (bellsTimer) window.clearInterval(bellsTimer);
-    bellsTimer = null;
-  };
-
-  const startBells = () => {
-    stopBells();
-    if (!somAtivo || !audioLiberado) return;
-    playBells();
-    bellsTimer = window.setInterval(playBells, 5200);
   };
 
   const soundButton = document.createElement('button');
   soundButton.type = 'button';
   soundButton.className = 'christmas-sound-toggle';
-  soundButton.setAttribute('aria-label', 'Ativar ou desativar sons natalinos');
-  soundButton.setAttribute('aria-pressed', String(somAtivo));
+  soundButton.setAttribute('aria-label', 'Ativar ou desativar música natalina');
   soundButton.innerHTML = '<span aria-hidden="true">♫</span><span class="christmas-sound-label"></span>';
   document.body.appendChild(soundButton);
 
   const refreshButton = () => {
-    soundButton.querySelector('.christmas-sound-label').textContent = somAtivo ? 'Sons ligados' : 'Sons desligados';
+    soundButton.querySelector('.christmas-sound-label').textContent = somAtivo ? 'Música ligada' : 'Música desligada';
     soundButton.setAttribute('aria-pressed', String(somAtivo));
     soundButton.classList.toggle('is-muted', !somAtivo);
   };
   refreshButton();
 
-  soundButton.addEventListener('click', () => {
+  soundButton.addEventListener('click', async () => {
     somAtivo = !somAtivo;
-    localStorage.setItem(STORAGE_KEY, String(somAtivo));
+    try { localStorage.setItem(STORAGE_KEY, String(somAtivo)); } catch (_) {}
     refreshButton();
-    if (somAtivo) {
-      ensureAudio();
-      startBells();
-    } else {
-      stopBells();
-    }
+    if (somAtivo) await startMusic();
+    else stopMusic();
   });
 
-  // O navegador só libera áudio depois de uma interação explícita.
-  const unlockAudio = () => {
-    if (!audioLiberado) {
-      ensureAudio();
-      startBells();
-    }
+  const unlockAudio = async event => {
+    if (event.target === soundButton || soundButton.contains(event.target)) return;
+    if (somAtivo && !audioLiberado) await startMusic();
   };
-  document.addEventListener('pointerdown', unlockAudio, { once: true, passive: true });
-  document.addEventListener('keydown', unlockAudio, { once: true });
+  document.addEventListener('pointerdown', unlockAudio, { passive: true });
+  document.addEventListener('keydown', unlockAudio);
 
-  // Efeitos sonoros apenas nos comandos de ação solicitados.
   document.addEventListener('click', event => {
     const button = event.target.closest('button, input[type="submit"]');
     if (!button || button === soundButton || !somAtivo) return;
@@ -124,13 +166,9 @@
     const isSave = id === 'btnSalvarHistorico' || /salvar no histórico|salvar rescisão/.test(label);
     const isBudget = id === 'generateBtn' || /gerar 3 orçamentos|gerar orçamento/.test(label);
     const isPhotos = id === 'generateButton' || /gerar documentos|gerar fotos/.test(label);
-    if (isSave || isBudget || isPhotos) {
-      unlockAudio();
-      playSantaLaugh();
-    }
+    if (isSave || isBudget || isPhotos) playSantaLaugh();
   }, true);
 
-  // Silhueta do trenó passa discretamente ao fundo a cada 15 segundos.
   const sleigh = document.createElement('div');
   sleigh.className = 'christmas-sleigh-pass';
   sleigh.setAttribute('aria-hidden', 'true');
@@ -147,6 +185,5 @@
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && !reducedMotion) launchSleigh();
   });
-
-  window.addEventListener('beforeunload', stopBells);
+  window.addEventListener('beforeunload', stopMusic);
 })();
