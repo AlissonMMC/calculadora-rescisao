@@ -140,7 +140,7 @@ body::after {
   filter: drop-shadow(0 5px 8px rgba(0,0,0,.12));
   transform: translate3d(-115%, 0, 0);
 }
-.christmas-sleigh-pass svg { display: block; width: 100%; height: auto; }
+.christmas-sleigh-pass img { display: block; width: 100%; height: auto; mix-blend-mode: multiply; }
 .christmas-sleigh-pass.is-flying { animation: christmas-sleigh-flight 7.5s ease-in-out both; }
 @keyframes christmas-sleigh-flight {
   0% { opacity: 0; transform: translate3d(-115%, 0, 0) rotate(-2deg); }
