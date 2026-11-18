@@ -116,17 +116,18 @@
     osc.stop(start + duration + .03);
   };
 
+  // Risada real do Papai Noel, armazenada localmente no projeto.
+  const santaLaugh = new Audio('assets/audio/santa-laugh.mp3');
+  santaLaugh.preload = 'auto';
+  santaLaugh.volume = 0.9;
   const playSantaLaugh = () => {
-    const ctx = getAudio();
-    if (!ctx || !somAtivo || !audioLiberado || ctx.state !== 'running') return;
-    const now = ctx.currentTime + .03;
-    [[112,0,.34],[105,.43,.38],[94,.91,.58]].forEach(([base, offset, duration], index) => {
-      const start = now + offset;
-      tone(base, start, duration, .075, 'triangle', base * .72);
-      tone(base * 2.02, start + .015, duration * .82, .025, 'sawtooth', base * 1.42);
-      tone(base * 3.01, start + .02, duration * .68, .009, 'sine', base * 2.1);
-      tone(48 + index * 3, start, duration * .75, .012, 'triangle', 38);
-    });
+    if (!somAtivo) return;
+    try {
+      santaLaugh.pause();
+      santaLaugh.currentTime = 0;
+      const playback = santaLaugh.play();
+      if (playback && typeof playback.catch === 'function') playback.catch(() => {});
+    } catch (_) {}
   };
 
   const soundButton = document.createElement('button');
