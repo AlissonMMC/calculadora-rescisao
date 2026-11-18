@@ -131,9 +131,9 @@ body::after {
 .christmas-sleigh-pass {
   position: fixed;
   z-index: 1190;
-  top: 13%;
+  top: 12%;
   left: 0;
-  width: min(360px, 52vw);
+  width: min(920px, 88vw);
   color: rgba(45, 48, 54, .20);
   opacity: 0;
   pointer-events: none;
@@ -150,7 +150,7 @@ body::after {
 }
 @media (max-width: 600px) {
   .christmas-sound-toggle { right: 12px; bottom: 12px; }
-  .christmas-sleigh-pass { top: 17%; width: 230px; }
+  .christmas-sleigh-pass { top: 16%; width: 94vw; }
 }
 @media (prefers-reduced-motion: reduce) {
   .christmas-sleigh-pass { display: none !important; }
