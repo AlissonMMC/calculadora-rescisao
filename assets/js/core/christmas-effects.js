@@ -259,8 +259,12 @@
     image.loading = 'lazy';
     tree.appendChild(image);
 
-    // Agrupa somente a área dos seguros e a imagem, lado a lado, fora de qualquer card.
-    insuranceCard.parentNode.insertBefore(layout, insuranceCard);
+    // O wrapper ocupa a largura das duas colunas; o card mantém a largura original
+    // de uma coluna e a árvore utiliza a coluna livre ao lado.
+    const topicsGrid = insuranceCard.closest('.optional-topics-columns');
+    if (!topicsGrid) return;
+
+    topicsGrid.appendChild(layout);
     layout.appendChild(insuranceCard);
     layout.appendChild(tree);
   };
