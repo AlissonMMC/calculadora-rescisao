@@ -215,11 +215,12 @@ body::after {
   pointer-events: none;
   opacity: .96;
 }
-.christmas-sheet-tree svg {
+.christmas-sheet-tree img {
   display: block;
-  width: min(190px, 48%);
+  width: min(250px, 58%);
   height: auto;
-  max-height: 270px;
+  max-height: 340px;
+  object-fit: contain;
   filter: drop-shadow(0 5px 7px rgba(0,0,0,.16));
 }
 
