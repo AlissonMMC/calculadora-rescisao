@@ -207,7 +207,7 @@
     const isDashboard = /dashboard\\.php$/.test(path);
     const selectors = isDashboard
       ? '.stats .stat-card'
-      : 'main .stat-card, main .filter-card, main .history-card, main .panel, main .card, main .mode-card, main .result-box, main .form-section, #calculatorScreen .result-box, #modeScreen .mode-card';
+      : 'main .stat-card, main .filter-card, main .history-card, main .panel, main .card, main .mode-card, main .mode-option, main .result-box, main .form-section, #calculatorScreen .result-box, #modeScreen .mode-card, #modeScreen .mode-option';
     let targets = Array.from(document.querySelectorAll(selectors)).filter(element =>
       element.getClientRects().length > 0 &&
       !element.closest('.global-sidebar, .global-topbar, .global-mobilebar, .christmas-sound-toggle')
@@ -243,15 +243,17 @@
       });
       target.appendChild(lights);
 
-      // Gorrinhos em alguns cards de cada tela, sem cobrir títulos ou controles.
-      if (cardIndex === 0 || (cardIndex > 0 && cardIndex % 3 === 0)) {
-        const anchor = target.querySelector('.stat-top, .panel-head, .card-header, h2, h3') || target;
-        anchor.classList.add('christmas-hat-anchor');
-      }
     });
   };
 
   addChristmasCardLights();
+
+  // Reaplica a decoração quando a calculadora alterna entre seleção de modo e folha de cálculo.
+  document.addEventListener('click', event => {
+    if (event.target.closest('[data-mode], #btnAlterarModo')) {
+      window.requestAnimationFrame(addChristmasCardLights);
+    }
+  });
 
 
   const sleigh = document.createElement('div');
