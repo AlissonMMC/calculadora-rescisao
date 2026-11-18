@@ -181,3 +181,4 @@ $appPath = $appPath === '/' ? '' : $appPath;
 </aside>
 
 <script src="<?= htmlspecialchars($appPath . '/assets/js/core/nav-global.js', ENT_QUOTES, 'UTF-8') ?>"></script>
+<script src="<?= htmlspecialchars($appPath . '/assets/js/core/christmas-effects.js', ENT_QUOTES, 'UTF-8') ?>" defer></script>
