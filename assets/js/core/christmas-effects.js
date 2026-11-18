@@ -201,47 +201,55 @@
   }, true);
 
 
-  // Decoração natalina: uma única peça por página, sem interferir nos controles.
+  // Decoração natalina: pisca-piscas em todos os KPIs da página inicial.
   const addChristmasCardLights = () => {
     const path = window.location.pathname.toLowerCase();
-    let target = null;
+    let targets = [];
 
-    if (/dashboard\.php$/.test(path)) {
-      target = document.querySelector('.stats .stat-card') || document.querySelector('.workflow-grid .panel');
-    } else if (/historico\.php$/.test(path) && !/historico_orcamentos/.test(path)) {
-      target = document.querySelector('.filter-card') || document.querySelector('.history-card');
-    } else if (/index\.php$/.test(path) && document.querySelector('#calculatorScreen')) {
-      target = document.querySelector('#calculatorScreen .result-box') || document.querySelector('#modeScreen .mode-card');
+    if (/dashboard\\.php$/.test(path)) {
+      targets = Array.from(document.querySelectorAll('.stats .stat-card'));
     } else {
-      const selectors = [
-        'main .stat-card', 'main .filter-card', 'main .history-card',
-        'main .panel', 'main .card', 'main section[class*="card"]',
-        '.stat-card', '.filter-card', '.history-card', '.panel', '.card'
-      ];
-      for (const selector of selectors) {
-        target = Array.from(document.querySelectorAll(selector)).find(element =>
-          !element.closest('.global-sidebar, .global-topbar, .global-mobilebar') &&
-          element.getClientRects().length > 0
-        );
-        if (target) break;
+      let target = null;
+      if (/historico\\.php$/.test(path) && !/historico_orcamentos/.test(path)) {
+        target = document.querySelector('.filter-card') || document.querySelector('.history-card');
+      } else if (/index\\.php$/.test(path) && document.querySelector('#calculatorScreen')) {
+        target = document.querySelector('#calculatorScreen .result-box') || document.querySelector('#modeScreen .mode-card');
+      } else {
+        const selectors = ['main .stat-card', 'main .filter-card', 'main .history-card', 'main .panel', 'main .card'];
+        for (const selector of selectors) {
+          target = Array.from(document.querySelectorAll(selector)).find(element =>
+            !element.closest('.global-sidebar, .global-topbar, .global-mobilebar') &&
+            element.getClientRects().length > 0
+          );
+          if (target) break;
+        }
       }
+      if (target) targets = [target];
     }
 
-    if (!target || target.querySelector(':scope > .christmas-card-lights')) return;
-    target.classList.add('christmas-decorated-card');
-    const lights = document.createElement('div');
-    lights.className = 'christmas-card-lights';
-    lights.setAttribute('aria-hidden', 'true');
     const colors = ['#e34b4b', '#e6bd4b', '#4ca66a', '#4d8fd6', '#e34b4b', '#e6bd4b', '#4ca66a', '#4d8fd6', '#e34b4b'];
-    colors.forEach((color, index) => {
-      const bulb = document.createElement('span');
-      bulb.style.setProperty('--bulb-color', color);
-      bulb.style.setProperty('--bulb-delay', (index * 0.16) + 's');
-      lights.appendChild(bulb);
+    targets.forEach((target, cardIndex) => {
+      if (!target || target.querySelector(':scope > .christmas-card-lights')) return;
+      target.classList.add('christmas-decorated-card');
+      const lights = document.createElement('div');
+      lights.className = 'christmas-card-lights';
+      lights.setAttribute('aria-hidden', 'true');
+      colors.forEach((color, index) => {
+        const bulb = document.createElement('span');
+        bulb.style.setProperty('--bulb-color', color);
+        bulb.style.setProperty('--bulb-delay', ((index + cardIndex * 2) * 0.13) + 's');
+        lights.appendChild(bulb);
+      });
+      target.appendChild(lights);
+
+      // Alguns KPIs recebem um gorro discreto.
+      if (/dashboard\\.php$/.test(path) && [0, 2].includes(cardIndex)) {
+        target.classList.add('christmas-kpi-hat');
+      }
     });
-    target.appendChild(lights);
   };
 
+  addChristmasCardLights();
 
 
   const sleigh = document.createElement('div');
