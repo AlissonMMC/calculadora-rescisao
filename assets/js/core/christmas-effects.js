@@ -242,35 +242,7 @@
     target.appendChild(lights);
   };
 
-  const addChristmasSheetTree = () => {
-    const insuranceCard = document.querySelector('#topicoSeguros');
-    if (!insuranceCard || !/index\.php$/.test(window.location.pathname.toLowerCase())) return;
 
-    const layout = document.createElement('div');
-    layout.className = 'christmas-insurance-tree-layout';
-
-    const tree = document.createElement('div');
-    tree.className = 'christmas-sheet-tree';
-    tree.setAttribute('aria-hidden', 'true');
-
-    const image = document.createElement('img');
-    image.src = 'assets/images/arvore-natalina.png';
-    image.alt = '';
-    image.loading = 'lazy';
-    tree.appendChild(image);
-
-    // O wrapper ocupa a largura das duas colunas; o card mantém a largura original
-    // de uma coluna e a árvore utiliza a coluna livre ao lado.
-    const topicsGrid = insuranceCard.closest('.optional-topics-columns');
-    if (!topicsGrid) return;
-
-    topicsGrid.appendChild(layout);
-    layout.appendChild(insuranceCard);
-    layout.appendChild(tree);
-  };
-
-  addChristmasCardLights();
-  addChristmasSheetTree();
 
   const sleigh = document.createElement('div');
   sleigh.className = 'christmas-sleigh-pass';
