@@ -86,6 +86,7 @@ $appPath = $appPath === '/' ? '' : $appPath;
 <link rel="stylesheet" href="<?= htmlspecialchars($appPath . '/assets/css/core/nav-global.css', ENT_QUOTES, 'UTF-8') ?>">
 <link rel="stylesheet" href="<?= htmlspecialchars($appPath . '/assets/css/core/layout-standard.css', ENT_QUOTES, 'UTF-8') ?>">
 <link rel="stylesheet" href="<?= htmlspecialchars($appPath . '/assets/css/core/components-standard.css', ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars($appPath . '/assets/css/core/theme-christmas.css', ENT_QUOTES, 'UTF-8') ?>">
 
 <div class="global-mobilebar">
     <button class="global-sidebar-toggle global-mobile-toggle" id="globalSidebarToggleMobile" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button>
@@ -180,3 +181,4 @@ $appPath = $appPath === '/' ? '' : $appPath;
 </aside>
 
 <script src="<?= htmlspecialchars($appPath . '/assets/js/core/nav-global.js', ENT_QUOTES, 'UTF-8') ?>"></script>
+<script src="<?= htmlspecialchars($appPath . '/assets/js/core/christmas-effects.js', ENT_QUOTES, 'UTF-8') ?>" defer></script>

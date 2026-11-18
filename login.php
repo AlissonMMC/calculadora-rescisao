@@ -49,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Login — Calculadora de Rescisão</title>
 <link rel="stylesheet" href="assets/css/pages/login.css">
+<link rel="stylesheet" href="assets/css/core/theme-christmas.css">
 </head>
 <body>
 <div class="login-shell">

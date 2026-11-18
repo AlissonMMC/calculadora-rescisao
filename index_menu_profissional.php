@@ -16,6 +16,7 @@ $adminLink = ($usuario['perfil'] === 'admin') ? '<a class="session-button sessio
   <title>Calculadora de Rescisão de Locação</title>
   <meta name="description" content="Calculadora para rescisão de contratos de locação com multa por mês ou por dias." />
   <link rel="stylesheet" href="assets/css/pages/menu-profissional.css">
+  <link rel="stylesheet" href="assets/css/core/theme-christmas.css">
 </head>
 <body>
   <main class="container">

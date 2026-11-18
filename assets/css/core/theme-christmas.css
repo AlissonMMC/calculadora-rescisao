@@ -1,0 +1,237 @@
+/* Tema natalino — decoração sazonal sem alterar a identidade visual original.
+   Preserva integralmente cores, fundos, tipografia, botões, cards e componentes. */
+
+/* Filete decorativo com pequenas luzes no topo da aplicação. */
+html::before {
+  content: "";
+  position: fixed;
+  z-index: 1300;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, #c83f3f 0 2px, transparent 2.8px) 0 0 / 42px 5px repeat-x,
+    radial-gradient(circle, #d7ad48 0 2px, transparent 2.8px) 21px 0 / 42px 5px repeat-x;
+  opacity: .72;
+}
+
+/* Neve muito discreta, apenas decorativa e sem bloquear cliques. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  pointer-events: none;
+  opacity: .22;
+  background-image:
+    radial-gradient(2px 2px at 8% 18%, rgba(255,255,255,.95) 98%, transparent),
+    radial-gradient(1.5px 1.5px at 23% 72%, rgba(160,190,220,.85) 98%, transparent),
+    radial-gradient(2px 2px at 41% 34%, rgba(255,255,255,.9) 98%, transparent),
+    radial-gradient(1.5px 1.5px at 63% 82%, rgba(160,190,220,.8) 98%, transparent),
+    radial-gradient(2px 2px at 82% 24%, rgba(255,255,255,.9) 98%, transparent),
+    radial-gradient(1.5px 1.5px at 94% 61%, rgba(160,190,220,.8) 98%, transparent);
+  background-size: 360px 300px;
+  animation: christmas-snow-drift 28s linear infinite;
+}
+
+/* Pequeno detalhe de estrela nos identificadores da aplicação.
+   O fundo e as cores originais desses elementos permanecem intactos. */
+.global-brand-mark,
+.brand-mark {
+  position: relative;
+}
+
+.global-brand-mark::after,
+.brand-mark::after {
+  content: "✦";
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(215,173,72,.65);
+  border-radius: 50%;
+  background: rgba(255,255,255,.96);
+  color: #b58a35;
+  font-size: 9px;
+  line-height: 1;
+  box-shadow: 0 2px 7px rgba(0,0,0,.12);
+  pointer-events: none;
+}
+
+/* Um detalhe festivo na barra superior, sem alterar sua paleta original. */
+.global-topbar {
+  position: fixed;
+}
+
+.global-topbar::after {
+  content: "✧";
+  position: absolute;
+  right: 252px;
+  top: 11px;
+  color: #b58a35;
+  font-size: 15px;
+  opacity: .72;
+  pointer-events: none;
+}
+
+@keyframes christmas-snow-drift {
+  from { background-position: 0 0; }
+  to { background-position: 0 300px; }
+}
+
+@media (max-width: 820px) {
+  .global-topbar::after { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::after { animation: none; }
+}
+
+@media print {
+  html::before,
+  body::after,
+  .global-brand-mark::after,
+  .brand-mark::after,
+  .global-topbar::after {
+    display: none !important;
+  }
+}
+
+
+/* Efeitos sonoros e passagem do trenó — sem alterar a paleta original. */
+.christmas-sound-toggle {
+  position: fixed;
+  right: 22px;
+  bottom: 20px;
+  z-index: 1400;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid rgba(150,150,150,.35);
+  border-radius: 999px;
+  background: var(--surface, #fff);
+  color: inherit;
+  box-shadow: 0 3px 14px rgba(0,0,0,.12);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: .88;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.christmas-sound-toggle:hover { opacity: 1; transform: translateY(-2px); }
+.christmas-sound-toggle > span:first-child { font-size: 17px; line-height: 1; }
+.christmas-sound-toggle.is-muted { opacity: .58; }
+.christmas-sleigh-pass {
+  position: fixed;
+  z-index: 1190;
+  top: 12%;
+  left: 0;
+  width: min(920px, 88vw);
+  color: rgba(45, 48, 54, .20);
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 5px 8px rgba(0,0,0,.12));
+  transform: translate3d(-115%, 0, 0);
+}
+.christmas-sleigh-pass img { display: block; width: 100%; height: auto; mix-blend-mode: multiply; }
+.christmas-sleigh-pass.is-flying { animation: christmas-sleigh-flight 7.5s ease-in-out both; }
+@keyframes christmas-sleigh-flight {
+  0% { opacity: 0; transform: translate3d(-115%, 0, 0) rotate(-2deg); }
+  12% { opacity: .62; }
+  78% { opacity: .52; }
+  100% { opacity: 0; transform: translate3d(110vw, 7vh, 0) rotate(2deg); }
+}
+@media (max-width: 600px) {
+  .christmas-sound-toggle { right: 12px; bottom: 12px; }
+  .christmas-sleigh-pass { top: 16%; width: 94vw; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .christmas-sleigh-pass { display: none !important; }
+  .christmas-sound-toggle { transition: none; }
+}
+@media print {
+  .christmas-sound-toggle, .christmas-sleigh-pass { display: none !important; }
+}
+
+
+/* Pisca-piscas: um único card decorado em cada página. */
+.christmas-decorated-card {
+  position: relative;
+}
+.christmas-card-lights {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.christmas-card-lights::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 2px;
+  right: 2px;
+  height: 8px;
+  border-top: 1.5px solid rgba(70, 70, 70, .55);
+  border-radius: 50% 50% 0 0;
+}
+.christmas-card-lights span {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 7px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 45% 45% 55% 55%;
+  background: var(--bulb-color);
+  box-shadow: 0 0 3px var(--bulb-color), 0 0 8px color-mix(in srgb, var(--bulb-color) 70%, transparent);
+  animation: christmas-bulb-blink 1.15s ease-in-out var(--bulb-delay) infinite alternate;
+}
+@keyframes christmas-bulb-blink {
+  0%, 18% { opacity: .28; filter: brightness(.65); box-shadow: 0 0 1px var(--bulb-color); }
+  55%, 100% { opacity: 1; filter: brightness(1.25); box-shadow: 0 0 5px var(--bulb-color), 0 0 12px var(--bulb-color); }
+}
+
+
+/* Botão de música com contraste garantido no tema escuro. */
+html[data-theme="dark"] .christmas-sound-toggle {
+  background: #171717;
+  color: #f5f5f5;
+  border-color: #454545;
+  box-shadow: 0 4px 16px rgba(0,0,0,.42);
+}
+html[data-theme="dark"] .christmas-sound-toggle:hover {
+  background: #262626;
+  border-color: #666;
+}
+html[data-theme="dark"] .christmas-sound-toggle.is-muted {
+  color: #bdbdbd;
+  background: #111;
+  border-color: #383838;
+}
+
+@media (max-width: 1250px) {
+}
+@media (prefers-reduced-motion: reduce) {
+  .christmas-card-lights span { animation: none; opacity: .85; }
+}
+@media print {
+  .christmas-card-lights,
+  .christmas-decorated-card::before,
+  .christmas-decorated-card::after {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
