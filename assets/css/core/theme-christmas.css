@@ -204,24 +204,33 @@ body::after {
   55%, 100% { opacity: 1; filter: brightness(1.25); box-shadow: 0 0 5px var(--bulb-color), 0 0 12px var(--bulb-color); }
 }
 
-/* Árvore única e maior no espaço abaixo do modelo de e-mail do inquilino. */
+/* Árvore natalina solta no rodapé da calculadora, alinhada à direita. */
 .christmas-sheet-tree {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-end;
+  align-items: flex-end;
   width: 100%;
-  min-height: 390px;
-  margin: 22px auto 10px;
+  min-height: 0;
+  margin: 8px 0 0;
+  padding: 0 2% 0 0;
   pointer-events: none;
-  opacity: .96;
 }
 .christmas-sheet-tree img {
   display: block;
-  width: min(360px, 78%);
+  width: min(420px, 38vw);
   height: auto;
-  max-height: 460px;
+  max-height: 480px;
   object-fit: contain;
-  filter: drop-shadow(0 5px 7px rgba(0,0,0,.16));
+}
+@media (max-width: 820px) {
+  .christmas-sheet-tree {
+    justify-content: center;
+    padding-right: 0;
+  }
+  .christmas-sheet-tree img {
+    width: min(320px, 65vw);
+    max-height: 380px;
+  }
 }
 
 /* Botão de música com contraste garantido no tema escuro. */
