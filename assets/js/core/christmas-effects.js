@@ -251,7 +251,7 @@
     tree.setAttribute('aria-hidden', 'true');
 
     const image = document.createElement('img');
-    image.src = 'images/arvore-natalina.png';
+    image.src = 'assets/images/arvore-natalina.png';
     image.alt = '';
     image.loading = 'lazy';
     tree.appendChild(image);
