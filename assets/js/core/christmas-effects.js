@@ -201,35 +201,36 @@
   }, true);
 
 
-  // Decoração natalina: pisca-piscas em todos os KPIs da página inicial.
+  // Decoração natalina distribuída pelas telas do sistema.
   const addChristmasCardLights = () => {
     const path = window.location.pathname.toLowerCase();
-    let targets = [];
+    const isDashboard = /dashboard\\.php$/.test(path);
+    const selectors = isDashboard
+      ? '.stats .stat-card'
+      : 'main .stat-card, main .filter-card, main .history-card, main .panel, main .card, main .mode-card, main .result-box, main .form-section, #calculatorScreen .result-box, #modeScreen .mode-card';
+    let targets = Array.from(document.querySelectorAll(selectors)).filter(element =>
+      element.getClientRects().length > 0 &&
+      !element.closest('.global-sidebar, .global-topbar, .global-mobilebar, .christmas-sound-toggle')
+    );
 
-    if (/dashboard\\.php$/.test(path)) {
-      targets = Array.from(document.querySelectorAll('.stats .stat-card'));
-    } else {
-      let target = null;
-      if (/historico\\.php$/.test(path) && !/historico_orcamentos/.test(path)) {
-        target = document.querySelector('.filter-card') || document.querySelector('.history-card');
-      } else if (/index\\.php$/.test(path) && document.querySelector('#calculatorScreen')) {
-        target = document.querySelector('#calculatorScreen .result-box') || document.querySelector('#modeScreen .mode-card');
-      } else {
-        const selectors = ['main .stat-card', 'main .filter-card', 'main .history-card', 'main .panel', 'main .card'];
-        for (const selector of selectors) {
-          target = Array.from(document.querySelectorAll(selector)).find(element =>
-            !element.closest('.global-sidebar, .global-topbar, .global-mobilebar') &&
-            element.getClientRects().length > 0
-          );
-          if (target) break;
-        }
+    // Evita decorar simultaneamente um card e seus subcards internos.
+    targets = targets.filter(element => {
+      let parent = element.parentElement;
+      while (parent) {
+        if (targets.includes(parent)) return false;
+        parent = parent.parentElement;
       }
-      if (target) targets = [target];
+      return true;
+    });
+
+    if (!targets.length) {
+      const fallback = document.querySelector('main') || document.querySelector('#calculatorScreen');
+      if (fallback && fallback.getClientRects().length) targets = [fallback];
     }
 
     const colors = ['#e34b4b', '#e6bd4b', '#4ca66a', '#4d8fd6', '#e34b4b', '#e6bd4b', '#4ca66a', '#4d8fd6', '#e34b4b'];
     targets.forEach((target, cardIndex) => {
-      if (!target || target.querySelector(':scope > .christmas-card-lights')) return;
+      if (target.querySelector(':scope > .christmas-card-lights')) return;
       target.classList.add('christmas-decorated-card');
       const lights = document.createElement('div');
       lights.className = 'christmas-card-lights';
@@ -242,9 +243,10 @@
       });
       target.appendChild(lights);
 
-      // Alguns KPIs recebem um gorro discreto.
-      if (/dashboard\\.php$/.test(path) && [0, 2].includes(cardIndex)) {
-        target.classList.add('christmas-kpi-hat');
+      // Gorrinhos em alguns cards de cada tela, sem cobrir títulos ou controles.
+      if (cardIndex === 0 || (cardIndex > 0 && cardIndex % 3 === 0)) {
+        const anchor = target.querySelector('.stat-top, .panel-head, .card-header, h2, h3') || target;
+        anchor.classList.add('christmas-hat-anchor');
       }
     });
   };
