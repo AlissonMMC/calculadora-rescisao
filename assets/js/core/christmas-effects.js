@@ -1,4 +1,4 @@
-/* Efeitos natalinos — melodias sintetizadas e animação decorativa. */
+/* Efeitos natalinos — música instrumental e animação decorativa. */
 (() => {
   'use strict';
   if (window.__efeitosNatalinosInicializados) return;
@@ -11,7 +11,26 @@
   let somAtivo = true;
   let audioLiberado = false;
   let musicTimer = null;
-  let melodyIndex = 0;
+  const MUSIC_POSITION_KEY = 'folhaNatalMusicPosition';
+  const christmasMusic = new Audio('assets/audio/christmas-music.mp3');
+  christmasMusic.preload = 'auto';
+  christmasMusic.volume = 0.22;
+  christmasMusic.loop = false;
+  let musicPositionRestored = false;
+
+  const saveMusicPosition = () => {
+    if (!Number.isFinite(christmasMusic.currentTime)) return;
+    try { localStorage.setItem(MUSIC_POSITION_KEY, String(christmasMusic.currentTime)); } catch (_) {}
+  };
+
+  christmasMusic.addEventListener('timeupdate', () => {
+    if (christmasMusic.duration && christmasMusic.currentTime >= christmasMusic.duration - 0.18) {
+      christmasMusic.currentTime = 0;
+      if (somAtivo) christmasMusic.play().catch(() => {});
+    }
+    saveMusicPosition();
+  });
+  window.addEventListener('pagehide', saveMusicPosition);
   try { somAtivo = localStorage.getItem(STORAGE_KEY) !== 'false'; } catch (_) {}
 
   const getAudio = () => {
@@ -68,35 +87,41 @@
     }
   ];
 
-  const playSong = () => {
-    const ctx = getAudio();
-    if (!ctx || !somAtivo || !audioLiberado || ctx.state !== 'running') return;
-    const song = songs[melodyIndex % songs.length];
-    melodyIndex++;
-    let cursor = ctx.currentTime + .12;
-    song.notes.forEach(([hz, beats]) => {
-      const duration = song.bpm * beats;
-      if (hz > 0) bell(hz, cursor, Math.min(duration * .92, 1.15), .16);
-      cursor += duration;
-    });
-    const delay = Math.max(9000, (cursor - ctx.currentTime) * 1000 + 1800);
-    musicTimer = window.setTimeout(playSong, delay);
-  };
-
   const stopMusic = () => {
+    saveMusicPosition();
     if (musicTimer) window.clearTimeout(musicTimer);
     musicTimer = null;
+    christmasMusic.pause();
   };
 
   const startMusic = async () => {
-    const ctx = getAudio();
-    if (!ctx || !somAtivo) return;
+    if (!somAtivo) return;
     try {
-      if (ctx.state !== 'running') await ctx.resume();
-      audioLiberado = ctx.state === 'running';
-      stopMusic();
-      if (audioLiberado) playSong();
-    } catch (_) { audioLiberado = false; }
+      if (christmasMusic.readyState < 1) {
+        await new Promise((resolve, reject) => {
+          const ready = () => { cleanup(); resolve(); };
+          const failed = () => { cleanup(); reject(new Error('Não foi possível carregar a música.')); };
+          const cleanup = () => {
+            christmasMusic.removeEventListener('loadedmetadata', ready);
+            christmasMusic.removeEventListener('error', failed);
+          };
+          christmasMusic.addEventListener('loadedmetadata', ready, { once: true });
+          christmasMusic.addEventListener('error', failed, { once: true });
+          christmasMusic.load();
+        });
+      }
+      if (!musicPositionRestored) {
+        let saved = 0;
+        try { saved = Number(localStorage.getItem(MUSIC_POSITION_KEY) || 0); } catch (_) {}
+        if (!Number.isFinite(saved) || saved < 0 || (christmasMusic.duration && saved >= christmasMusic.duration)) saved = 0;
+        christmasMusic.currentTime = saved;
+        musicPositionRestored = true;
+      }
+      await christmasMusic.play();
+      audioLiberado = !christmasMusic.paused;
+    } catch (_) {
+      audioLiberado = false;
+    }
   };
 
   const tone = (frequency, start, duration, volume, type = 'sine', endFrequency = frequency) => {
