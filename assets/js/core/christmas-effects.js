@@ -243,8 +243,8 @@
   };
 
   const addChristmasSheetTree = () => {
-    const emailSection = document.querySelector('#emailCollapse');
-    if (!emailSection || !/index\.php$/.test(window.location.pathname.toLowerCase())) return;
+    const layout = document.querySelector('#calculatorScreen > .layout');
+    if (!layout || !/index\.php$/.test(window.location.pathname.toLowerCase())) return;
 
     const tree = document.createElement('div');
     tree.className = 'christmas-sheet-tree';
@@ -256,7 +256,8 @@
     image.loading = 'lazy';
     tree.appendChild(image);
 
-    emailSection.insertAdjacentElement('afterend', tree);
+    // A árvore fica fora das colunas e dos cards, no rodapé da calculadora.
+    layout.insertAdjacentElement('afterend', tree);
   };
 
   addChristmasCardLights();
