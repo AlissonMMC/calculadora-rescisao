@@ -167,7 +167,7 @@ a{ text-decoration-color:rgba(31,107,79,.35) }
 .file-picker{border-color:#c7dfcc}
 .file-picker:hover{border-color:#1f6b4f;background:#edf5ed}
 .btn,.button,.btn-primary{--button-accent:#1f6b4f}
-button.btn,.btn-primary{background:#1f6b4f}
+button.btn:not(.gray):not(.secondary):not(.danger):not(.btn-danger):not(.btn-delete):not(.btn-history-delete):not(.btn-light),.btn-primary{background:#1f6b4f}
 html[data-theme="dark"]{
   --global-accent:#67b58a;
   --global-accent-strong:#8bd0a5;
@@ -207,7 +207,6 @@ html[data-theme="dark"] .login-form-wrap{background:#17231c}
 }
 @media(max-width:760px){
   .global-topbar-left:after{display:none}
-  .global-topbar:after{content:"Boas festas";display:block;position:absolute;left:16px;bottom:-23px;padding:3px 8px;border-radius:0 0 7px 7px;background:#eaf4ed;color:#15543d;font-size:9px;font-weight:850;letter-spacing:.06em;text-transform:uppercase}
 }
 @media print{
   body{background:#fff!important;color:#111!important;background-image:none!important}
