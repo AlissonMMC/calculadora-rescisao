@@ -100,7 +100,12 @@ try {
     header('Content-Type: application/pdf');
     header('X-Content-Type-Options: nosniff');
     header('Cache-Control: private, no-store');
-    header('Content-Disposition: attachment; filename="contestacao_vistoria_' . $id . '.pdf"');
+    $contratoArquivo = preg_replace('/[^A-Za-z0-9._-]+/', '_', (string)$item['numero_contrato']);
+    $contratoArquivo = trim((string)$contratoArquivo, '._-');
+    if ($contratoArquivo === '') $contratoArquivo = (string)$id;
+    $nomeArquivo = 'contestação_vistoria_' . $contratoArquivo . '.pdf';
+    $nomeFallback = 'contestacao_vistoria_' . $contratoArquivo . '.pdf';
+    header('Content-Disposition: attachment; filename="' . $nomeFallback . '"; filename*=UTF-8\'\'' . rawurlencode($nomeArquivo));
     header('Content-Length: ' . (string)filesize($output));
     readfile($output);
 } catch (Throwable $e) {
