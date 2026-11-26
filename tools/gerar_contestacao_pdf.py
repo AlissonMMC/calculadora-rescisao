@@ -170,9 +170,9 @@ def build_pdf(data: dict, photos_dir: Path, output: Path, paper_template: Path |
         max_height = {0: 4.8, 1: 4.8, 2: 4.2, 3: 3.7, 4: 3.2, 5: 2.8, 6: 2.5, 7: 2.2, 8: 2.0, 9: 1.8, 10: 1.7}.get(count, 1.6) * cm
         title = Paragraph(f"{index + 1:02d} — {paragraph_text(room.get('nome') or 'Cômodo')}", styles["RoomTitle"])
         entry_cell = [Paragraph("LAUDO DE ENTRADA", styles["EntryLabel"]),
-                      photo_grid(entry_paths, max_height, col_width - 5)]
+                      photo_grid(entry_paths, max_height, col_width - 16)]
         exit_cell = [Paragraph("LAUDO DE SAÍDA", styles["ExitLabel"]),
-                     photo_grid(exit_paths, max_height, col_width - 5)]
+                     photo_grid(exit_paths, max_height, col_width - 16)]
         comparison = Table([[entry_cell, exit_cell]], colWidths=[col_width, col_width], hAlign="CENTER")
         comparison.setStyle(TableStyle([
             ("VALIGN", (0, 0), (-1, -1), "TOP"),
