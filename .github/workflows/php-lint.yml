@@ -2,7 +2,7 @@ name: PHP Lint
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feature/contestacao-vistoria ]
   pull_request:
     branches: [ main ]
 
@@ -27,13 +27,14 @@ jobs:
           done < <(find . -type f -name '*.php' -not -path './.git/*' -print0)
 
       - name: Validate Python syntax
-        run: python3 -m py_compile tools/gerar_fotos_word.py
+        run: python3 -m py_compile tools/gerar_fotos_word.py tools/gerar_contestacao_pdf.py
 
       - name: Install photo module dependencies
         run: python3 -m pip install -r tools/requirements-fotos-word.txt
 
       - name: Validate photo generator imports
         run: python3 tools/gerar_fotos_word.py --help
+          python3 tools/gerar_contestacao_pdf.py --help
 
       - name: Smoke test Word and PDF generation
         shell: bash
@@ -66,4 +67,44 @@ jobs:
           assert pdf_path.is_file() and pdf_path.read_bytes().startswith(b"%PDF-"), "PDF inválido"
           assert len(Document(docx_path).inline_shapes) == 3, "Nem todas as imagens foram incluídas no Word"
           print("Smoke test Word/PDF aprovado")
+          PY
+      - name: Smoke test contestação PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_root="$(mktemp -d)"
+          trap 'rm -rf "$test_root"' EXIT
+          mkdir -p "$test_root/photos"
+          python3 - "$test_root" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          from PIL import Image
+
+          root = Path(sys.argv[1])
+          Image.new("RGB", (900, 600), (210, 90, 50)).save(root / "photos" / "entrada.jpg")
+          Image.new("RGB", (600, 900), (50, 110, 180)).save(root / "photos" / "saida.jpg")
+          data = {
+              "id": 1,
+              "nome_inquilino": "Teste de PDF",
+              "cpf_inquilino": "000.000.000-00",
+              "endereco_locacao": "Rua de Teste, 123",
+              "data_contestacao_br": "26/11/2026",
+              "numero_contrato": "CT-001",
+              "fianca": "Fiador",
+              "comodos": [{"nome": "Cozinha", "descricao": "Comparação de teste."}],
+              "photos": [
+                  {"room_index": 0, "side": "entrada", "file": "entrada.jpg"},
+                  {"room_index": 0, "side": "saida", "file": "saida.jpg"}
+              ]
+          }
+          (root / "dados.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+          PY
+          python3 tools/gerar_contestacao_pdf.py --input "$test_root/dados.json" --photos-dir "$test_root/photos" --output "$test_root/contestacao.pdf"
+          python3 - "$test_root/contestacao.pdf" <<'PY'
+          import sys
+          from pathlib import Path
+          pdf = Path(sys.argv[1])
+          assert pdf.is_file() and pdf.read_bytes().startswith(b"%PDF-"), "PDF de contestação inválido"
+          print("Smoke test de contestação PDF aprovado")
           PY
