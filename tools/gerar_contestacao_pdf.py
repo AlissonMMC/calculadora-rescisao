@@ -145,7 +145,6 @@ def build_pdf(data: dict, photos_dir: Path, output: Path, paper_template: Path |
     ]
     details_table = Table(details, colWidths=[page_width / 2, page_width / 2], hAlign="CENTER")
     details_table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FAFAFA")),
         ("BOX", (0, 0), (-1, -1), .6, BORDER),
         ("INNERGRID", (0, 0), (-1, -1), .35, BORDER),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
