@@ -47,6 +47,7 @@ def load_photo(path: Path, max_width: float, max_height: float):
     return photo
 
 
+
 def photo_grid(paths: list[Path], max_height: float, width: float):
     if not paths:
         cell = Paragraph("Nenhuma foto adicionada", ParagraphStyle(
@@ -59,23 +60,27 @@ def photo_grid(paths: list[Path], max_height: float, width: float):
             ("LEFTPADDING", (0, 0), (-1, -1), 3),
             ("RIGHTPADDING", (0, 0), (-1, -1), 3),
         ]))
+
+    # Uma foto por linha, aproveitando toda a largura da coluna.
+    cell_width = width - 8
     rows = []
-    cell_width = (width - 8) / 2
-    for index in range(0, len(paths), 2):
-        row = []
-        for path in paths[index:index + 2]:
-            row.append(load_photo(path, cell_width, max_height))
-        if len(row) == 1:
-            row.append("")
-        rows.append(row)
-    return Table(rows, colWidths=[cell_width, cell_width], hAlign="CENTER", style=TableStyle([
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 2),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 2),
-        ("TOPPADDING", (0, 0), (-1, -1), 2),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
-    ]))
+
+    for path in paths:
+        rows.append([load_photo(path, cell_width, max_height)])
+
+    return Table(
+        rows,
+        colWidths=[cell_width],
+        hAlign="CENTER",
+        style=TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 2),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 2),
+            ("TOPPADDING", (0, 0), (-1, -1), 3),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ])
+    )
 
 
 def build_pdf(data: dict, photos_dir: Path, output: Path, paper_template: Path | None = None):
@@ -124,7 +129,7 @@ def build_pdf(data: dict, photos_dir: Path, output: Path, paper_template: Path |
     # Reserva o cabeçalho, o rodapé e as margens do papel timbrado A4.
     doc = SimpleDocTemplate(
         str(output), pagesize=A4,
-        rightMargin=3.1 * cm, leftMargin=3.1 * cm,
+        rightMargin=2.2 * cm, leftMargin=2.2 * cm,
         topMargin=3.6 * cm, bottomMargin=2.6 * cm,
         title="Contestação de Vistoria",
         author="Folha de Cálculo"
@@ -170,7 +175,7 @@ def build_pdf(data: dict, photos_dir: Path, output: Path, paper_template: Path |
         entry_paths = photo_map.get((index, "entrada"), [])
         exit_paths = photo_map.get((index, "saida"), [])
         count = max(len(entry_paths), len(exit_paths))
-        max_height = {0: 4.8, 1: 4.8, 2: 4.2, 3: 3.7, 4: 3.2, 5: 2.8, 6: 2.5, 7: 2.2, 8: 2.0, 9: 1.8, 10: 1.7}.get(count, 1.6) * cm
+        max_height = {0: 6.0, 1: 6.0, 2: 5.3, 3: 4.8, 4: 4.3, 5: 3.9, 6: 3.5, 7: 3.2, 8: 3.0, 9: 2.8, 10: 2.7}.get(count, 2.5) * cm
         title = Paragraph(f"{index + 1:02d} — {paragraph_text(room.get('nome') or 'Cômodo')}", styles["RoomTitle"])
         entry_cell = [Paragraph("LAUDO DE ENTRADA", styles["EntryLabel"]),
                       photo_grid(entry_paths, max_height, col_width - 16)]
