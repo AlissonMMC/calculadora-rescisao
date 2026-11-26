@@ -72,7 +72,8 @@ $data = limparTexto($entrada['data_contestacao'] ?? '',10);
 $contrato = limparTexto($entrada['numero_contrato'] ?? '',80);
 $fianca = limparTexto($entrada['fianca'] ?? '',180);
 $comodos = is_array($entrada['comodos'] ?? null) ? array_values($entrada['comodos']) : [];
-if ($nome==='' || $endereco==='' || !preg_match('/^\d{4}-\d{2}-\d{2}$/',$data) || !$comodos) {
+$dataObj = DateTime::createFromFormat('!Y-m-d', $data);
+if ($nome==='' || $endereco==='' || (!$dataObj || $dataObj->format('Y-m-d') !== $data) || !$comodos) {
     responder(['ok'=>false,'error'=>'Preencha inquilino, endereço, data e pelo menos um cômodo.'],422);
 }
 if (count($comodos)>40) responder(['ok'=>false,'error'=>'O limite é de 40 cômodos por contestação.'],422);
