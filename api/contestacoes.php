@@ -88,7 +88,7 @@ try {
         $acao='edicao';
     } else {
         $stmt=$pdo->prepare('INSERT INTO contestacoes_vistoria (usuario_id,nome_inquilino,cpf_inquilino,endereco_locacao,data_contestacao,numero_contrato,fianca,comodos_json) VALUES (?,?,?,?,?,?,?,?)');
-        $stmt->execute([(int)$usuario['id'],$nome,$cpf,$endereco,$data,$contrato,$fianca,json_encode($comodos,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);
+        $stmt->execute([(int)$usuario['id'],$nome,$cpf,$endereco,$data,$contrato,$fianca,json_encode($comodosPersistidos,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);
         $id=(int)$pdo->lastInsertId();
         $acao='criacao';
     }
