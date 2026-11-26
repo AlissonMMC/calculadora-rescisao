@@ -34,7 +34,7 @@ def load_photo(path: Path, max_width: float, max_height: float):
         image = source.convert("RGB")
         image.thumbnail((int(max_width * 4), int(max_height * 4)))
         width_px, height_px = image.size
-        image.save(path.with_suffix(".pdf.jpg"), "JPEG", quality=88, optimize=True)
+        image.save(path.with_suffix(".pdf.jpg"), "JPEG", quality=95, subsampling=0, optimize=True)
     target = path.with_suffix(".pdf.jpg")
     scale = min(max_width / max(width_px, 1), max_height / max(height_px, 1))
     return Image(str(target), width=width_px * scale, height=height_px * scale)
