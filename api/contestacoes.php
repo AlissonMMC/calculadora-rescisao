@@ -24,11 +24,19 @@ if ($method === 'GET') {
         $fotos = $pdo->prepare('SELECT id, comodo_indice, lado, nome_arquivo, mime_type FROM contestacoes_vistoria_fotos WHERE contestacao_id = ? ORDER BY id');
         $fotos->execute([$id]);
         $comodos = json_decode((string)$item['comodos_json'], true);
+        if (!is_array($comodos)) $comodos = [];
+        foreach ($fotos->fetchAll() as $foto) {
+            $indice = (int)$foto['comodo_indice'];
+            if (!isset($comodos[$indice]) || !is_array($comodos[$indice])) continue;
+            $lado = (string)$foto['lado'];
+            $comodos[$indice][$lado] = is_array($comodos[$indice][$lado] ?? null) ? $comodos[$indice][$lado] : [];
+            $comodos[$indice][$lado][] = ['id'=>(int)$foto['id'],'name'=>$foto['nome_arquivo'],'url'=>'contestacao_foto.php?id='.$id.'&foto='.(int)$foto['id']];
+        }
         responder(['ok'=>true,'item'=>[
             'id'=>(int)$item['id'],'nome_inquilino'=>$item['nome_inquilino'],'cpf_inquilino'=>$item['cpf_inquilino'],
             'endereco_locacao'=>$item['endereco_locacao'],'data_contestacao'=>$item['data_contestacao'],
             'numero_contrato'=>$item['numero_contrato'],'fianca'=>$item['fianca'],
-            'comodos'=>is_array($comodos)?$comodos:[],'fotos'=>$fotos->fetchAll()
+            'comodos'=>$comodos
         ]]);
     }
     $stmt = $pdo->prepare('SELECT c.id,c.nome_inquilino,c.endereco_locacao,c.data_contestacao,c.numero_contrato,c.atualizado_em,u.nome AS responsavel,
@@ -66,12 +74,13 @@ if ($nome==='' || $endereco==='' || !preg_match('/^\d{4}-\d{2}-\d{2}$/',$data) |
 }
 if (count($comodos)>40) responder(['ok'=>false,'error'=>'O limite é de 40 cômodos por contestação.'],422);
 
+$comodosPersistidos = array_map(static function ($comodo) { return ['nome'=>limparTexto($comodo['nome'] ?? '',100),'descricao'=>limparTexto($comodo['descricao'] ?? '',5000)]; }, $comodos);
 $pdo->beginTransaction();
 try {
     if ($id > 0) {
         contestacaoAcesso($pdo,$id,$usuario);
         $stmt=$pdo->prepare('UPDATE contestacoes_vistoria SET nome_inquilino=?,cpf_inquilino=?,endereco_locacao=?,data_contestacao=?,numero_contrato=?,fianca=?,comodos_json=? WHERE id=?');
-        $stmt->execute([$nome,$cpf,$endereco,$data,$contrato,$fianca,json_encode($comodos,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),$id]);
+        $stmt->execute([$nome,$cpf,$endereco,$data,$contrato,$fianca,json_encode($comodosPersistidos,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),$id]);
         $pdo->prepare('DELETE FROM contestacoes_vistoria_fotos WHERE contestacao_id=?')->execute([$id]);
         $acao='edicao';
     } else {
