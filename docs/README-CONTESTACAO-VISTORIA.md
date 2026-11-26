@@ -31,9 +31,10 @@ As fotografias ficam armazenadas como BLOB no banco e são entregues por endpoin
 2. Atualize o ambiente de teste em `C:\xampp\htdocs\rescisao-teste`.
 3. Confirme que o arquivo `.env` do ambiente de teste aponta para `calculadora_rescisao_teste`.
 4. Execute a migração acima no banco de teste.
-5. Entre no sistema e abra **Contestação de vistoria** no menu lateral.
-6. Teste criar, editar, excluir, adicionar/remover cômodos, incluir várias fotos em ambos os lados e gerar o PDF.
-7. Verifique também acesso com dois usuários diferentes: um usuário comum não deve visualizar registros de outro usuário.
+5. Instale/atualize as dependências do gerador, se necessário: `py -3 -m pip install -r tools/requirements-fotos-word.txt`.
+6. Entre no sistema e abra **Contestação de vistoria** no menu lateral.
+7. Teste criar, editar, excluir, adicionar/remover cômodos, incluir várias fotos em ambos os lados e baixar o PDF.
+8. Verifique também acesso com dois usuários diferentes: um usuário comum não deve visualizar registros de outro usuário.
 
 ## Observação sobre o PDF
 
