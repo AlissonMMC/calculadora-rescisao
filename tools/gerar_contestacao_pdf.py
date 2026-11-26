@@ -5,6 +5,9 @@ import argparse
 import json
 from pathlib import Path
 from xml.sax.saxutils import escape
+import tempfile
+
+from pypdf import PdfReader, PdfWriter
 
 from PIL import Image as PILImage
 from reportlab.lib import colors
@@ -23,6 +26,7 @@ MUTED = colors.HexColor("#737373")
 GREEN = colors.HexColor("#16804A")
 EXIT = colors.HexColor("#C65A16")
 BORDER = colors.HexColor("#DDDDDD")
+PAPER_TEMPLATE = Path(__file__).resolve().parents[1] / "assets" / "images" / "papel-timbrado" / "papel-timbrado.pdf"
 
 
 def paragraph_text(value: object) -> str:
@@ -71,7 +75,7 @@ def photo_grid(paths: list[Path], max_height: float, width: float):
     ]))
 
 
-def build_pdf(data: dict, photos_dir: Path, output: Path):
+def build_pdf(data: dict, photos_dir: Path, output: Path, paper_template: Path | None = None):
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(
         name="DocTitle", parent=styles["Title"], fontName="Helvetica-Bold",
@@ -114,13 +118,15 @@ def build_pdf(data: dict, photos_dir: Path, output: Path):
         fontSize=6.5, leading=8, textColor=MUTED, spaceAfter=3
     ))
 
+    # Reserva o cabeçalho, o rodapé e as margens do papel timbrado A4.
     doc = SimpleDocTemplate(
         str(output), pagesize=A4,
-        rightMargin=1.35 * cm, leftMargin=1.35 * cm,
-        topMargin=1.2 * cm, bottomMargin=1.2 * cm,
+        rightMargin=3.1 * cm, leftMargin=3.1 * cm,
+        topMargin=3.6 * cm, bottomMargin=2.6 * cm,
         title="Contestação de Vistoria",
         author="Folha de Cálculo"
     )
+    page_width = A4[0] - doc.leftMargin - doc.rightMargin
     story = [
         Paragraph("CONTESTAÇÃO DE VISTORIA", styles["DocTitle"]),
         Paragraph("COMPARATIVO ENTRE LAUDO DE ENTRADA E LAUDO DE SAÍDA", styles["DocSubtitle"]),
@@ -137,7 +143,7 @@ def build_pdf(data: dict, photos_dir: Path, output: Path):
         [field("Data da contestação", data.get("data_contestacao_br")), ""],
         [field("Endereço da locação", data.get("endereco_locacao")), ""],
     ]
-    details_table = Table(details, colWidths=[8.8 * cm, 8.8 * cm], hAlign="LEFT")
+    details_table = Table(details, colWidths=[page_width / 2, page_width / 2], hAlign="LEFT")
     details_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FAFAFA")),
         ("BOX", (0, 0), (-1, -1), .6, BORDER),
@@ -156,7 +162,6 @@ def build_pdf(data: dict, photos_dir: Path, output: Path):
         key = (int(photo.get("room_index", 0)), str(photo.get("side", "")))
         photo_map.setdefault(key, []).append(photos_dir / str(photo.get("file", "")))
 
-    page_width = A4[0] - doc.leftMargin - doc.rightMargin
     col_width = page_width / 2
     rooms = data.get("comodos", [])
     for index, room in enumerate(rooms):
@@ -203,7 +208,52 @@ def build_pdf(data: dict, photos_dir: Path, output: Path):
             f"Folha de Cálculo · Contestação #{data.get('id', '')} · Página {document.page}")
         canvas.restoreState()
 
-    doc.build(story, onFirstPage=footer, onLaterPages=footer)
+    # Gera primeiro o conteúdo e, quando disponível, aplica o papel timbrado
+    # como camada inferior para que a marca d'água fique atrás de textos e fotos.
+    template = paper_template if paper_template is not None else PAPER_TEMPLATE
+    template = Path(template) if template else None
+    if template and template.is_file():
+        with tempfile.NamedTemporaryFile(
+            prefix="contestacao-conteudo-", suffix=".pdf",
+            dir=str(output.parent), delete=False
+        ) as temp_file:
+            content_pdf = Path(temp_file.name)
+        try:
+            doc.filename = str(content_pdf)
+            doc.build(story, onFirstPage=footer, onLaterPages=footer)
+
+            source_reader = PdfReader(str(content_pdf))
+            template_reader = PdfReader(str(template))
+            if not template_reader.pages:
+                raise ValueError("O PDF do papel timbrado não possui páginas.")
+            background = template_reader.pages[0]
+            writer = PdfWriter()
+            for page in source_reader.pages:
+                page.merge_page(background, over=False)
+                writer.add_page(page)
+            if source_reader.metadata:
+                metadata = {
+                    key: str(value) for key, value in source_reader.metadata.items()
+                    if value is not None
+                }
+                if metadata:
+                    writer.add_metadata(metadata)
+            with tempfile.NamedTemporaryFile(
+                prefix="contestacao-final-", suffix=".pdf",
+                dir=str(output.parent), delete=False
+            ) as merged_file:
+                merged_pdf = Path(merged_file.name)
+            try:
+                with merged_pdf.open("wb") as final_file:
+                    writer.write(final_file)
+                merged_pdf.replace(output)
+            finally:
+                merged_pdf.unlink(missing_ok=True)
+        finally:
+            content_pdf.unlink(missing_ok=True)
+    else:
+        doc.filename = str(output)
+        doc.build(story, onFirstPage=footer, onLaterPages=footer)
 
 
 def main():
