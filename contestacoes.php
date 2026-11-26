@@ -25,6 +25,7 @@ $csrf=csrfToken();
 </div>
 <div class="cv-rooms-head"><div><h3>Comparação por cômodo</h3><p>Adicione fotos de entrada e saída e descreva as diferenças observadas.</p></div><button class="cv-btn cv-primary" type="button" id="addRoom">＋ Adicionar cômodo</button></div>
 <div id="roomsContainer"></div>
+<div class="cv-rooms-bottom"><button class="cv-btn cv-primary" type="button" id="addRoomBottom">＋ Adicionar cômodo</button></div>
 <div class="cv-form-footer"><span id="saveFeedback" role="status"></span><button class="cv-btn" type="button" id="cancelForm">Cancelar</button><button class="cv-btn cv-primary" type="submit" id="saveContestacao">Salvar contestação</button></div>
 </form></section>
 </main>
