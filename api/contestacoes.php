@@ -5,6 +5,9 @@ require __DIR__ . '/config.php';
 $usuario = exigirLoginApi();
 $pdo = db();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+if ($method === 'POST' && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 30 * 1024 * 1024) {
+    responder(['ok'=>false,'error'=>'O envio ultrapassou 30 MB. Reduza a quantidade de fotos ou envie em partes menores.'], 413);
+}
 
 function contestacaoAcesso(PDO $pdo, int $id, array $usuario): array {
     $stmt = $pdo->prepare('SELECT * FROM contestacoes_vistoria WHERE id = ? LIMIT 1');
