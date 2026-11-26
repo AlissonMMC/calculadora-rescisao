@@ -78,7 +78,7 @@ if ($nome==='' || $endereco==='' || (!$dataObj || $dataObj->format('Y-m-d') !== 
 }
 if (count($comodos)>40) responder(['ok'=>false,'error'=>'O limite é de 40 cômodos por contestação.'],422);
 
-$comodosPersistidos = array_map(static function ($comodo) { return ['nome'=>limparTexto($comodo['nome'] ?? '',100),'descricao'=>limparTexto($comodo['descricao'] ?? '',5000)]; }, $comodos);
+$comodosPersistidos = array_map(static function ($comodo) { return ['nome'=>limparTexto($comodo['nome'] ?? '',100),'descricao'=>limparTexto($comodo['descricao'] ?? '',2000)]; }, $comodos);
 $pdo->beginTransaction();
 try {
     if ($id > 0) {
