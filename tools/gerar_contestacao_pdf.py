@@ -65,7 +65,7 @@ def photo_grid(paths: list[Path], max_height: float, width: float):
         if len(row) == 1:
             row.append("")
         rows.append(row)
-    return Table(rows, colWidths=[cell_width, cell_width], hAlign="LEFT", style=TableStyle([
+    return Table(rows, colWidths=[cell_width, cell_width], hAlign="CENTER", style=TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("LEFTPADDING", (0, 0), (-1, -1), 2),
@@ -143,7 +143,7 @@ def build_pdf(data: dict, photos_dir: Path, output: Path, paper_template: Path |
         [field("Data da contestação", data.get("data_contestacao_br")), ""],
         [field("Endereço da locação", data.get("endereco_locacao")), ""],
     ]
-    details_table = Table(details, colWidths=[page_width / 2, page_width / 2], hAlign="LEFT")
+    details_table = Table(details, colWidths=[page_width / 2, page_width / 2], hAlign="CENTER")
     details_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FAFAFA")),
         ("BOX", (0, 0), (-1, -1), .6, BORDER),
@@ -174,7 +174,7 @@ def build_pdf(data: dict, photos_dir: Path, output: Path, paper_template: Path |
                       photo_grid(entry_paths, max_height, col_width - 5)]
         exit_cell = [Paragraph("LAUDO DE SAÍDA", styles["ExitLabel"]),
                      photo_grid(exit_paths, max_height, col_width - 5)]
-        comparison = Table([[entry_cell, exit_cell]], colWidths=[col_width, col_width], hAlign="LEFT")
+        comparison = Table([[entry_cell, exit_cell]], colWidths=[col_width, col_width], hAlign="CENTER")
         comparison.setStyle(TableStyle([
             ("VALIGN", (0, 0), (-1, -1), "TOP"),
             ("BOX", (0, 0), (-1, -1), .5, BORDER),
@@ -188,10 +188,9 @@ def build_pdf(data: dict, photos_dir: Path, output: Path, paper_template: Path |
             Paragraph("DESCRIÇÃO / JUSTIFICATIVA", styles["DescriptionLabel"]),
             Paragraph(paragraph_text(room.get("descricao") or "Sem descrição informada."), styles["Description"])
         ]
-        description_box = Table([[description]], colWidths=[page_width])
+        description_box = Table([[description]], colWidths=[page_width], hAlign="CENTER")
         description_box.setStyle(TableStyle([
             ("BOX", (0, 0), (-1, -1), .5, BORDER),
-            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FCFCFC")),
             ("LEFTPADDING", (0, 0), (-1, -1), 8),
             ("RIGHTPADDING", (0, 0), (-1, -1), 8),
             ("TOPPADDING", (0, 0), (-1, -1), 6),
