@@ -9,7 +9,7 @@ import tempfile
 
 from pypdf import PdfReader, PdfWriter
 
-from PIL import Image as PILImage
+from PIL import Image as PILImage, ImageOps
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4
@@ -34,14 +34,17 @@ def paragraph_text(value: object) -> str:
 
 
 def load_photo(path: Path, max_width: float, max_height: float):
-    with PILImage.open(path) as source:
-        image = source.convert("RGB")
-        image.thumbnail((int(max_width * 4), int(max_height * 4)))
-        width_px, height_px = image.size
-        image.save(path.with_suffix(".pdf.jpg"), "JPEG", quality=95, subsampling=0, optimize=True)
     target = path.with_suffix(".pdf.jpg")
-    scale = min(max_width / max(width_px, 1), max_height / max(height_px, 1))
-    return Image(str(target), width=width_px * scale, height=height_px * scale)
+    with PILImage.open(path) as source:
+        # Corrige a orientação EXIF antes de calcular as dimensões da foto.
+        image = ImageOps.exif_transpose(source).convert("RGB")
+        image.save(target, "JPEG", quality=95, subsampling=0, optimize=True)
+
+    # O modo proporcional mantém a foto inteira dentro da célula,
+    # sem recortar as bordas superior/inferior ou laterais.
+    photo = Image(str(target), width=max_width - 6, height=max_height - 6, kind="proportional")
+    photo.hAlign = "CENTER"
+    return photo
 
 
 def photo_grid(paths: list[Path], max_height: float, width: float):
