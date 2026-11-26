@@ -105,8 +105,12 @@ try {
                 if (!is_array($foto) || empty($foto['data'])) continue;
                 if (!preg_match('#^data:image/(jpeg|png|webp);base64,#',$foto['data'],$m)) throw new RuntimeException('Uma das imagens possui formato inválido.');
                 $bin=base64_decode(substr($foto['data'],strpos($foto['data'],',')+1),true);
-                if ($bin===false || strlen($bin)>3*1024*1024) throw new RuntimeException('Cada imagem deve ter no máximo 3 MB após a otimização.');
-                $mime='image/'.$m[1];
+                if ($bin===false || strlen($bin)<1 || strlen($bin)>3*1024*1024) throw new RuntimeException('Cada imagem deve ter no máximo 3 MB após a otimização.');
+                $imageInfo = @getimagesizefromstring($bin);
+                if (!$imageInfo || !in_array($imageInfo['mime'] ?? '', ['image/jpeg','image/png','image/webp'], true)) {
+                    throw new RuntimeException('Uma das imagens está corrompida ou usa um formato não permitido.');
+                }
+                $mime = $imageInfo['mime'];
                 $insertFoto->execute([$id,$indice,$lado,limparTexto($foto['name'] ?? 'foto',255),$mime,$bin]);
                 $totalFotos++;
             }
