@@ -79,7 +79,7 @@ def build_pdf(data: dict, photos_dir: Path, output: Path):
     ))
     styles.add(ParagraphStyle(
         name="DocSubtitle", parent=styles["Normal"], fontSize=7, leading=9,
-        textColor=MUTED, alignment=TA_CENTER, tracking=1.0, spaceAfter=10
+        textColor=MUTED, alignment=TA_CENTER, spaceAfter=10
     ))
     styles.add(ParagraphStyle(
         name="SectionTitle", parent=styles["Heading2"], fontName="Helvetica-Bold",
