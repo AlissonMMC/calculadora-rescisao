@@ -38,4 +38,4 @@ As fotografias ficam armazenadas como BLOB no banco e são entregues por endpoin
 
 ## Observação sobre o PDF
 
-O relatório é preparado em HTML próprio para impressão A4. O botão abre a janela de impressão do navegador; selecione **Salvar como PDF**. Isso evita adicionar dependências PHP externas ao projeto.
+O botão **Baixar PDF** executa `tools/gerar_contestacao_pdf.py` com ReportLab e devolve o arquivo diretamente ao navegador. O PHP usa o mesmo `PYTHON_LAUNCHER` configurado para o módulo Fotos Word/PDF.
