@@ -42,8 +42,8 @@ if ($method === 'GET') {
     $stmt = $pdo->prepare('SELECT c.id,c.nome_inquilino,c.endereco_locacao,c.data_contestacao,c.numero_contrato,c.atualizado_em,u.nome AS responsavel,
         (SELECT COUNT(*) FROM contestacoes_vistoria_fotos f WHERE f.contestacao_id=c.id) AS total_fotos
         FROM contestacoes_vistoria c LEFT JOIN usuarios u ON u.id=c.usuario_id
-        WHERE c.usuario_id = ? OR ? = "admin" ORDER BY c.atualizado_em DESC');
-    $stmt->execute([(int)$usuario['id'], (string)($usuario['perfil'] ?? '')]);
+        WHERE c.usuario_id = ? OR (? = ?) ORDER BY c.atualizado_em DESC');
+    $stmt->execute([(int)$usuario['id'], (string)($usuario['perfil'] ?? ''), 'admin']);
     responder(['ok'=>true,'items'=>$stmt->fetchAll()]);
 }
 
