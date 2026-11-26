@@ -16,7 +16,7 @@ function renderRooms(){
  <div class="cv-sides">
  ${sideMarkup(room,'entrada',i,'LAUDO DE ENTRADA','cv-entry')}
  ${sideMarkup(room,'saida',i,'LAUDO DE SAÍDA','cv-exit')}
- </div><div class="cv-description"><label>Descrição / justificativa</label><textarea data-field="descricao" placeholder="Explique as diferenças entre o laudo de entrada e o laudo de saída...">${esc(room.descricao)}</textarea></div></article>`).join('');
+ </div><div class="cv-description"><label>Descrição / justificativa</label><textarea maxlength="2000" data-field="descricao" placeholder="Explique as diferenças entre o laudo de entrada e o laudo de saída...">${esc(room.descricao)}</textarea></div></article>`).join('');
 }
 function sideMarkup(room,side,i,label,cls){const photos=room[side]||[];return `<section class="cv-side"><div class="cv-side-title"><span class="${cls}">${label}</span><label class="cv-upload">＋ Adicionar fotos<input type="file" accept="image/jpeg,image/png,image/webp" multiple data-side="${side}"></label></div><div class="cv-previews">${photos.map((p,n)=>`<div class="cv-preview"><img src="${p.data||p.url}" alt="Foto ${n+1}"><button type="button" data-action="remove-photo" data-side="${side}" data-photo="${n}" aria-label="Remover foto">×</button></div>`).join('')}</div><div class="cv-photo-count">${photos.length} foto(s) adicionada(s) · máximo de 10 por lado</div></section>`;}
 function updateRoomFromDOM(card){const i=Number(card.dataset.room);if(!rooms[i])return;const n=card.querySelector('[data-field="nome"]'),d=card.querySelector('[data-field="descricao"]');rooms[i].nome=n.value;rooms[i].descricao=d.value;}
