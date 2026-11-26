@@ -8,7 +8,7 @@
 - Até 10 fotos por lado (entrada e saída) em cada cômodo; as imagens são redimensionadas no navegador antes do envio.
 - Descrição/justificativa individual por cômodo.
 - Consulta, edição e exclusão dos registros.
-- Relatório de impressão com as fotos de entrada e saída em duas colunas e a descrição abaixo. No navegador, use **Baixar / Salvar em PDF** e escolha **Salvar como PDF** no destino da impressão.
+- Geração de arquivo PDF A4 real para download, com as fotos de entrada e saída em duas colunas e a descrição abaixo de cada cômodo. As imagens são ajustadas automaticamente para aproveitar a página.
 - Controle de acesso: cada usuário visualiza e altera os próprios registros; administradores podem consultar todos.
 
 ## Banco de dados
