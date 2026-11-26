@@ -229,8 +229,9 @@ def build_pdf(data: dict, photos_dir: Path, output: Path, paper_template: Path |
             background = template_reader.pages[0]
             writer = PdfWriter()
             for page in source_reader.pages:
-                page.merge_page(background, over=False)
                 writer.add_page(page)
+                # A página precisa estar vinculada ao PdfWriter antes da mesclagem (pypdf 7+).
+                writer.pages[-1].merge_page(background, over=False)
             if source_reader.metadata:
                 metadata = {
                     key: str(value) for key, value in source_reader.metadata.items()
