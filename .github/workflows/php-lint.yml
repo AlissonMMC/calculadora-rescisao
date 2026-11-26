@@ -27,13 +27,14 @@ jobs:
           done < <(find . -type f -name '*.php' -not -path './.git/*' -print0)
 
       - name: Validate Python syntax
-        run: python3 -m py_compile tools/gerar_fotos_word.py
+        run: python3 -m py_compile tools/gerar_fotos_word.py tools/gerar_contestacao_pdf.py
 
       - name: Install photo module dependencies
         run: python3 -m pip install -r tools/requirements-fotos-word.txt
 
       - name: Validate photo generator imports
         run: python3 tools/gerar_fotos_word.py --help
+          python3 tools/gerar_contestacao_pdf.py --help
 
       - name: Smoke test Word and PDF generation
         shell: bash
